@@ -1,0 +1,13 @@
+.env
+.venv/
+node_modules/
+.next/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+dist/
+build/
+coverage/
+

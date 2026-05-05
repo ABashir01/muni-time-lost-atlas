@@ -1,19 +1,19 @@
 services:
   db:
     image: postgis/postgis:16-3.4
-    container_name: muni-lost-time-atlas-db
+    container_name: ${POSTGRES_CONTAINER_NAME}
     restart: unless-stopped
     environment:
-      POSTGRES_DB: muni_lost_time_atlas
-      POSTGRES_USER: muni
-      POSTGRES_PASSWORD: muni_dev_password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U muni -d muni_lost_time_atlas"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 12

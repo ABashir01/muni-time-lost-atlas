@@ -14,6 +14,7 @@ Build from the inside out:
 - `S01_repo_structure`
 - `S02_database_bootstrap`
 - `S03_python_project_bootstrap`
+- `S03a_schema_strategy`
 
 ### Static / Historical Data
 - `S04_gtfs_static_fixture_ingest`
@@ -79,4 +80,3 @@ Before moving from one phase to the next, these conditions must hold:
 ### Before realtime work
 - historical/static MVP is trustworthy
 - frontend map works without live vehicles
-

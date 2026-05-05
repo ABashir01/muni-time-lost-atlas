@@ -1,60 +1,81 @@
 param(
-    [int]$MaxAttempts = 24,
-    [int]$SleepSeconds = 5
+    [int]$MaxAttempts = 12,
+    [int]$SleepSeconds = 2
 )
 
 $ErrorActionPreference = "Stop"
+$envFile = Join-Path $PSScriptRoot "..\..\.env"
 
-function Invoke-Compose {
+if (-not (Test-Path $envFile)) {
+    throw "Missing .env at repo root. Copy .env.example to .env and set local DB values before running the smoke test."
+}
+
+function Get-EnvFileValues {
     param(
-        [Parameter(ValueFromRemainingArguments = $true)]
-        [string[]]$Args
+        [string]$Path
     )
 
-    & docker compose @Args
-    if ($LASTEXITCODE -ne 0) {
-        throw "docker compose $($Args -join ' ') failed with exit code $LASTEXITCODE"
+    $values = @{}
+    foreach ($line in Get-Content $Path) {
+        if ([string]::IsNullOrWhiteSpace($line)) {
+            continue
+        }
+
+        $trimmed = $line.Trim()
+        if ($trimmed.StartsWith("#")) {
+            continue
+        }
+
+        $parts = $trimmed -split "=", 2
+        if ($parts.Count -ne 2) {
+            continue
+        }
+
+        $values[$parts[0].Trim()] = $parts[1].Trim()
+    }
+
+    return $values
+}
+
+$envValues = Get-EnvFileValues -Path $envFile
+$requiredKeys = @("POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD")
+foreach ($key in $requiredKeys) {
+    if (-not $envValues.ContainsKey($key) -or [string]::IsNullOrWhiteSpace($envValues[$key])) {
+        throw "Missing required key '$key' in .env."
     }
 }
 
+$postgresDb = $envValues["POSTGRES_DB"]
+$postgresUser = $envValues["POSTGRES_USER"]
+$postgresPassword = $envValues["POSTGRES_PASSWORD"]
+$query = "SELECT current_database() || '|' || current_user || '|' || PostGIS_Version();"
+
 Write-Host "Starting local Postgres/PostGIS service..."
-Invoke-Compose up -d db
+& docker compose up -d db
+if ($LASTEXITCODE -ne 0) {
+    throw "docker compose up -d db failed with exit code $LASTEXITCODE"
+}
 
-$ready = $false
+$runningServices = (& docker compose ps --services --status running).Trim()
+if ($LASTEXITCODE -ne 0 -or -not ($runningServices -split "\r?\n" | Where-Object { $_ -eq "db" })) {
+    throw "The db service is not running."
+}
+
+$result = $null
 for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
-    try {
-        & docker compose exec -T db pg_isready -U muni -d muni_lost_time_atlas | Out-Null
-        if ($LASTEXITCODE -eq 0) {
-            $ready = $true
-            break
-        }
-    }
-    catch {
+    Write-Host "Running DB smoke query (attempt $attempt of $MaxAttempts)..."
+    $result = & docker compose exec -T -e PGPASSWORD=$postgresPassword db psql -h 127.0.0.1 -U $postgresUser -d $postgresDb -t -A -c $query 2>$null
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($result)) {
+        break
     }
 
+    $result = $null
     Start-Sleep -Seconds $SleepSeconds
 }
 
-if (-not $ready) {
-    throw "Database did not become ready after $MaxAttempts attempts."
+if ([string]::IsNullOrWhiteSpace($result)) {
+    throw "The DB smoke query did not succeed after $MaxAttempts attempts."
 }
 
-Write-Host "Checking PostGIS extension availability..."
-$postgisVersion = & docker compose exec -T db psql -U muni -d muni_lost_time_atlas -t -A -c "SELECT PostGIS_Version();"
-if ($LASTEXITCODE -ne 0) {
-    throw "Failed to query PostGIS version."
-}
-
-if ([string]::IsNullOrWhiteSpace($postgisVersion)) {
-    throw "PostGIS version query returned an empty result."
-}
-
-Write-Host "Checking project-level connection query..."
-$connectionCheck = & docker compose exec -T db psql -U muni -d muni_lost_time_atlas -t -A -c "SELECT current_database() || '|' || current_user;"
-if ($LASTEXITCODE -ne 0) {
-    throw "Failed to run connection smoke test query."
-}
-
-Write-Host "PostGIS version: $postgisVersion"
-Write-Host "Connection check: $connectionCheck"
+Write-Host "Smoke query result: $($result.Trim())"
 Write-Host "DB smoke test passed."

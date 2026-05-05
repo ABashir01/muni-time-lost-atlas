@@ -78,3 +78,13 @@
 - Alternatives rejected:
   - local machine Postgres install as the primary bootstrap path
   - delaying database bootstrap until the Python project exists
+
+## ADR 009: Local Dev DB Credentials
+- Decision: keep `docker-compose.yml` in git, but source local Postgres settings from a repo-root `.env` file that is gitignored
+- Why:
+  - removes inline local credentials from versioned config
+  - keeps the local Docker bootstrap simple
+  - gives a clear path to rotating throwaway dev credentials without changing committed compose files
+- Alternatives rejected:
+  - leaving local credentials hardcoded in `docker-compose.yml`
+  - removing `docker-compose.yml` from git

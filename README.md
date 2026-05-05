@@ -49,11 +49,13 @@ Not included yet:
 
 The MVP uses a local Docker Compose service for development database work.
 
+- create a local `.env` first:
+  - `Copy-Item .env.example .env`
+  - open `.env` and set a local-only `POSTGRES_PASSWORD`
+  - if your local DB was already initialized with the old inline password, run `docker compose down -v` once so Postgres reinitializes with the `.env` values
 - service: `db`
 - image: `postgis/postgis:16-3.4`
-- database: `muni_lost_time_atlas`
-- user: `muni`
-- password: `muni_dev_password`
+- database/user/password come from local `.env`
 
 Common commands:
 
@@ -69,4 +71,4 @@ Repeatable smoke test:
 powershell -ExecutionPolicy Bypass -File .\tests\integration\db_smoke_test.ps1
 ```
 
-The smoke test starts the DB if needed, waits for readiness, confirms `PostGIS` is enabled, and runs a simple connection query.
+The smoke test expects a local `.env`, starts the DB if needed, confirms the `db` service is running, and retries one simple `psql` query until it returns the database name, user, and `PostGIS` version.

@@ -12,7 +12,8 @@ Slice docs should continue to define exactly which tests are required before a c
 Current integration artifacts:
 
 - `integration/db_smoke_test.ps1`
+  - expects a local `.env` file at the repo root
   - starts the local Docker Compose DB service if needed
-  - waits for readiness
-  - checks `PostGIS` availability
-  - runs a simple connection query against `muni_lost_time_atlas`
+  - confirms the `db` service is running
+  - retries one simple `psql` query until it succeeds
+  - proves the query can read `current_database()`, `current_user`, and `PostGIS_Version()`
