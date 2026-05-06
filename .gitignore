@@ -1,5 +1,6 @@
 .env
 .venv/
+.tmp/
 node_modules/
 .next/
 __pycache__/
@@ -10,4 +11,3 @@ __pycache__/
 dist/
 build/
 coverage/
-

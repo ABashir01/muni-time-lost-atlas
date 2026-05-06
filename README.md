@@ -37,6 +37,7 @@ Read additional contract docs as needed:
 This repository currently contains:
 - the initial project structure from `S01_repo_structure`
 - local Postgres/PostGIS bootstrap for `S02_database_bootstrap`
+- Python package and test bootstrap for `S03_python_project_bootstrap`
 
 Not included yet:
 
@@ -44,6 +45,29 @@ Not included yet:
 - transit schemas or ingest logic
 - transit business logic
 - product implementation
+
+## Python bootstrap
+
+The repository now includes:
+- a root `pyproject.toml` for Python dependency metadata
+- `api/src/muni_lta_api` for the future `FastAPI` service package
+- `pipeline/src/muni_lta_pipeline` for future ingest and transform code
+- repository-level unit tests under `tests/unit`
+- a local `.venv` bootstrap path for future Python-package work
+
+The API bootstrap uses a lazy `FastAPI` import so the package structure and tests can exist before all runtime dependencies are installed in every environment.
+
+To create a local virtual environment with a Python 3.12+ interpreter:
+
+```powershell
+python -m venv .venv
+```
+
+To run the unit test harness from the venv:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
 
 ## Local database bootstrap
 

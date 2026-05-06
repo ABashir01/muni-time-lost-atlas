@@ -88,3 +88,32 @@
 - Alternatives rejected:
   - leaving local credentials hardcoded in `docker-compose.yml`
   - removing `docker-compose.yml` from git
+
+## ADR 010: Initial Postgres Schema Strategy
+- Decision: use Postgres schemas named `raw`, `staging`, `canonical`, `marts`, and `serving`, with GTFS static ingest starting in `raw` and the first stable scheduled interface landing in `canonical`
+- Why:
+  - gives `S04` and `S05` fixed namespaces and table boundaries before ingest begins
+  - keeps raw-source fidelity separate from normalized scheduled entities
+  - avoids overdesigning final marts or realtime structures too early
+  - matches the contract-first workflow where downstream slices should not depend on raw GTFS directly
+  - is closest to `dbt`-style layered modeling guidance, with `canonical` acting as the stable reusable intermediate layer
+  - remains close enough to medallion architecture to explain the pattern externally without adopting `bronze/silver/gold` names literally
+  - provides a clean place to preserve 511 active-feed versus historic-regional-feed provenance before reconciliation
+  - supports separate batch historical refreshes and bounded-retention realtime polling/storage
+- Alternatives rejected:
+  - a single flat schema for all entities
+  - using only table prefixes without schema separation
+  - designing the full final mart and serving schema before fixture ingest is proven
+  - renaming schemas to `bronze`, `silver`, and `gold`
+
+## ADR 011: Python Bootstrap Structure
+- Decision: use a root `pyproject.toml`, separate `src` packages under `api/` and `pipeline/`, and the standard-library `unittest` test runner for the early Python bootstrap
+- Why:
+  - keeps the API and pipeline code in separate, predictable package boundaries
+  - records the `FastAPI` dependency without forcing early endpoint work
+  - provides a test harness without adding more tooling than this slice needs
+  - keeps later ingest and API slices free to add richer tooling once real code exists
+- Alternatives rejected:
+  - putting all Python code in one shared package at this stage
+  - introducing `pytest` before the repo needs it
+  - delaying all Python dependency metadata until a later slice

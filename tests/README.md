@@ -17,3 +17,16 @@ Current integration artifacts:
   - confirms the `db` service is running
   - retries one simple `psql` query until it succeeds
   - proves the query can read `current_database()`, `current_user`, and `PostGIS_Version()`
+
+Current unit artifacts:
+
+- `unit/test_python_bootstrap.py`
+  - includes one placeholder unit test
+  - verifies the API and pipeline packages can be imported
+  - verifies the bootstrap config helpers return the expected settings objects
+
+Unit test command:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```

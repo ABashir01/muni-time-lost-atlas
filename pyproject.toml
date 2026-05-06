@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "muni-lost-time-atlas"
+version = "0.1.0"
+description = "Bootstrap tooling for the Muni Lost Time Atlas API and data platform."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["api/src", "pipeline/src"]
+include = ["muni_lta_api*", "muni_lta_pipeline*"]

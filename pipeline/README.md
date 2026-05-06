@@ -2,6 +2,13 @@
 
 Reserved for ingestion, normalization, transformation, and metric computation code.
 
+Current package layout:
+
+- `src/muni_lta_pipeline/__init__.py`
+  - package marker and version
+- `src/muni_lta_pipeline/config.py`
+  - environment-driven config bootstrap
+
 Expected future ownership:
 
 - GTFS static ingest
