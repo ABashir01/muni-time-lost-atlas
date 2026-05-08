@@ -46,3 +46,8 @@ Observed stop arrivals are necessary for waiting-loss and scheduled-vs-observed 
 Next slice joins scheduled and observed stop events.
 
 ## Completion notes
+- Added dedicated raw stop-observations DDL at `db/sql/03-create-raw-stop-observations-table.sql` with source-facing join fields plus a typed `observed_arrival_ts`.
+- Added a tiny deterministic fixture under `fixtures/stop_observations/regional_rg_minimal/stop_observations.txt`.
+- Added `pipeline/src/muni_lta_pipeline/historic_stop_observations_fixture_ingest.py` to load the fixture into `raw.stop_observations`.
+- Added unit tests for service-date and timestamp parsing plus an integration test for row counts, non-null required fields, and basic join-key compatibility with the raw GTFS fixture.
+- Updated repository and pipeline/test docs plus the data-model and decisions logs for the new raw historical observation ingest path.

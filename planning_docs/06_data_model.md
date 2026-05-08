@@ -91,6 +91,16 @@ Future slices should use these names unless a later decision explicitly changes 
 `S06` should land historic observed arrivals in `raw.stop_observations`.
 `S30` should land GTFS-RT vehicle snapshots in `raw.gtfs_rt_vehicle_positions`.
 
+### Initial raw stop observations fields for `S06`
+The first historical observation ingest slice should preserve these source-facing fields in `raw.stop_observations`:
+- `service_date`
+- `trip_id`
+- `stop_id`
+- `stop_sequence`
+- `observed_arrival_time`
+
+`S06` may also derive a typed `observed_arrival_ts` alongside the source timestamp text so later slices can validate and compare observed arrival times without reparsing the raw text value repeatedly.
+
 ## Staging Layer
 ### Staging goals
 - normalize column names only where source quirks would leak into downstream models

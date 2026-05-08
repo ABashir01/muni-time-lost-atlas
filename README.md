@@ -42,6 +42,7 @@ This repository currently contains:
 - active `511` GTFS acquisition for `S04a_511_active_gtfs_fetch`
 - historic regional `511` GTFS acquisition for `S06a_511_historic_rg_feed_fetch`
 - canonical scheduled GTFS models for `S05_canonical_scheduled_models`
+- raw historic stop observations fixture ingest for `S06_historic_stop_observations_ingest`
 
 Not included yet:
 
@@ -57,6 +58,7 @@ Current transit data artifact:
 - an active-feed fetcher at `pipeline/src/muni_lta_pipeline/active_gtfs_fetch.py`
 - a historic regional fetcher at `pipeline/src/muni_lta_pipeline/historic_rg_feed_fetch.py`
 - scheduled model materialization at `pipeline/src/muni_lta_pipeline/canonical_scheduled_models.py`
+- a historic stop-observations fixture loader at `pipeline/src/muni_lta_pipeline/historic_stop_observations_fixture_ingest.py`
 - gitignored local acquisition artifacts under `artifacts/acquisitions/511/operator_active`
 
 ## Python bootstrap
@@ -174,4 +176,19 @@ Example command:
 
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\canonical_scheduled_models.py
+```
+
+## Historic stop observations fixture ingest
+
+The project now has a fixture-driven raw ingest path for historical `stop_observations`.
+
+- loads `fixtures/stop_observations/regional_rg_minimal/stop_observations.txt`
+- creates and populates `raw.stop_observations`
+- preserves source-facing observation fields for `service_date`, `trip_id`, `stop_id`, `stop_sequence`, and `observed_arrival_time`
+- derives a typed `observed_arrival_ts` for later scheduled/observed reconciliation work
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_stop_observations_fixture_ingest.py
 ```

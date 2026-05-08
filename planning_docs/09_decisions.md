@@ -160,3 +160,14 @@
 - Alternatives rejected:
   - folding historic `RG` fetch directly into `S06_historic_stop_observations_ingest`
   - treating the plain and `-so` variants as one implicit acquisition path without explicit provenance
+
+## ADR 015: Raw Historic Stop Observations Shape
+- Decision: land the first historical observation fixture in `raw.stop_observations` with source-facing join fields (`service_date`, `trip_id`, `stop_id`, `stop_sequence`, `observed_arrival_time`) plus a typed `observed_arrival_ts`
+- Why:
+  - keeps the raw historical observation slice narrow and usable for later scheduled/observed joins
+  - preserves the source-facing timestamp text while proving timestamp parsing once during ingest
+  - avoids broadening `S06` into canonical observed-event modeling
+- Alternatives rejected:
+  - storing only text observation timestamps and deferring all parsing
+  - skipping the typed timestamp and forcing downstream slices to reparse raw text repeatedly
+  - broadening `S06` into canonical observed-stop tables

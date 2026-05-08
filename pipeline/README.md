@@ -77,3 +77,16 @@ Example command:
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\canonical_scheduled_models.py
 ```
+
+Current historic stop observations ingest artifact:
+
+- `src/muni_lta_pipeline/historic_stop_observations_fixture_ingest.py`
+  - creates and loads the first `raw.stop_observations` fixture for `S06`
+  - parses typed observed-arrival timestamps while preserving source-facing observation fields
+  - keeps historical observation ingest separate from scheduled/observed joins and canonical observed models
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_stop_observations_fixture_ingest.py
+```

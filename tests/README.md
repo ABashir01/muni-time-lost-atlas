@@ -26,6 +26,10 @@ Current integration artifacts:
   - asserts uniqueness and non-null required keys for the canonical scheduled entities
   - asserts referential integrity between canonical trips, stops, service dates, and scheduled stop events
   - verifies the fixture service-calendar exception is applied and scheduled stop events are queryable
+- `integration/test_historic_stop_observations_fixture_ingest.py`
+  - loads the tiny historic `stop_observations` fixture into `raw.stop_observations`
+  - asserts row counts and required non-null observation fields
+  - verifies typed timestamp parsing and basic join-key compatibility with the raw GTFS fixture
 - `integration/test_511_active_gtfs_fetch.py`
   - performs a live `511` fetch only if `TRANSIT_511_API_KEY` is configured locally
   - skips cleanly when no token is available or network access to `511` is blocked
@@ -49,6 +53,9 @@ Current unit artifacts:
   - verifies the historic `RG` acquisition URL is built correctly for both plain and `-so` variants
   - validates historic zip structure checks, including `stop_observations.txt` expectations
   - verifies mocked historic fetches write both the zip artifact and JSON provenance metadata
+- `unit/test_historic_stop_observations_fixture_ingest.py`
+  - verifies service-date and observed-arrival timestamp parsing helpers
+  - verifies the stop-observations fixture reader preserves required source-facing fields plus typed timestamps
 
 Unit test command:
 
