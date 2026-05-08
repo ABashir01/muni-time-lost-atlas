@@ -57,10 +57,13 @@ When a worker agent finishes a slice, it should send one final message and then 
 - pass/fail status
 - blockers or known limitations
 - whether the slice is ready for central review
+- a single sentinel line at the top so completion is easy to detect programmatically and visually
 
 Use this shape:
 
 ```text
+WORKER_DONE: SXX_<slice_name>
+
 Completed SXX_<slice_name> and stopped.
 
 Changed files:
@@ -77,3 +80,10 @@ Blockers / follow-up:
 ```
 
 Do not continue with the next slice automatically. Do not restate the overall roadmap. Wait for the central planner to review, request revisions, accept, and handle git.
+
+## Central Thread Handling
+The central planner should treat either of these as valid completion signals:
+- a successful `wait_agent` return with the worker's final message
+- an asynchronous subagent notification containing the worker's final `WORKER_DONE:` message
+
+The central planner should not rely on short polling timeouts alone to determine whether a worker is still running or finished.
