@@ -29,3 +29,17 @@ Example command:
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\gtfs_static_fixture_ingest.py
 ```
+
+Current active-feed acquisition artifact:
+
+- `src/muni_lta_pipeline/active_gtfs_fetch.py`
+  - fetches the active operator-specific `511` GTFS zip for `operator_id=SF`
+  - validates that the archive contains the required GTFS files for later ingest
+  - writes a timestamped `.zip` plus adjacent JSON provenance metadata
+  - keeps acquisition separate from raw-table loading
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\active_gtfs_fetch.py
+```

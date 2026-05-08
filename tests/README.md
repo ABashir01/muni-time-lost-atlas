@@ -21,6 +21,10 @@ Current integration artifacts:
   - loads the tiny GTFS static fixture into the accepted `raw.gtfs_*` tables
   - asserts row counts for routes, trips, stops, stop_times, shapes, calendar, and calendar_dates
   - asserts referential sanity between trips, stop_times, and stops
+- `integration/test_511_active_gtfs_fetch.py`
+  - performs a live `511` fetch only if `TRANSIT_511_API_KEY` is configured locally
+  - skips cleanly when no token is available or network access to `511` is blocked
+  - verifies the fetched archive and provenance metadata are usable by later ingest slices
 
 Current unit artifacts:
 
@@ -28,6 +32,10 @@ Current unit artifacts:
   - includes one placeholder unit test
   - verifies the API and pipeline packages can be imported
   - verifies the bootstrap config helpers return the expected settings objects
+- `unit/test_511_active_gtfs_fetch.py`
+  - verifies the active `511` acquisition URL is built correctly
+  - validates GTFS zip structure checks with deterministic in-memory archives
+  - verifies a mocked fetch writes both the zip artifact and JSON provenance metadata
 
 Unit test command:
 

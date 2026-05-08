@@ -39,6 +39,7 @@ This repository currently contains:
 - local Postgres/PostGIS bootstrap for `S02_database_bootstrap`
 - Python package and test bootstrap for `S03_python_project_bootstrap`
 - raw GTFS fixture ingest for `S04_gtfs_static_fixture_ingest`
+- active `511` GTFS acquisition for `S04a_511_active_gtfs_fetch`
 
 Not included yet:
 
@@ -51,6 +52,8 @@ Current transit data artifact:
 - a tiny deterministic GTFS static fixture under `fixtures/gtfs_static/minimal`
 - a raw ingest loader at `pipeline/src/muni_lta_pipeline/gtfs_static_fixture_ingest.py`
 - accepted raw GTFS table DDL at `db/sql/01-create-raw-gtfs-tables.sql`
+- an active-feed fetcher at `pipeline/src/muni_lta_pipeline/active_gtfs_fetch.py`
+- gitignored local acquisition artifacts under `artifacts/acquisitions/511/operator_active`
 
 ## Python bootstrap
 
@@ -102,3 +105,27 @@ powershell -ExecutionPolicy Bypass -File .\tests\integration\db_smoke_test.ps1
 ```
 
 The smoke test expects a local `.env`, starts the DB if needed, confirms the `db` service is running, and retries one simple `psql` query until it returns the database name, user, and `PostGIS` version.
+
+## Active 511 GTFS acquisition
+
+The project now has a separate acquisition step for the active operator-specific Muni GTFS feed from `511`.
+
+- set `TRANSIT_511_API_KEY` in the repo-root `.env`
+- the fetcher targets `operator_id=SF`
+- successful downloads are archived locally as:
+  - a timestamped `.zip`
+  - a neighboring `.json` provenance/validation record
+- default artifact location:
+  - `artifacts/acquisitions/511/operator_active/`
+
+Example command with the bundled Python runtime:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\active_gtfs_fetch.py
+```
+
+Optional live verification test:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest tests.integration.test_511_active_gtfs_fetch -v
+```

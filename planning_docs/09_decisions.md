@@ -128,3 +128,14 @@
   - putting all Python code in one shared package at this stage
   - introducing `pytest` before the repo needs it
   - delaying all Python dependency metadata until a later slice
+
+## ADR 012: Active 511 GTFS Acquisition Boundary
+- Decision: keep active operator-specific `511` GTFS acquisition as a separate pipeline step that archives the downloaded zip and adjacent provenance metadata before any raw-table loading
+- Why:
+  - keeps network fetch concerns separate from raw-table ingest concerns
+  - preserves source/operator/fetch-time provenance for later ingest and debugging
+  - gives `S05` a stable upstream artifact instead of forcing canonical modeling to fetch from the network directly
+  - avoids mixing active operator-specific acquisition with historic `RG` acquisition logic
+- Alternatives rejected:
+  - combining active `511` fetch with `raw.gtfs_*` table loading in one slice
+  - storing only an unpacked directory without the original zip or provenance metadata

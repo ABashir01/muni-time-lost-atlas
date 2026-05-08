@@ -46,4 +46,21 @@ Prove the project can fetch the active operator-specific SFMTA/Muni GTFS feed fr
 `S05_canonical_scheduled_models` should assume active GTFS acquisition is a known upstream step.
 
 ## Completion notes
-
+- What changed:
+  - added `pipeline/src/muni_lta_pipeline/active_gtfs_fetch.py` to fetch the active operator-specific `511` GTFS feed for `operator_id=SF`
+  - added a gitignored local artifact path under `artifacts/acquisitions/511/operator_active/` and documented it in `artifacts/README.md`
+  - added `TRANSIT_511_API_KEY` to `.env.example`
+  - added unit coverage for URL construction, zip validation, and mocked fetch/archive behavior
+  - added an integration test that performs a live `511` fetch only when a local token is configured and network access is available
+  - updated project docs and recorded the acquisition-boundary decision in `planning_docs/09_decisions.md`
+- Tests run:
+  - `& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest tests.unit.test_511_active_gtfs_fetch -v`
+  - `& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest tests.integration.test_511_active_gtfs_fetch -v`
+  - `& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest discover -s tests -v`
+- Results:
+  - active acquisition unit tests passed
+  - full repository `unittest discover` sweep passed
+  - the live `511` integration test skipped because `TRANSIT_511_API_KEY` is not configured locally in this environment
+- Follow-up issues:
+  - later slices still need to decide when/how the archived active zip is unpacked for raw ingest reuse
+  - historic `RG` acquisition remains separate work for `S06a`
