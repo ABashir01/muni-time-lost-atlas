@@ -1,5 +1,11 @@
 # Agent Workflow
 
+## Roles
+- the main Codex thread is the central planner, reviewer, and release manager
+- spawned agents are worker agents only
+- worker agents should not propose the next overall plan, choose the next slice, or act as release managers
+- worker agents should complete the assigned slice, document the result, and stop
+
 ## What Every Agent Reads First
 Before implementing any slice, an agent should read:
 1. [00_project_brief.md](./00_project_brief.md)
@@ -21,7 +27,7 @@ Agents should also read:
 ## How To Claim A Slice
 - confirm all dependencies listed in the slice doc are complete
 - restate the goal in the implementation note or commit/PR description
-- keep the change tightly aligned to the slice’s acceptance criteria
+- keep the change tightly aligned to the slice's acceptance criteria
 
 ## Testing Rules
 - run the tests listed in the slice doc
@@ -43,3 +49,31 @@ Each agent should fill the `Completion notes` section in the slice doc with:
 - what passed
 - any known limitations or follow-up issues
 
+## Worker Completion Signal
+When a worker agent finishes a slice, it should send one final message and then stop. That final message should include:
+- the slice id and title
+- a flat list of changed files
+- tests run
+- pass/fail status
+- blockers or known limitations
+- whether the slice is ready for central review
+
+Use this shape:
+
+```text
+Completed SXX_<slice_name> and stopped.
+
+Changed files:
+- ...
+
+Tests run:
+- ...
+
+Results:
+- ...
+
+Blockers / follow-up:
+- ...
+```
+
+Do not continue with the next slice automatically. Do not restate the overall roadmap. Wait for the central planner to review, request revisions, accept, and handle git.

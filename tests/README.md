@@ -21,6 +21,11 @@ Current integration artifacts:
   - loads the tiny GTFS static fixture into the accepted `raw.gtfs_*` tables
   - asserts row counts for routes, trips, stops, stop_times, shapes, calendar, and calendar_dates
   - asserts referential sanity between trips, stop_times, and stops
+- `integration/test_canonical_scheduled_models.py`
+  - loads the GTFS fixture and materializes the first staged/canonical scheduled tables
+  - asserts uniqueness and non-null required keys for the canonical scheduled entities
+  - asserts referential integrity between canonical trips, stops, service dates, and scheduled stop events
+  - verifies the fixture service-calendar exception is applied and scheduled stop events are queryable
 - `integration/test_511_active_gtfs_fetch.py`
   - performs a live `511` fetch only if `TRANSIT_511_API_KEY` is configured locally
   - skips cleanly when no token is available or network access to `511` is blocked

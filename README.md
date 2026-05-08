@@ -40,6 +40,7 @@ This repository currently contains:
 - Python package and test bootstrap for `S03_python_project_bootstrap`
 - raw GTFS fixture ingest for `S04_gtfs_static_fixture_ingest`
 - active `511` GTFS acquisition for `S04a_511_active_gtfs_fetch`
+- canonical scheduled GTFS models for `S05_canonical_scheduled_models`
 
 Not included yet:
 
@@ -53,6 +54,7 @@ Current transit data artifact:
 - a raw ingest loader at `pipeline/src/muni_lta_pipeline/gtfs_static_fixture_ingest.py`
 - accepted raw GTFS table DDL at `db/sql/01-create-raw-gtfs-tables.sql`
 - an active-feed fetcher at `pipeline/src/muni_lta_pipeline/active_gtfs_fetch.py`
+- scheduled model materialization at `pipeline/src/muni_lta_pipeline/canonical_scheduled_models.py`
 - gitignored local acquisition artifacts under `artifacts/acquisitions/511/operator_active`
 
 ## Python bootstrap
@@ -128,4 +130,19 @@ Optional live verification test:
 
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest tests.integration.test_511_active_gtfs_fetch -v
+```
+
+## Canonical scheduled models
+
+The project now has a first scheduled-model materialization layer on top of the raw GTFS fixture.
+
+- uses `staging` for typed GTFS normalization
+- uses `canonical` for stable scheduled entities
+- expands service dates from `calendar.txt` and `calendar_dates.txt`
+- keeps service-day-relative times as seconds for downstream calculations
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\canonical_scheduled_models.py
 ```

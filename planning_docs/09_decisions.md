@@ -139,3 +139,13 @@
 - Alternatives rejected:
   - combining active `511` fetch with `raw.gtfs_*` table loading in one slice
   - storing only an unpacked directory without the original zip or provenance metadata
+
+## ADR 013: Early Scheduled Model Materialization
+- Decision: materialize the first `staging` and `canonical` scheduled GTFS models through a dedicated SQL file executed by a thin Python entrypoint before introducing a full `dbt` project
+- Why:
+  - keeps `S05` focused on raw-to-canonical scheduled modeling without broadening into full transformation-tool setup
+  - preserves a clear raw/staging/canonical boundary while still producing DB-backed, testable tables
+  - gives later slices a stable scheduled interface for observed joins and metric work
+- Alternatives rejected:
+  - pushing canonical scheduled logic directly into Python row transforms
+  - introducing a full `dbt` project before the first scheduled canonical tables are proven

@@ -43,3 +43,22 @@ Example command:
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\active_gtfs_fetch.py
 ```
+
+Current scheduled canonical-model artifact:
+
+- `src/muni_lta_pipeline/canonical_scheduled_models.py`
+  - materializes the first `staging` and `canonical` scheduled GTFS tables for `S05`
+  - expands `service_date` values from `calendar.txt` plus `calendar_dates.txt`
+  - normalizes stop times into both `*_time_text` and `*_secs` fields
+  - creates:
+    - `canonical.scheduled_routes`
+    - `canonical.scheduled_trips`
+    - `canonical.scheduled_stops`
+    - `canonical.service_dates`
+    - `canonical.scheduled_stop_events`
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\canonical_scheduled_models.py
+```
