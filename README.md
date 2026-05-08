@@ -40,6 +40,7 @@ This repository currently contains:
 - Python package and test bootstrap for `S03_python_project_bootstrap`
 - raw GTFS fixture ingest for `S04_gtfs_static_fixture_ingest`
 - active `511` GTFS acquisition for `S04a_511_active_gtfs_fetch`
+- historic regional `511` GTFS acquisition for `S06a_511_historic_rg_feed_fetch`
 - canonical scheduled GTFS models for `S05_canonical_scheduled_models`
 
 Not included yet:
@@ -54,6 +55,7 @@ Current transit data artifact:
 - a raw ingest loader at `pipeline/src/muni_lta_pipeline/gtfs_static_fixture_ingest.py`
 - accepted raw GTFS table DDL at `db/sql/01-create-raw-gtfs-tables.sql`
 - an active-feed fetcher at `pipeline/src/muni_lta_pipeline/active_gtfs_fetch.py`
+- a historic regional fetcher at `pipeline/src/muni_lta_pipeline/historic_rg_feed_fetch.py`
 - scheduled model materialization at `pipeline/src/muni_lta_pipeline/canonical_scheduled_models.py`
 - gitignored local acquisition artifacts under `artifacts/acquisitions/511/operator_active`
 
@@ -130,6 +132,33 @@ Optional live verification test:
 
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest tests.integration.test_511_active_gtfs_fetch -v
+```
+
+## Historic 511 regional GTFS acquisition
+
+The project now also has a separate acquisition step for monthly historic `511` regional GTFS feeds used by retrospective analysis.
+
+- set `TRANSIT_511_API_KEY` in the repo-root `.env`
+- the fetcher targets `operator_id=RG`
+- pass `--historic-month YYYY-MM`
+- use `--with-stop-observations` to request the historic `-so` variant with `stop_observations.txt`
+- successful downloads are archived locally as:
+  - a timestamped `.zip`
+  - a neighboring `.json` provenance/validation record
+- default artifact location:
+  - `artifacts/acquisitions/511/regional_historic/`
+
+Example commands with the bundled Python runtime:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_rg_feed_fetch.py --historic-month 2023-02
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_rg_feed_fetch.py --historic-month 2023-02 --with-stop-observations
+```
+
+Optional live verification test:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest tests.integration.test_511_historic_rg_feed_fetch -v
 ```
 
 ## Canonical scheduled models

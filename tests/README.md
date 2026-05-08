@@ -30,6 +30,10 @@ Current integration artifacts:
   - performs a live `511` fetch only if `TRANSIT_511_API_KEY` is configured locally
   - skips cleanly when no token is available or network access to `511` is blocked
   - verifies the fetched archive and provenance metadata are usable by later ingest slices
+- `integration/test_511_historic_rg_feed_fetch.py`
+  - performs a live monthly historic `511` regional fetch only if `TRANSIT_511_API_KEY` is configured locally
+  - skips cleanly when no token is available or network access to `511` is blocked
+  - verifies the plain historic regional archive and provenance metadata are usable by later historical ingest slices
 
 Current unit artifacts:
 
@@ -41,6 +45,10 @@ Current unit artifacts:
   - verifies the active `511` acquisition URL is built correctly
   - validates GTFS zip structure checks with deterministic in-memory archives
   - verifies a mocked fetch writes both the zip artifact and JSON provenance metadata
+- `unit/test_511_historic_rg_feed_fetch.py`
+  - verifies the historic `RG` acquisition URL is built correctly for both plain and `-so` variants
+  - validates historic zip structure checks, including `stop_observations.txt` expectations
+  - verifies mocked historic fetches write both the zip artifact and JSON provenance metadata
 
 Unit test command:
 

@@ -44,6 +44,21 @@ Example command:
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\active_gtfs_fetch.py
 ```
 
+Current historic regional acquisition artifact:
+
+- `src/muni_lta_pipeline/historic_rg_feed_fetch.py`
+  - fetches monthly historic `511` regional GTFS zips for `operator_id=RG`
+  - supports both plain historic requests and the `-so` variant that includes `stop_observations.txt`
+  - validates the requested variant and writes timestamped zip + JSON provenance metadata
+  - keeps historic acquisition separate from any raw-table load or Muni-only filtering
+
+Example commands:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_rg_feed_fetch.py --historic-month 2023-02
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_rg_feed_fetch.py --historic-month 2023-02 --with-stop-observations
+```
+
 Current scheduled canonical-model artifact:
 
 - `src/muni_lta_pipeline/canonical_scheduled_models.py`

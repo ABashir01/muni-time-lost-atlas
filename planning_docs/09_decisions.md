@@ -149,3 +149,14 @@
 - Alternatives rejected:
   - pushing canonical scheduled logic directly into Python row transforms
   - introducing a full `dbt` project before the first scheduled canonical tables are proven
+
+## ADR 014: Historic 511 RG Acquisition Boundary
+- Decision: keep monthly historic `511` regional GTFS acquisition as a separate pipeline step that archives the downloaded zip and adjacent provenance metadata, with an explicit switch for the `-so` stop-observations variant
+- Why:
+  - keeps historic network fetch concerns separate from historical raw-table ingest and reconciliation work
+  - preserves requested month, feed scope, and `stop_observations` intent for later staging and canonical joins
+  - matches 511's documented split between plain historic `RG` feeds and the `YYYY-MM-so` variant
+  - avoids mixing regional historic acquisition with the active operator-specific acquisition path
+- Alternatives rejected:
+  - folding historic `RG` fetch directly into `S06_historic_stop_observations_ingest`
+  - treating the plain and `-so` variants as one implicit acquisition path without explicit provenance
