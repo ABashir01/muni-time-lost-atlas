@@ -52,6 +52,7 @@ Expected MVP ingest choice:
 Important source notes from 511:
 - historic regional feeds are downloaded via the `RG` feed path
 - `stop_observations.txt` is available via the historic regional feed with the `-so` suffix
+- real historic `stop_observations.txt` rows include richer fields than the first raw table contract, including `to_stop_id`, `service_date` in `YYYYMMDD`, and service-day clock times such as `25:15:00`
 - historic feeds differ structurally from active feeds:
   - `calendar.txt` is removed and rewritten into `calendar_dates.txt`
   - `trips.txt` records are hashed and compared

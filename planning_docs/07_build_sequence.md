@@ -22,6 +22,7 @@ Build from the inside out:
 - `S05_canonical_scheduled_models`
 - `S06a_511_historic_rg_feed_fetch`
 - `S06_historic_stop_observations_ingest`
+- `S06b_real_historic_stop_observations_load`
 - `S07_scheduled_observed_join`
 
 ### Metric Proof

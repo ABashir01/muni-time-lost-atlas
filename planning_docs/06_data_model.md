@@ -101,6 +101,12 @@ The first historical observation ingest slice should preserve these source-facin
 
 `S06` may also derive a typed `observed_arrival_ts` alongside the source timestamp text so later slices can validate and compare observed arrival times without reparsing the raw text value repeatedly.
 
+For the real historic `RG` archive path:
+- map source `to_stop_id` into raw `stop_id`
+- parse compact `service_date` values such as `20230214` into the raw `service_date` date column
+- derive `observed_arrival_ts` from service-day clock times such as `25:15:00` in local Bay Area time
+- keep snapshot labeling explicit enough to distinguish fixture loads from real archive-backed loads
+
 ## Staging Layer
 ### Staging goals
 - normalize column names only where source quirks would leak into downstream models

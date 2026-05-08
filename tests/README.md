@@ -30,6 +30,10 @@ Current integration artifacts:
   - loads the tiny historic `stop_observations` fixture into `raw.stop_observations`
   - asserts row counts and required non-null observation fields
   - verifies typed timestamp parsing and basic join-key compatibility with the raw GTFS fixture
+- `integration/test_historic_stop_observations_archive_ingest.py`
+  - performs a live historic `511` `RG` `-so` fetch only if `TRANSIT_511_API_KEY` is configured locally
+  - loads a bounded set of real archive observations into `raw.stop_observations`
+  - verifies required observation fields, typed timestamps, and snapshot labels distinguish fixture rows from archive-backed rows
 - `integration/test_511_active_gtfs_fetch.py`
   - performs a live `511` fetch only if `TRANSIT_511_API_KEY` is configured locally
   - skips cleanly when no token is available or network access to `511` is blocked
@@ -56,6 +60,9 @@ Current unit artifacts:
 - `unit/test_historic_stop_observations_fixture_ingest.py`
   - verifies service-date and observed-arrival timestamp parsing helpers
   - verifies the stop-observations fixture reader preserves required source-facing fields plus typed timestamps
+- `unit/test_historic_stop_observations_archive_ingest.py`
+  - verifies compact historic service-date parsing and service-day timestamp handling past `24:00:00`
+  - verifies `-so` acquisition metadata validation and archive-backed snapshot labeling
 
 Unit test command:
 

@@ -171,3 +171,15 @@
   - storing only text observation timestamps and deferring all parsing
   - skipping the typed timestamp and forcing downstream slices to reparse raw text repeatedly
   - broadening `S06` into canonical observed-stop tables
+
+### ADR 015a: Real Historic RG Observation Mapping
+- Decision: load real historic `RG` archive rows into the same `raw.stop_observations` shape by mapping source `to_stop_id` to raw `stop_id`, parsing compact `service_date` values, and deriving `observed_arrival_ts` from local service-day clock times
+- Why:
+  - the real `stop_observations.txt` file carries more fields than the accepted raw contract, so the ingest path needs one explicit narrowing rule
+  - `to_stop_id` is populated across real archive rows and matches the arrival event semantics needed by later scheduled/observed joins
+  - service-day times can exceed `24:00:00`, so deriving the typed timestamp during raw load avoids repeating that edge-case parsing downstream
+  - archive-backed snapshot labels should remain distinguishable from fixture labels for debugging and provenance
+- Alternatives rejected:
+  - expanding `raw.stop_observations` immediately to every real archive column
+  - treating `from_stop_id` as the raw stop join key
+  - storing real archive arrival times only as text and deferring service-day timestamp parsing

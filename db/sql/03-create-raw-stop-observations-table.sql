@@ -1,7 +1,5 @@
 CREATE SCHEMA IF NOT EXISTS raw;
 
-DROP TABLE IF EXISTS raw.stop_observations;
-
 CREATE TABLE IF NOT EXISTS raw.stop_observations (
     service_date DATE NOT NULL,
     trip_id TEXT NOT NULL,

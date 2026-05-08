@@ -43,6 +43,7 @@ This repository currently contains:
 - historic regional `511` GTFS acquisition for `S06a_511_historic_rg_feed_fetch`
 - canonical scheduled GTFS models for `S05_canonical_scheduled_models`
 - raw historic stop observations fixture ingest for `S06_historic_stop_observations_ingest`
+- real historic stop observations archive ingest for `S06b_real_historic_stop_observations_load`
 
 Not included yet:
 
@@ -59,6 +60,7 @@ Current transit data artifact:
 - a historic regional fetcher at `pipeline/src/muni_lta_pipeline/historic_rg_feed_fetch.py`
 - scheduled model materialization at `pipeline/src/muni_lta_pipeline/canonical_scheduled_models.py`
 - a historic stop-observations fixture loader at `pipeline/src/muni_lta_pipeline/historic_stop_observations_fixture_ingest.py`
+- a real historic stop-observations archive loader at `pipeline/src/muni_lta_pipeline/historic_stop_observations_archive_ingest.py`
 - gitignored local acquisition artifacts under `artifacts/acquisitions/511/operator_active`
 
 ## Python bootstrap
@@ -191,4 +193,20 @@ Example command:
 
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_stop_observations_fixture_ingest.py
+```
+
+## Real historic stop observations archive ingest
+
+The project now also has a real archive-backed raw ingest path for historic `RG` `stop_observations`.
+
+- reads the `.json` sidecar and `.zip` artifact produced by `historic_rg_feed_fetch.py --with-stop-observations`
+- loads real archive rows into `raw.stop_observations`
+- maps source `to_stop_id` into raw `stop_id`
+- parses compact `service_date` values and derives a typed `observed_arrival_ts` from service-day local times
+- uses `archive_...` snapshot labels so real loads remain distinguishable from fixture loads
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_stop_observations_archive_ingest.py --metadata-path .\artifacts\acquisitions\511\regional_historic\511_regional_historic_RG_202302_with_so_20260508T223557Z.json --max-rows 250
 ```
