@@ -18,7 +18,9 @@ Build from the inside out:
 
 ### Static / Historical Data
 - `S04_gtfs_static_fixture_ingest`
+- `S04a_511_active_gtfs_fetch`
 - `S05_canonical_scheduled_models`
+- `S06a_511_historic_rg_feed_fetch`
 - `S06_historic_stop_observations_ingest`
 - `S07_scheduled_observed_join`
 

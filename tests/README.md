@@ -17,6 +17,10 @@ Current integration artifacts:
   - confirms the `db` service is running
   - retries one simple `psql` query until it succeeds
   - proves the query can read `current_database()`, `current_user`, and `PostGIS_Version()`
+- `integration/test_gtfs_static_fixture_ingest.py`
+  - loads the tiny GTFS static fixture into the accepted `raw.gtfs_*` tables
+  - asserts row counts for routes, trips, stops, stop_times, shapes, calendar, and calendar_dates
+  - asserts referential sanity between trips, stop_times, and stops
 
 Current unit artifacts:
 
@@ -29,4 +33,10 @@ Unit test command:
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+Bundled-runtime alternative:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest discover -s tests -v
 ```

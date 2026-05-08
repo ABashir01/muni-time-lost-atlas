@@ -38,13 +38,19 @@ This repository currently contains:
 - the initial project structure from `S01_repo_structure`
 - local Postgres/PostGIS bootstrap for `S02_database_bootstrap`
 - Python package and test bootstrap for `S03_python_project_bootstrap`
+- raw GTFS fixture ingest for `S04_gtfs_static_fixture_ingest`
 
 Not included yet:
 
 - framework initialization
-- transit schemas or ingest logic
 - transit business logic
 - product implementation
+
+Current transit data artifact:
+
+- a tiny deterministic GTFS static fixture under `fixtures/gtfs_static/minimal`
+- a raw ingest loader at `pipeline/src/muni_lta_pipeline/gtfs_static_fixture_ingest.py`
+- accepted raw GTFS table DDL at `db/sql/01-create-raw-gtfs-tables.sql`
 
 ## Python bootstrap
 

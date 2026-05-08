@@ -1,0 +1,4 @@
+shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled
+14_IB,37.752239,-122.418445,1,0.0
+14_IB,37.765051,-122.419671,2,1.4
+14_IB,37.778646,-122.414173,3,3.1

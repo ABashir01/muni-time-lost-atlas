@@ -16,3 +16,16 @@ Expected future ownership:
 - GTFS-RT ingest later
 - dbt project and transformations
 - metric computation helpers
+
+Current GTFS static ingest artifact:
+
+- `src/muni_lta_pipeline/gtfs_static_fixture_ingest.py`
+  - creates the accepted `raw.gtfs_*` tables for `S04`
+  - loads the tiny deterministic GTFS fixture under `fixtures/gtfs_static/minimal`
+  - uses the local Docker Compose Postgres/PostGIS service via `psql`
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\gtfs_static_fixture_ingest.py
+```

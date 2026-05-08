@@ -1,0 +1,4 @@
+trip_id,arrival_time,departure_time,stop_id,stop_sequence,shape_dist_traveled
+14_WKDY_IB_0800,08:00:00,08:00:00,STP_24TH,1,0.0
+14_WKDY_IB_0800,08:07:00,08:07:00,STP_16TH,2,1.4
+14_WKDY_IB_0800,08:15:00,08:15:00,STP_8TH,3,3.1

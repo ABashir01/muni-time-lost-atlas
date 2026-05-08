@@ -80,7 +80,7 @@ These are the minimum scheduled entities needed to support:
   - `stop_id`
   - `service_id`
   - `shape_id`
-- keep source GTFS arrival/departure clock fields in raw as their original text values
+- keep source GTFS field names unchanged in raw, including `arrival_time` and `departure_time`
 - add ingest metadata columns only as implementation support, not as replacements for GTFS identifiers
 
 ### Deferred raw observed and realtime entities
@@ -170,7 +170,8 @@ Deferred but reserved canonical entity names:
 - `canonical.service_dates` is the source-of-truth table for expanded active dates per `service_id`
 
 ### Time and timestamp fields
-- use `_time_text` only for source GTFS clock strings retained from files
+- raw GTFS tables should preserve original source field names such as `arrival_time` and `departure_time`
+- use `_time_text` only in normalized layers where a renamed source-clock field is intentionally retained
 - use `_secs` for service-day-relative seconds from local midnight, especially for GTFS times that can exceed `24:00:00`
 - use `_ts` for derived wall-clock timestamps when they are needed
 - for scheduled GTFS modeling, treat local service-day time as primary; do not make UTC conversion the canonical representation in early slices

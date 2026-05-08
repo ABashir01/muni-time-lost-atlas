@@ -9,7 +9,18 @@
   - avoids reconciling multiple schedule sources in MVP
 - Alternatives rejected:
   - direct SFMTA GTFS as primary
-  - regional RG feed for MVP
+  - direct SFMTA GTFS plus separate non-511 historic source
+
+### ADR 001a: 511 Source Split
+- Decision: use operator-specific SFMTA/Muni feeds for active scheduled/realtime work, and use 511 regional `RG` historic feeds for monthly historical analysis with `stop_observations`
+- Why:
+  - current operator-specific feeds are the cleanest path for Muni-only active schedule and realtime work
+  - 511’s historic monthly analysis path is explicitly provided through regional `RG` feeds
+  - `stop_observations.txt` is documented through the historic regional feed path rather than the active operator-only path
+  - this split matches the actual structure of 511’s published data products
+- Alternatives rejected:
+  - using only operator-specific feeds for the full historical-analysis plan
+  - using regional feeds for all active/current Muni work from day one
 
 ## ADR 002: MVP Transit Scope
 - Decision: Muni only

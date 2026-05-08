@@ -26,6 +26,7 @@ Observed stop arrivals are necessary for waiting-loss and scheduled-vs-observed 
 ## Implementation notes
 - keep scope narrow and fixture-driven
 - do not solve every historical edge case in this slice
+- assume the historic feed source is the regional `RG` path prepared by the prior fetch slice
 
 ## Tests required
 - row-count assertions
@@ -45,4 +46,3 @@ Observed stop arrivals are necessary for waiting-loss and scheduled-vs-observed 
 Next slice joins scheduled and observed stop events.
 
 ## Completion notes
-
