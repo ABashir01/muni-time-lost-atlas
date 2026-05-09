@@ -1,0 +1,41 @@
+{
+  "direction_id": 1,
+  "direction_label": "Outbound",
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          -122.414173,
+          37.778646
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "direction_id": 1,
+        "direction_label": "Outbound",
+        "matched_headway_interval_count": 2,
+        "metric_updated_at": "2026-05-09T08:24:44.279566Z",
+        "observed_effective_wait_minutes": 7.5,
+        "route_id": "14",
+        "route_long_name": "Mission",
+        "route_name": "Mission",
+        "route_short_name": "14",
+        "scheduled_effective_wait_minutes": 6.0,
+        "stop_id": "STP_8TH",
+        "stop_name": "8th St Market",
+        "stop_wait_label": "8th St Market (Outbound)",
+        "stop_wait_strategy": "first_stop_exact_match",
+        "waiting_loss_minutes": 1.5,
+        "window": "all_day"
+      },
+      "type": "Feature"
+    }
+  ],
+  "metric_updated_at": "2026-05-09T08:24:44.279566Z",
+  "route_id": "14",
+  "route_long_name": "Mission",
+  "route_name": "Mission",
+  "route_short_name": "14",
+  "type": "FeatureCollection",
+  "window": "all_day"
+}

@@ -209,6 +209,30 @@ class ApiBundleIntegrationTests(unittest.TestCase):
             places=6,
         )
 
+        stop_wait_response = self.client.get(
+            "/routes/14/stops/wait",
+            params={"window": "all_day", "direction": 1},
+        )
+        self.assertEqual(stop_wait_response.status_code, 200)
+        stop_wait_payload = stop_wait_response.json()
+        self.assertEqual(stop_wait_payload["type"], "FeatureCollection")
+        self.assertEqual(stop_wait_payload["direction_id"], 1)
+        self.assertEqual(len(stop_wait_payload["features"]), 1)
+        self.assertEqual(stop_wait_payload["features"][0]["geometry"]["type"], "Point")
+        self.assertEqual(
+            stop_wait_payload["features"][0]["properties"]["stop_wait_strategy"],
+            "first_stop_exact_match",
+        )
+        self.assertEqual(
+            stop_wait_payload["features"][0]["properties"]["stop_wait_label"],
+            "8th St Market (Outbound)",
+        )
+        self.assertAlmostEqual(
+            stop_wait_payload["features"][0]["properties"]["waiting_loss_minutes"],
+            1.5,
+            places=6,
+        )
+
     def test_validation_and_not_found_paths_stay_narrow(self) -> None:
         invalid_metric_response = self.client.get(
             "/rankings",
@@ -238,6 +262,12 @@ class ApiBundleIntegrationTests(unittest.TestCase):
             params={"direction": 1},
         )
         self.assertEqual(missing_segments_response.status_code, 404)
+
+        missing_stop_wait_response = self.client.get(
+            "/routes/49/stops/wait",
+            params={"direction": 1},
+        )
+        self.assertEqual(missing_stop_wait_response.status_code, 404)
 
 
 if __name__ == "__main__":

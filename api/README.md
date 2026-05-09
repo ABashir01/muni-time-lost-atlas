@@ -22,9 +22,9 @@ Current endpoint surface:
 - `GET /rankings`
 - `GET /routes/{route_id}/summary`
 - `GET /routes/{route_id}/segments`
+- `GET /routes/{route_id}/stops/wait`
 - `GET /routes/compare`
 - `GET /map/routes`
 
 Deferred from B4:
-- `GET /routes/{route_id}/stops/wait`
 - `GET /live/vehicles`

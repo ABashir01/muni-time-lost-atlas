@@ -27,18 +27,18 @@ Current `B1` limitation:
 Current `B4` scope limits:
 - `window=all_day` is the only supported historical/static API window
 - `/rankings` currently supports only `mode=routes`
-- stop-wait hotspot data remains exposed through route-level labels and the serving layer, not a standalone public endpoint yet
+- stop-wait hotspot data remains limited to the conservative first-stop exact-match methodology
 
 ## Implemented Endpoints
 - `GET /health`
 - `GET /rankings?window=all_day&metric={typical_trip_loss_minutes|waiting_loss_minutes|in_vehicle_loss_minutes}&mode=routes`
 - `GET /routes/{route_id}/summary?window=all_day&direction={0|1 optional}`
 - `GET /routes/{route_id}/segments?window=all_day&direction={0|1 required}`
+- `GET /routes/{route_id}/stops/wait?window=all_day&direction={0|1 required}`
 - `GET /routes/compare?ids=14,49&window=all_day`
 - `GET /map/routes?window=all_day&metric={typical_trip_loss_minutes|waiting_loss_minutes|in_vehicle_loss_minutes}`
 
 Deferred endpoints:
-- `GET /routes/{route_id}/stops/wait?window=&direction=`
 - `GET /live/vehicles`
 
 ## Core Shared Fields
@@ -143,18 +143,30 @@ Current `B3a` implementation notes:
 Purpose:
 - power route-detail stop hotspot panels and future stop-wait map overlays
 
-Should include:
-- route and direction
-- stop identity and label
-- stop geometry from serving tables
-- `stop_wait_strategy` so the first-stop-only scope remains explicit
-- scheduled effective wait
-- observed effective wait
-- waiting loss
-- matched headway interval count
+Shape:
+- top-level route metadata
+- top-level `window`
+- top-level `direction_id`
+- top-level `direction_label`
+- top-level `type = FeatureCollection`
+- `features[]`, each with GeoJSON `geometry` plus typed `properties`
 
-Current `B4` note:
-- this payload is not exposed as a standalone HTTP endpoint yet
+Stop-wait feature properties include:
+- route identity fields
+- `stop_id`
+- `stop_name`
+- `stop_wait_label`
+- `stop_wait_strategy`
+- `scheduled_effective_wait_minutes`
+- `observed_effective_wait_minutes`
+- `waiting_loss_minutes`
+- `matched_headway_interval_count`
+- `metric_updated_at`
+
+Current `B4a` implementation notes:
+- the endpoint reads directly from `serving.stop_wait_hotspots`
+- `direction` is required because stop-wait rows are direction-specific
+- `stop_wait_strategy` keeps the first-stop-only conservative scope explicit
 - route-level summaries and map payloads still surface `worst_stop_wait_label`
 
 ## Map Response
@@ -216,5 +228,10 @@ Current `B4` fixture set:
 - `fixtures/api/rankings_all_day_typical_trip_loss_minutes_routes.json`
 - `fixtures/api/route_14_summary_all_day.json`
 - `fixtures/api/route_14_segments_direction_1_all_day.json`
+- `fixtures/api/route_14_stops_wait_direction_1_all_day.json`
 - `fixtures/api/routes_compare_14_49_all_day.json`
 - `fixtures/api/map_routes_all_day_typical_trip_loss_minutes.json`
+
+Static frontend clarification after `B5`:
+- the accepted fixture set still publishes only one dedicated route-detail segment payload (`route_14_segments_direction_1_all_day.json`)
+- frontend route pages for any additional published routes must therefore fall back to the shared summary/map fixtures until broader route-detail fixtures exist

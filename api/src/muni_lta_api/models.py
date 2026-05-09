@@ -133,6 +133,44 @@ class RouteSegmentsResponse(ApiModel):
     metric_updated_at: datetime | None = None
 
 
+class StopWaitFeatureProperties(ApiModel):
+    route_id: str
+    route_name: str
+    route_short_name: str | None = None
+    route_long_name: str | None = None
+    window: TimeWindow
+    direction_id: int
+    direction_label: str | None = None
+    stop_id: str
+    stop_name: str
+    stop_wait_label: str
+    stop_wait_strategy: str
+    scheduled_effective_wait_minutes: float | None = None
+    observed_effective_wait_minutes: float | None = None
+    waiting_loss_minutes: float | None = None
+    matched_headway_interval_count: int
+    metric_updated_at: datetime
+
+
+class StopWaitFeature(ApiModel):
+    type: Literal["Feature"] = "Feature"
+    geometry: PointGeometry
+    properties: StopWaitFeatureProperties
+
+
+class RouteStopWaitResponse(ApiModel):
+    route_id: str
+    route_name: str
+    route_short_name: str | None = None
+    route_long_name: str | None = None
+    window: TimeWindow
+    direction_id: int
+    direction_label: str | None = None
+    type: Literal["FeatureCollection"] = "FeatureCollection"
+    features: list[StopWaitFeature]
+    metric_updated_at: datetime | None = None
+
+
 class RouteMapFeatureProperties(RouteSummary):
     metric: RankingMetric
     metric_value: float | None = None

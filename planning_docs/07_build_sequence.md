@@ -59,6 +59,11 @@ The current baseline now includes:
 - replaces: `S15` through `S19`
 - doc: [B4_api_bundle.md](./slices/B4_api_bundle.md)
 
+### B4a Stop Wait API Extension
+- goal: expose stop-based waiting hotspots through a dedicated historical/static API endpoint
+- replaces: the currently deferred stop-wait endpoint follow-up from `B4`
+- doc: [B4a_stop_wait_api_extension.md](./slices/B4a_stop_wait_api_extension.md)
+
 ### B5 Frontend Static Bundle
 - goal: build the full Next.js product shell against fixtures
 - replaces: `S20` through `S25`
@@ -98,6 +103,7 @@ Keep the old slice docs only as planning history. Do not resume implementation f
 ### Before B6
 - API response shapes are frozen in docs and code
 - fixture payloads exist for every frontend surface
+- if route-detail stop-wait hotspots are intended in the first live integration pass, `B4a` is complete
 
 ### Before B7
 - the historical/static product is complete and trustworthy without realtime

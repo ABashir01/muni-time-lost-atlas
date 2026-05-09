@@ -23,6 +23,7 @@ from muni_lta_api.models import (  # noqa: E402
     HealthResponse,
     MapRoutesResponse,
     RankingsResponse,
+    RouteStopWaitResponse,
     RouteSegmentsResponse,
     RouteSummary,
 )
@@ -39,6 +40,7 @@ class ApiContractFixtureTests(unittest.TestCase):
             "rankings_all_day_typical_trip_loss_minutes_routes.json": RankingsResponse,
             "route_14_summary_all_day.json": RouteSummary,
             "route_14_segments_direction_1_all_day.json": RouteSegmentsResponse,
+            "route_14_stops_wait_direction_1_all_day.json": RouteStopWaitResponse,
             "routes_compare_14_49_all_day.json": CompareResponse,
             "map_routes_all_day_typical_trip_loss_minutes.json": MapRoutesResponse,
         }

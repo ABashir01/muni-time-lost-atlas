@@ -14,9 +14,11 @@ from .models import (
     RankingMode,
     RankingsResponse,
     RouteMapFeature,
+    RouteStopWaitResponse,
     RouteSegmentsResponse,
     RouteSummary,
     SegmentFeature,
+    StopWaitFeature,
     TimeWindow,
 )
 
@@ -263,6 +265,67 @@ class HistoricalApiRepository:
             metric_updated_at=first_row["metric_updated_at"],
         )
 
+    def get_route_stop_wait(
+        self,
+        *,
+        route_id: str,
+        window: TimeWindow,
+        direction_id: int,
+    ) -> RouteStopWaitResponse | None:
+        rows = self._database.fetch_all(
+            """
+            SELECT
+                stop_wait.route_id,
+                stop_wait.route_name,
+                stop_wait.route_short_name,
+                stop_wait.route_long_name,
+                stop_wait.direction_id,
+                stop_wait.direction_label,
+                stop_wait.stop_id,
+                stop_wait.stop_name,
+                stop_wait.stop_wait_label,
+                stop_wait.window_key,
+                stop_wait.stop_wait_strategy,
+                stop_wait.scheduled_effective_wait_minutes,
+                stop_wait.observed_effective_wait_minutes,
+                stop_wait.waiting_loss_minutes,
+                stop_wait.matched_headway_interval_count,
+                stop_wait.metric_updated_at,
+                ST_AsGeoJSON(stop_wait.geom)::TEXT AS geometry_json
+            FROM serving.stop_wait_hotspots AS stop_wait
+            WHERE stop_wait.route_id = %s
+              AND stop_wait.direction_id = %s
+              AND stop_wait.window_key = %s
+            ORDER BY stop_wait.waiting_loss_minutes DESC NULLS LAST, stop_wait.stop_id
+            """,
+            [route_id, direction_id, window.value],
+        )
+        if not rows:
+            return None
+
+        first_row = rows[0]
+        features = [
+            StopWaitFeature.model_validate(
+                {
+                    "geometry": json.loads(row["geometry_json"]),
+                    "properties": self._normalize_stop_wait_properties_row(row),
+                }
+            )
+            for row in rows
+        ]
+
+        return RouteStopWaitResponse(
+            route_id=first_row["route_id"],
+            route_name=first_row["route_name"],
+            route_short_name=first_row["route_short_name"],
+            route_long_name=first_row["route_long_name"],
+            window=window,
+            direction_id=first_row["direction_id"],
+            direction_label=first_row["direction_label"],
+            features=features,
+            metric_updated_at=first_row["metric_updated_at"],
+        )
+
     def get_compare(
         self,
         *,
@@ -411,6 +474,13 @@ class HistoricalApiRepository:
 
     @staticmethod
     def _normalize_segment_properties_row(row: dict[str, Any]) -> dict[str, Any]:
+        normalized = dict(row)
+        normalized.pop("geometry_json", None)
+        normalized["window"] = normalized.pop("window_key")
+        return normalized
+
+    @staticmethod
+    def _normalize_stop_wait_properties_row(row: dict[str, Any]) -> dict[str, Any]:
         normalized = dict(row)
         normalized.pop("geometry_json", None)
         normalized["window"] = normalized.pop("window_key")

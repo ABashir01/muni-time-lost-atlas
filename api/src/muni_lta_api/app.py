@@ -13,6 +13,7 @@ from .models import (
     RankingMetric,
     RankingMode,
     RankingsResponse,
+    RouteStopWaitResponse,
     RouteSegmentsResponse,
     RouteSummary,
     TimeWindow,
@@ -123,6 +124,31 @@ def create_app(settings: ApiSettings | None = None):
                 ),
             )
         return segments
+
+    @app.get(
+        "/routes/{route_id}/stops/wait",
+        response_model=RouteStopWaitResponse,
+        response_model_exclude_none=True,
+    )
+    def get_route_stop_wait(
+        route_id: str,
+        window: TimeWindow = Query(default=TimeWindow.ALL_DAY),
+        direction: int = Query(..., ge=0, le=1),
+    ) -> RouteStopWaitResponse:
+        stop_wait = repository().get_route_stop_wait(
+            route_id=route_id,
+            window=window,
+            direction_id=direction,
+        )
+        if stop_wait is None:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    "No stop wait hotspots found for "
+                    f"route_id={route_id} and direction={direction}"
+                ),
+            )
+        return stop_wait
 
     @app.get(
         "/routes/compare",
