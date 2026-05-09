@@ -64,10 +64,15 @@ The current baseline now includes:
 - replaces: the currently deferred stop-wait endpoint follow-up from `B4`
 - doc: [B4a_stop_wait_api_extension.md](./slices/B4a_stop_wait_api_extension.md)
 
-### B5 Frontend Static Bundle
-- goal: build the full Next.js product shell against fixtures
-- replaces: `S20` through `S25`
-- doc: [B5_frontend_static_bundle.md](./slices/B5_frontend_static_bundle.md)
+### B5a Homepage Visual Lock
+- goal: match the approved homepage mockup at the primary desktop breakpoint before broader frontend acceptance
+- replaces: the currently unstable homepage portion of `B5`
+- doc: [B5a_homepage_visual_lock.md](./slices/B5a_homepage_visual_lock.md)
+
+### B5b Frontend Static Surface Completion
+- goal: finish the remaining static fixture-driven frontend surfaces once the homepage design is locked
+- replaces: the remainder of `B5` and legacy `S20` through `S25`
+- doc: [B5b_static_surface_completion.md](./slices/B5b_static_surface_completion.md)
 
 ### B6 Frontend API Integration Bundle
 - goal: wire the finished frontend to the live historical/static API
@@ -102,7 +107,9 @@ Keep the old slice docs only as planning history. Do not resume implementation f
 
 ### Before B6
 - API response shapes are frozen in docs and code
+- `B5a` homepage visual lock is accepted
 - fixture payloads exist for every frontend surface
+- `B5b` static surface completion is accepted
 - if route-detail stop-wait hotspots are intended in the first live integration pass, `B4a` is complete
 
 ### Before B7

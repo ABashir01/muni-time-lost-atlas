@@ -1,90 +1,51 @@
 # Title
-B5 Frontend Static Bundle
+B5 Frontend Static Bundle (Superseded By B5a/B5b)
 
 ## Goal
-Build the complete Next.js product shell and all public-facing screens against fixture data.
+This document now serves as the umbrella record for the original `B5` intent. Active frontend implementation should proceed through `B5a_homepage_visual_lock` first and then `B5b_static_surface_completion`.
 
 ## Why this bundle exists
-The frontend should be built and reviewed as a coherent product experience instead of being fragmented into many tiny page/component slices.
+The original single frontend bundle proved too broad while the homepage visual target was still moving. Splitting the work allows the homepage to be locked first and the remaining static surfaces to be completed against a stable visual system.
 
 ## Depends on
 - `B4_api_bundle`
 
-## Touches
-- Next.js app shell
-- design primitives
-- homepage
-- route detail page
-- compare view
-- map view
-- methodology page
+## Active split
+- `B5a_homepage_visual_lock`
+  - homepage only
+  - desktop-first screenshot review at `1440x900`
+  - strict match against the design reference, design system, and homepage layout spec
+- `B5b_static_surface_completion`
+  - route detail page
+  - compare view
+  - map view
+  - methodology page
+  - shared primitives/layout finalization once the homepage is accepted
 
 ## Inputs
 - fixture payloads from the API bundle
-- design direction already agreed for the public-facing product
 - product framing in `01_product_experience.md`
 - explicit visual contract in `11_design_reference.md`
 - hard visual-system rules in `12_frontend_design_system.md`
 - homepage numeric layout rules in `13_homepage_layout_spec.md`
 
 ## Outputs
-- complete static frontend MVP
-- no backend dependency for design validation
-
-## Implementation notes
-- build the full app shell in this bundle
-- implement the design primitives and layout system as part of the same work
-- keep the hierarchy:
-  - rankings first
-  - map second
-  - explanatory context third
-- keep the public language consistent with the methodology and API fields
-- optimize for the public-facing product, not dashboards
-- follow the approved mockup’s editorial/transit-signage visual language
-- preserve the split hero structure:
-  - oversized headline on the left
-  - large interactive-feeling map surface on the right
-- use a strong black / white / red base palette with limited route-color accents
-- prefer sharp borders, compact cards, and minimal rounding over soft dashboard styling
-- the frontend should be reviewable against the design reference, not just against functional completeness
-- for homepage work, prioritize `1440x900` desktop fidelity before broader breakpoint generalization
-- preserve horizontal occupancy at desktop widths; do not collapse into narrow centered layouts unless the layout spec explicitly allows it
+- a locked homepage visual direction before broader frontend completion
+- a clean handoff into the remaining fixture-driven public screens
 
 ## Tests required
-- one primary frontend render/test suite covering the major screens against fixtures
-- one responsive or smoke-level check for the main product surfaces
-- one screenshot-based visual review against `11_design_reference.md`
-- one screenshot-based visual review at `1440x900`
+- see `B5a_homepage_visual_lock.md` and `B5b_static_surface_completion.md`
 
 ## Acceptance criteria
-- homepage, route detail, compare, map, and methodology pages all render from fixtures
-- the product hierarchy and core metric language read correctly
-- the bundle is reviewable without live backend coupling
-- the homepage clearly resembles the approved mockup’s tone, hierarchy, and density
-- the result does not read as a generic SaaS dashboard
-- the homepage satisfies the hard desktop ratio and occupancy rules in `13_homepage_layout_spec.md`
+- `B5a` is accepted before broader static frontend work resumes
+- `B5b` completes the remaining fixture-driven screens without regressing the locked homepage
 
 ## Non-goals
 - live API integration
 - realtime overlays
 
 ## Handoff to next bundle
-`B6_frontend_api_integration_bundle` should replace fixtures with live API responses while preserving the reviewed UI.
+`B6_frontend_api_integration_bundle` should start only after both `B5a` and `B5b` are accepted.
 
-## Completion notes
-- Changed:
-  - scaffolded the full `frontend/` Next.js app with fixture-only data loading from `../fixtures/api`
-  - implemented the homepage, route detail, compare, map, and methodology pages plus shared layout/design primitives
-  - added Vitest render coverage and a Playwright smoke pass that also writes a homepage review screenshot to `artifacts/frontend/b5-homepage-desktop.png`
-  - clarified in `05_api_contract.md` that only route 14 currently has a dedicated segment fixture, so secondary route detail pages fall back to shared summary/map payloads
-- Tests run:
-  - `npm test` in `frontend/`
-  - `npm run build` in `frontend/`
-  - `npm run smoke` in `frontend/`
-- Passed:
-  - all public pages render against fixtures
-  - Next.js production build succeeds
-  - browser smoke pass succeeds and captures the desktop homepage screenshot artifact for design review
-- Known limitations / follow-up:
-  - compare remains dynamic because it reads query-string route selections
-  - the current B4 fixture set only provides deep segment detail for route 14, so other route detail pages intentionally fall back to the shared map/summary contract
+## Historical note
+The earlier all-in-one `B5` implementation attempt remains useful as exploratory work, but it should not be accepted as the final frontend bundle until it has been re-evaluated through the `B5a` then `B5b` flow.
