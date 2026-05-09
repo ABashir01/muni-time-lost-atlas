@@ -50,6 +50,7 @@ Layering model:
 Current implementation note:
 - Python still owns raw acquisition and raw-table loads
 - after `B2`, the staged/canonical/mart graph lives in the in-repo `dbt/` project
+- after `B3`, the same dbt project also materializes the first `serving` spatial layers for route, stop, segment, and overlay map reads
 
 ## API
 Use:
@@ -104,6 +105,7 @@ dbt will own:
 - `staging` models
 - `canonical` models
 - `marts`
+- `serving` read models when thin API-oriented spatial layers are justified
 - dbt-native model tests
 
 dbt will not own:

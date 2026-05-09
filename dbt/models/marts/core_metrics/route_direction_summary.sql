@@ -73,6 +73,7 @@ select
     end as typical_trip_loss_minutes,
     waiting_metrics.waiting_loss_minutes,
     runtime_metrics.in_vehicle_loss_minutes,
+    worst_segment.segment_label as worst_segment_label,
     coalesce(matched_coverage.matched_observed_stop_event_count, 0)
         as matched_observed_stop_event_count,
     coalesce(unmatched_coverage.resolved_unmatched_observation_count, 0)
@@ -85,6 +86,17 @@ select
 from {{ ref('int_route_direction_keys') }} as direction_keys
 join {{ ref('scheduled_routes') }} as routes
   on routes.route_id = direction_keys.route_id
+left join lateral (
+    select segment_label
+    from {{ ref('route_segment_metrics') }} as route_segment_metrics
+    where route_segment_metrics.route_id = direction_keys.route_id
+      and route_segment_metrics.direction_id is not distinct from direction_keys.direction_id
+      and route_segment_metrics.window_key = 'all_day'
+    order by
+        route_segment_metrics.segment_in_vehicle_loss_minutes desc nulls last,
+        route_segment_metrics.segment_sequence
+    limit 1
+) as worst_segment on true
 left join {{ ref('int_direction_labels') }} as direction_labels
   on direction_labels.route_id = direction_keys.route_id
  and direction_labels.direction_id is not distinct from direction_keys.direction_id

@@ -126,6 +126,20 @@ For the first SQL bundle:
 - route summaries currently materialize one supported window: `all_day`
 - direction and hour summaries provide the first breakdowns beneath that route window
 
+## First Segment Layer
+For the first spatial bundle, the segment layer is narrower than the route summary layer.
+
+Implementation rule:
+- define segments as adjacent stop pairs on the scheduled shape
+- compute observed segment runtime from matched adjacent observed arrivals on the same trip/service date
+- subtract the scheduled arrival-to-arrival runtime for that stop pair
+- clamp negative values to zero for public `where time is lost` reporting
+
+This means:
+- the first segment metric is `segment_in_vehicle_loss_minutes`
+- waiting loss is not distributed onto segments in `B3`
+- transit-only lane overlays can sit beside the segment layer as context, but not as causal proof
+
 ## What This Metric Does Not Claim
 The MVP metric does not claim to be:
 - a passenger-weighted population average

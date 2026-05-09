@@ -49,6 +49,11 @@ The current baseline now includes:
 - replaces: `S12`, `S13`, `S14`
 - doc: [B3_gis_segment_metrics_bundle.md](./slices/B3_gis_segment_metrics_bundle.md)
 
+### B3a Stop Wait Metrics Bundle
+- goal: add stop-based waiting-loss metrics as a separate spatial layer instead of forcing waiting loss into segment metrics
+- replaces: the currently implicit future extension of `B1`/`B3`
+- doc: [B3a_stop_wait_metrics_bundle.md](./slices/B3a_stop_wait_metrics_bundle.md)
+
 ### B4 API Bundle
 - goal: build the full historical/static FastAPI surface in one pass
 - replaces: `S15` through `S19`
@@ -88,6 +93,7 @@ Keep the old slice docs only as planning history. Do not resume implementation f
 ### Before B4
 - the first marts exist and are queryable
 - the route/segment data contract is stable enough for API response models
+- stop-based waiting metrics exist or are explicitly deferred from the first API response shapes
 
 ### Before B6
 - API response shapes are frozen in docs and code

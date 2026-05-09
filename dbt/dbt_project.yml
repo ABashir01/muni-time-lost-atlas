@@ -19,3 +19,5 @@ models:
       +schema: canonical
     marts:
       +schema: marts
+    serving:
+      +schema: serving

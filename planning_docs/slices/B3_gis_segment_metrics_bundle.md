@@ -53,3 +53,19 @@ The product needs a real spatial story, not just route totals. This bundle creat
 `B4_api_bundle` should expose route, segment, compare, and map outputs from these stabilized tables.
 
 ## Completion notes
+- What changed:
+  - added a small raw transit-lane overlay fixture + loader and staged it through dbt
+  - materialized `canonical.route_geometries`, `canonical.stop_points`, and `canonical.route_stop_segments`
+  - materialized `marts.route_segment_metrics` with an explicit `adjacent_stop_pair` strategy
+  - materialized `serving.route_map_layer`, `serving.route_segment_layer`, `serving.stop_map_layer`, and `serving.transit_only_lane_overlay`
+  - threaded `worst_segment_label` into route summary marts for later route-detail and map use
+- Tests run:
+  - `.\.venv\Scripts\python.exe -m unittest tests.integration.test_gis_segment_metrics_bundle tests.integration.test_core_metrics_bundle -v`
+- What passed:
+  - route geometry, segment metrics, stop points, and transit-lane overlay are queryable from PostGIS-backed dbt models
+  - the controlled fixture produces stable adjacent-stop segment loss outputs and worst-segment labels
+  - prior core route metric math remains unchanged on the regression path
+- Known limitations / follow-up:
+  - the first segment layer is in-vehicle only and does not allocate waiting loss onto segments
+  - segment identity remains shape-specific; future branching/short-turn routes may need an additional route-pattern abstraction
+  - the overlay is intentionally contextual and is not used in any inferential metric

@@ -16,8 +16,11 @@ def materialize_canonical_scheduled_models() -> None:
             "path:models/canonical/scheduled",
         ],
         excludes=[
+            "path:models/staging/geospatial",
             "path:models/canonical/observed",
+            "path:models/canonical/spatial",
             "path:models/marts",
+            "path:models/serving",
         ],
     )
 

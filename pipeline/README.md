@@ -103,3 +103,27 @@ Example command:
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\canonical_observed_stop_events.py
 ```
+
+Current geospatial overlay artifact:
+
+- `src/muni_lta_pipeline/transit_lane_overlay_fixture_ingest.py`
+  - creates and loads the first `raw.transit_only_lanes` fixture for `B3`
+  - preserves a minimal contextual overlay shape in raw before dbt materializes PostGIS-serving geometry
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\transit_lane_overlay_fixture_ingest.py
+```
+
+Current GIS + segment artifact:
+
+- `src/muni_lta_pipeline/gis_segment_metrics.py`
+  - materializes the dbt graph for route geometry, stop geometry, adjacent-stop segment metrics, and serving map layers
+  - keeps the segment strategy explicit as `adjacent_stop_pair`
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\gis_segment_metrics.py
+```

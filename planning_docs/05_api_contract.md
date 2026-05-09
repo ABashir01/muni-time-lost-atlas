@@ -11,6 +11,15 @@ Current historical summary sources after `B1`:
 - `marts.route_direction_summary`
 - `marts.route_hour_summary`
 
+Current spatial/segment sources after `B3`:
+- `serving.route_map_layer`
+- `serving.route_segment_layer`
+- `serving.stop_map_layer`
+- `serving.transit_only_lane_overlay`
+
+Planned stop-wait source after `B3a`:
+- `serving.stop_wait_hotspots` or equivalent stop-based waiting metric layer
+
 Current `B1` limitation:
 - the only materialized route window is `all_day`
 - unmatched observations are surfaced through summary count fields, not blended into metric values
@@ -79,8 +88,17 @@ Purpose:
 Should include:
 - route and direction
 - segment identity or label
-- geometry reference or embedded geometry strategy to be decided during implementation
-- segment-level travel or total loss metric
+- adjacent stop-pair identity for the first bundle
+- embedded segment geometry from PostGIS-serving tables
+- segment-level in-vehicle loss metric for the first implementation
+
+Current `B3` implementation notes:
+- first segment strategy is `adjacent_stop_pair`
+- labels use stop-to-stop rider language such as `16th St Mission -> 24th St Mission`
+- `segment_in_vehicle_loss_minutes` is the first published segment metric; waiting loss is not allocated to segments in `B3`
+
+Planned `B3a` follow-up:
+- stop-based waiting burden should be exposed as a separate stop metric layer rather than folded into segment loss
 
 ## Map Response
 Purpose:
@@ -91,6 +109,12 @@ Should include:
 - route-level metric to color by
 - route identity
 - updated timestamp
+
+Current `B3` implementation notes:
+- route geometry is materialized in `serving.route_map_layer`
+- stop geometry is materialized in `serving.stop_map_layer`
+- transit-lane context is materialized in `serving.transit_only_lane_overlay`
+- overlays remain contextual and should not be presented as causal proof
 
 ## Compare Response
 Purpose:

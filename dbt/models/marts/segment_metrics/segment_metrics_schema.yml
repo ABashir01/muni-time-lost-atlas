@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: route_segment_metrics
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - route_id
+              - direction_id
+              - shape_id
+              - segment_sequence
+              - window_key
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_routes')
+                field: route_id
+      - name: window_key
+        tests:
+          - not_null
+      - name: from_stop_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_stops')
+                field: stop_id
+      - name: to_stop_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_stops')
+                field: stop_id
+      - name: segment_strategy
+        tests:
+          - not_null

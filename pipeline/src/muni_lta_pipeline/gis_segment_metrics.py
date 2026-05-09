@@ -1,4 +1,4 @@
-"""Materialize the dbt observed stop-event graph on top of the scheduled models."""
+"""Materialize the dbt GIS, serving, and segment-metric graph for B3."""
 
 from __future__ import annotations
 
@@ -9,20 +9,14 @@ from muni_lta_pipeline.dbt_runner import run_dbt_build
 from muni_lta_pipeline.gtfs_static_fixture_ingest import DEFAULT_FIXTURE_DIR
 
 
-def materialize_canonical_observed_stop_events() -> None:
+def materialize_gis_segment_metrics() -> None:
     run_dbt_build(
         [
-            "path:models/staging/gtfs",
-            "path:models/staging/observations",
-            "path:models/canonical/scheduled",
-            "path:models/canonical/observed",
-        ],
-        excludes=[
-            "path:models/staging/geospatial",
-            "path:models/canonical/spatial",
+            "path:models/staging",
+            "path:models/canonical",
             "path:models/marts",
             "path:models/serving",
-        ],
+        ]
     )
 
 
@@ -32,10 +26,10 @@ def main() -> int:
         "--fixture-dir",
         type=Path,
         default=DEFAULT_FIXTURE_DIR,
-        help="Unused in S07; kept for interface symmetry with earlier pipeline entrypoints.",
+        help="Unused in B3; kept for interface symmetry with earlier pipeline entrypoints.",
     )
     parser.parse_args()
-    materialize_canonical_observed_stop_events()
+    materialize_gis_segment_metrics()
     return 0
 
 

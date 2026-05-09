@@ -236,6 +236,18 @@
   - keeps the accepted metric and join semantics intact while removing the growing pile of one-off SQL materialization files from the execution path
   - allows later bundles to build on stable dbt-managed canonical and mart relations instead of bespoke Python wrappers around SQL files
 - Alternatives rejected:
-  - keeping the whole transformation graph as raw SQL files invoked directly from Python
-  - broadening dbt into acquisition/orchestration responsibilities
-  - redesigning the scheduled, observed, or mart semantics during the dbt migration itself
+- keeping the whole transformation graph as raw SQL files invoked directly from Python
+- broadening dbt into acquisition/orchestration responsibilities
+- redesigning the scheduled, observed, or mart semantics during the dbt migration itself
+
+## ADR 020: First Segment Identity And Spatial Serving Scope
+- Decision: use adjacent stop-pair segments keyed by scheduled shape/stop order as the first segment representation, and treat transit-only lanes as contextual serving overlays only
+- Why:
+  - adjacent stop pairs give the route-detail and map views a concrete answer to `where time is lost` without inventing a full corridor model
+  - the current exact-match observed-event graph supports conservative arrival-to-arrival runtime loss between adjacent stops
+  - shape-keyed stop-pair segments keep the representation explicit when future routes have multiple patterns or short turns
+  - transit-only lanes are useful civic context for the map, but the available MVP data does not justify causal claims about lane effectiveness
+- Alternatives rejected:
+  - inferring a generalized corridor layer before a stable route-detail consumer exists
+  - allocating waiting loss onto segments in the first spatial bundle
+  - using transit-lane overlays as inferential evidence instead of contextual GIS data

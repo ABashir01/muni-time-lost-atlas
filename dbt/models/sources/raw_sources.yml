@@ -12,3 +12,4 @@ sources:
       - name: gtfs_calendar
       - name: gtfs_calendar_dates
       - name: stop_observations
+      - name: transit_only_lanes

@@ -45,6 +45,10 @@ Current integration artifacts:
   - confirms waiting loss, in-vehicle loss, and typical trip loss use the expected public field names
   - confirms unmatched observation rows stay outside the metric numerators while remaining visible through separate counts
   - acts as the `B2` dbt-adoption regression check for the API-facing summary tables
+- `integration/test_gis_segment_metrics_bundle.py`
+  - loads the controlled GTFS + stop-observations fixture plus a tiny transit-lane overlay fixture
+  - runs the dbt GIS/segment graph and verifies route geometry, adjacent-stop segment metrics, stop points, and overlay layers are spatially queryable together
+  - verifies `worst_segment_label` is populated without changing the accepted core route metric math
 - `integration/test_511_active_gtfs_fetch.py`
   - performs a live `511` fetch only if `TRANSIT_511_API_KEY` is configured locally
   - skips cleanly when no token is available or network access to `511` is blocked

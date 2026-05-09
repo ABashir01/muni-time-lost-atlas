@@ -12,10 +12,18 @@ from muni_lta_pipeline.gtfs_static_fixture_ingest import DEFAULT_FIXTURE_DIR
 def materialize_core_metrics() -> None:
     run_dbt_build(
         [
-            "path:models/staging",
-            "path:models/canonical",
-            "path:models/marts",
-        ]
+            "path:models/staging/gtfs",
+            "path:models/staging/observations",
+            "path:models/canonical/scheduled",
+            "path:models/canonical/observed",
+            "path:models/canonical/spatial",
+            "path:models/marts/core_metrics",
+            "path:models/marts/segment_metrics",
+        ],
+        excludes=[
+            "path:models/staging/geospatial",
+            "path:models/serving",
+        ],
     )
 
 

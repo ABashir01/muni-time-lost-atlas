@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: route_map_layer
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+          - unique
+
+  - name: route_segment_layer
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - route_id
+              - direction_id
+              - shape_id
+              - segment_sequence
+              - window_key
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+      - name: segment_label
+        tests:
+          - not_null
+
+  - name: stop_map_layer
+    columns:
+      - name: stop_id
+        tests:
+          - not_null
+          - unique
+
+  - name: transit_only_lane_overlay
+    columns:
+      - name: overlay_id
+        tests:
+          - not_null
+          - unique

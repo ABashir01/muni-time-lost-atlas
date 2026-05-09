@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "overlay_id": "lane_mission_south",
+        "street_name": "Mission Street",
+        "segment_name": "24th St Mission to 16th St Mission",
+        "route_hint": "14"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -122.418445,
+            37.752239
+          ],
+          [
+            -122.419671,
+            37.765051
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "overlay_id": "lane_mission_north",
+        "street_name": "Mission Street",
+        "segment_name": "16th St Mission to 8th St Market",
+        "route_hint": "14"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -122.419671,
+            37.765051
+          ],
+          [
+            -122.414173,
+            37.778646
+          ]
+        ]
+      }
+    }
+  ]
+}

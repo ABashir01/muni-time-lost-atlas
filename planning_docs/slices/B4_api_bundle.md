@@ -10,6 +10,7 @@ Once metrics and GIS outputs are stable, the API should be implemented as a thin
 ## Depends on
 - `B2_dbt_adoption_bundle`
 - `B3_gis_segment_metrics_bundle`
+- `B3a_stop_wait_metrics_bundle`
 
 ## Touches
 - FastAPI app shell
@@ -35,6 +36,7 @@ Once metrics and GIS outputs are stable, the API should be implemented as a thin
   - `GET /routes/{route_id}/segments`
   - `GET /routes/compare`
   - `GET /map/routes`
+- include stop-based waiting hotspot outputs if `B3a` lands them in a stable serving layer
 - use Pydantic response models
 - prefer targeted SQL access over a heavy ORM domain model
 - serve only precomputed tables/views from Postgres

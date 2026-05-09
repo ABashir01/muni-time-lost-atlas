@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: route_geometries
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - route_id
+              - direction_id
+              - shape_id
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_routes')
+                field: route_id
+      - name: shape_id
+        tests:
+          - not_null
+
+  - name: stop_points
+    columns:
+      - name: stop_id
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('scheduled_stops')
+                field: stop_id
+
+  - name: route_stop_segments
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - route_id
+              - direction_id
+              - shape_id
+              - segment_sequence
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_routes')
+                field: route_id
+      - name: from_stop_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stop_points')
+                field: stop_id
+      - name: to_stop_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stop_points')
+                field: stop_id
+      - name: segment_label
+        tests:
+          - not_null

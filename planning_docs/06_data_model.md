@@ -40,7 +40,7 @@ Rules:
 - GTFS static snapshots
 - historic stop observations
 - GTFS-RT vehicle snapshots later
-- GIS overlays later
+- GIS overlays
 
 ### Raw layer goals
 - preserve source fidelity
@@ -93,6 +93,7 @@ These are the minimum scheduled entities needed to support:
 Future slices should use these names unless a later decision explicitly changes them:
 - `raw.stop_observations`
 - `raw.gtfs_rt_vehicle_positions`
+- `raw.transit_only_lanes`
 
 `S06` should land historic observed arrivals in `raw.stop_observations`.
 `S30` should land GTFS-RT vehicle snapshots in `raw.gtfs_rt_vehicle_positions`.
@@ -141,6 +142,7 @@ Future staged entity families should include:
 - `staging.gtfs_rt_vehicle_positions`
 
 After `B2`, `staging.stop_observations` is now a dbt-managed staged model over `raw.stop_observations`.
+After `B3`, `staging.transit_only_lanes` is now a dbt-managed staged model over `raw.transit_only_lanes`.
 
 The staging layer is where later slices should reconcile:
 - active operator feed IDs versus historic regional feed IDs/namespacing
@@ -182,6 +184,10 @@ Deferred but reserved canonical entity names:
 - `canonical.stop_points`
 
 After `B2`, both the scheduled canonical entities and the observed join models are dbt-managed relations.
+After `B3`, the first spatial canonical entities are now dbt-managed relations:
+- `canonical.route_geometries`
+- `canonical.stop_points`
+- `canonical.route_stop_segments`
 
 `S07` should target `canonical.observed_stop_events` as the first stable observed-event interface after raw/staged observation ingest.
 
@@ -233,7 +239,14 @@ Examples:
 - line tables should use `geom` with line geometry
 - keep source latitude/longitude columns alongside `geom` where the source provides them
 
-Geometry-bearing canonical tables are later work, but this naming should be used once geometry modeling begins.
+`B3` applies this convention in:
+- `canonical.route_geometries`
+- `canonical.stop_points`
+- `canonical.route_stop_segments`
+- `serving.route_map_layer`
+- `serving.route_segment_layer`
+- `serving.stop_map_layer`
+- `serving.transit_only_lane_overlay`
 
 ## Marts
 Expected marts:
@@ -258,11 +271,13 @@ Current scope rules:
 - the only materialized route window in `B1` is `all_day`
 
 After `B2`, these marts are now materialized from dbt models without changing the accepted metric semantics.
+After `B3`, `marts.route_segment_metrics` is also materialized from dbt with one explicit segment identity strategy.
 
 Key metric fields in these marts:
 - `typical_trip_loss_minutes`
 - `waiting_loss_minutes`
 - `in_vehicle_loss_minutes`
+- `segment_in_vehicle_loss_minutes`
 
 Key diagnostic fields in these marts:
 - `matched_observed_stop_event_count`
@@ -271,11 +286,15 @@ Key diagnostic fields in these marts:
 - `matched_full_trip_count`
 
 ## Serving Layer
+Current serving entities after `B3`:
+- `serving.route_map_layer`
+- `serving.route_segment_layer`
+- `serving.stop_map_layer`
+- `serving.transit_only_lane_overlay`
+
 Expected serving entities later:
-- API-ready route summary views or tables
-- API-ready map summary views
+- API-ready route summary views or tables beyond the current map layers
 - `serving.current_vehicle_positions`
-- optional `serving.route_map_summaries`
 
 This schema is later-phase and should remain separate from historical metric marts.
 
@@ -306,3 +325,24 @@ Do not treat realtime snapshots as the primary long-term analytical store. Long-
 - scheduled-to-observed join logic
 - segment identity choice
 - spatial validity for route/stop geometry
+
+### B3 segment identity
+The first accepted segment identity is:
+- adjacent stop pair on a scheduled shape
+
+`canonical.route_stop_segments` keeps that strategy explicit with:
+- `shape_id`
+- `segment_sequence`
+- `from_stop_id`
+- `to_stop_id`
+- `segment_label`
+
+`marts.route_segment_metrics` uses the same identity and computes only:
+- adjacent-stop observed arrival to next-stop observed arrival
+- minus the scheduled arrival-to-arrival runtime
+- clamped at zero for public loss reporting
+
+This is intentionally narrow:
+- it is an in-vehicle segment loss layer, not a segment-level waiting-loss allocation
+- it is suitable for route-detail and map explanation of where time is lost
+- it does not attempt corridor generalization or causal overlay inference
