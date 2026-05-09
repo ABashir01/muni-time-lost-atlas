@@ -229,6 +229,29 @@ Expected marts:
 
 The first mart should support a route ranking query for one time window.
 
+### First `B1` mart tables
+`B1` materializes these first summary tables:
+- `marts.route_window_summary`
+- `marts.route_direction_summary`
+- `marts.route_hour_summary`
+
+Current scope rules:
+- metrics are built from `canonical.observed_stop_events` matched rows only
+- unmatched rows from `canonical.observed_stop_event_join_audit` are kept out of the metric numerators
+- route-level summaries expose separate coverage counts for matched rows and route-resolved unmatched rows
+- the only materialized route window in `B1` is `all_day`
+
+Key metric fields in these marts:
+- `typical_trip_loss_minutes`
+- `waiting_loss_minutes`
+- `in_vehicle_loss_minutes`
+
+Key diagnostic fields in these marts:
+- `matched_observed_stop_event_count`
+- `resolved_unmatched_observation_count`
+- `matched_headway_interval_count`
+- `matched_full_trip_count`
+
 ## Serving Layer
 Expected serving entities later:
 - API-ready route summary views or tables

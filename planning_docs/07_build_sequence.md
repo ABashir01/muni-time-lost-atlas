@@ -1,22 +1,22 @@
 # Build Sequence
 
 ## Build Strategy
-Build from the inside out:
-1. prove scheduled and historical data ingest
-2. prove the metric math
-3. freeze a small API contract
-4. build the UI against fixtures
-5. wire the UI to live endpoints
-6. add GTFS-RT only after the static/historical MVP works
+Build the remaining MVP in larger subsystem bundles instead of narrow feature slices.
 
-## Ordered Slice List
-### Foundation
+From this point forward:
+1. finish the core metric/data path
+2. migrate the proven SQL graph into dbt
+3. build the full historical/static API
+4. build the full frontend against fixtures
+5. integrate frontend + API
+6. add realtime only after the historical product works
+
+## Completed Work
+These slices are complete and remain part of the permanent project history:
 - `S01_repo_structure`
 - `S02_database_bootstrap`
 - `S03_python_project_bootstrap`
 - `S03a_schema_strategy`
-
-### Static / Historical Data
 - `S04_gtfs_static_fixture_ingest`
 - `S04a_511_active_gtfs_fetch`
 - `S05_canonical_scheduled_models`
@@ -25,61 +25,87 @@ Build from the inside out:
 - `S06b_real_historic_stop_observations_load`
 - `S07_scheduled_observed_join`
 
-### Metric Proof
-- `S08_waiting_time_math`
-- `S09_in_vehicle_loss_math`
-- `S10_route_level_metric`
-- `S11_metrics_mart_prototype`
+The current baseline now includes:
+- raw GTFS ingest
+- active `511` acquisition
+- historic `RG` acquisition
+- fixture and real historic stop-observations load
+- canonical scheduled models
+- first conservative scheduled/observed join
 
-### GIS Layer
-- `S12_geometry_ingest`
-- `S13_transit_lane_overlay`
-- `S14_segment_loss_prototype`
+## Remaining Bundles
+### B1 Core Metrics Bundle
+- goal: produce the first route-level rider-time-loss metrics from the joined data
+- replaces: `S08`, `S09`, `S10`, and most of `S11`
+- doc: [B1_core_metrics_bundle.md](./slices/B1_core_metrics_bundle.md)
 
-### API Layer
-- `S15_api_skeleton`
-- `S16_rankings_endpoint`
-- `S17_route_summary_endpoint`
-- `S18_map_endpoints`
-- `S19_compare_endpoint`
+### B2 dbt Adoption Bundle
+- goal: migrate the proven SQL transformation graph into a real dbt project
+- replaces: the previously implicit dbt introduction
+- doc: [B2_dbt_adoption_bundle.md](./slices/B2_dbt_adoption_bundle.md)
 
-### Frontend Shell
-- `S20_next_app_skeleton`
-- `S21_design_system_primitives`
-- `S22_homepage_with_fixtures`
-- `S23_map_view_with_fixtures`
-- `S24_route_detail_with_fixtures`
-- `S25_compare_view_with_fixtures`
+### B3 GIS And Segment Metrics Bundle
+- goal: add geometry-serving tables, transit-lane overlay context, and the first segment metric layer
+- replaces: `S12`, `S13`, `S14`
+- doc: [B3_gis_segment_metrics_bundle.md](./slices/B3_gis_segment_metrics_bundle.md)
 
-### Frontend Integration
-- `S26_rankings_integration`
-- `S27_route_detail_integration`
-- `S28_map_integration`
-- `S29_compare_integration`
+### B4 API Bundle
+- goal: build the full historical/static FastAPI surface in one pass
+- replaces: `S15` through `S19`
+- doc: [B4_api_bundle.md](./slices/B4_api_bundle.md)
 
-### Realtime
-- `S30_gtfs_rt_ingest`
-- `S31_live_vehicle_endpoint`
-- `S32_live_map_overlay`
+### B5 Frontend Static Bundle
+- goal: build the full Next.js product shell against fixtures
+- replaces: `S20` through `S25`
+- doc: [B5_frontend_static_bundle.md](./slices/B5_frontend_static_bundle.md)
 
-### Hardening
-- `S33_methodology_page_finalization`
-- `S34_qa_edge_cases`
-- `S35_mvp_polish`
+### B6 Frontend API Integration Bundle
+- goal: wire the finished frontend to the live historical/static API
+- replaces: `S26` through `S29`
+- doc: [B6_frontend_api_integration_bundle.md](./slices/B6_frontend_api_integration_bundle.md)
+
+### B7 Realtime Bundle
+- goal: add GTFS-RT ingestion and live vehicle overlays
+- replaces: `S30` through `S32`
+- doc: [B7_realtime_bundle.md](./slices/B7_realtime_bundle.md)
+
+### B8 Product Hardening Bundle
+- goal: polish, explain, and harden the MVP for public and portfolio use
+- replaces: `S33` through `S35`
+- doc: [B8_product_hardening_bundle.md](./slices/B8_product_hardening_bundle.md)
+
+## Legacy Future Slices
+The old fine-grained future slices `S08` through `S35` are now superseded by bundles `B1` through `B8`.
+
+Keep the old slice docs only as planning history. Do not resume implementation from those legacy slice docs unless a bundle is intentionally split again later.
 
 ## Phase Gates
-Before moving from one phase to the next, these conditions must hold:
+### Before B2
+- the joined scheduled/observed path is stable
+- the first route-level metrics exist in SQL-first form
+- metric names and semantics are stable enough to migrate once
 
-### Before API work
-- static/historical ingest works on fixtures
-- the metric math is tested
-- the route-level metric definition is locked
+### Before B4
+- the first marts exist and are queryable
+- the route/segment data contract is stable enough for API response models
 
-### Before frontend live integration
-- API response shapes are documented
-- fixture payloads exist
-- endpoint integration tests pass
+### Before B6
+- API response shapes are frozen in docs and code
+- fixture payloads exist for every frontend surface
 
-### Before realtime work
-- historical/static MVP is trustworthy
-- frontend map works without live vehicles
+### Before B7
+- the historical/static product is complete and trustworthy without realtime
+- map and route detail screens already work from static/historical data
+
+## Validation Standard
+Use lean validation for all future bundles:
+- one primary test suite per bundle
+- one regression suite only when the bundle materially touches a prior subsystem
+- live `511` checks only when the bundle directly depends on live `511` behavior
+- DB-mutating integration suites must be run sequentially, never in parallel, against the shared local Postgres instance
+
+Use full `unittest discover` or broader regression sweeps only at major checkpoints:
+- after `B2`
+- after `B4`
+- after `B6`
+- after `B8`

@@ -6,6 +6,15 @@
 - API changes must be reflected in this document in the same slice
 - fixture JSON should mirror the planned response contract before live integration
 
+Current historical summary sources after `B1`:
+- `marts.route_window_summary`
+- `marts.route_direction_summary`
+- `marts.route_hour_summary`
+
+Current `B1` limitation:
+- the only materialized route window is `all_day`
+- unmatched observations are surfaced through summary count fields, not blended into metric values
+
 ## Planned Endpoints
 - `GET /health`
 - `GET /rankings?window=&metric=&mode=`
@@ -27,6 +36,12 @@ Most route-centric responses should use:
 - `worst_time_band`
 - `worst_segment_label`
 - `metric_updated_at`
+
+Current `B1` summary tables also expose diagnostic coverage fields:
+- `matched_observed_stop_event_count`
+- `resolved_unmatched_observation_count`
+- `matched_headway_interval_count`
+- `matched_full_trip_count`
 
 ## Rankings Response
 Purpose:
@@ -103,4 +118,3 @@ This endpoint is deferred until static/historical data paths are correct.
 - every major endpoint should get fixture JSON before frontend live integration
 - fixture names should clearly map to endpoints
 - fixture data should be plausible and reflect documented field names exactly
-

@@ -19,10 +19,14 @@ Agents should also read:
 - [09_decisions.md](./09_decisions.md) if there is any ambiguity about prior choices
 
 ## Slice Ownership Rules
-- one slice should prove one main thing
+- one completed work unit should prove one meaningful subsystem milestone
 - agents should not broaden scope beyond the slice
 - if a dependency is missing, document it rather than silently re-scoping downstream slices
 - do not mark a slice complete without tests
+
+For future work after `S07`:
+- use the bundle docs `B1` through `B8` as the source of truth
+- the legacy future slice docs `S08` through `S35` are superseded and should not be implemented directly
 
 ## How To Claim A Slice
 - confirm all dependencies listed in the slice doc are complete
@@ -30,9 +34,15 @@ Agents should also read:
 - keep the change tightly aligned to the slice's acceptance criteria
 
 ## Testing Rules
-- run the tests listed in the slice doc
+- run the tests listed in the slice or bundle doc
 - if a listed test cannot run, document exactly why
 - prefer local, narrow tests over broad end-to-end work during early slices
+
+For future bundles, use lean validation by default:
+- one primary test suite per bundle
+- one regression suite only when the bundle materially touches a prior subsystem
+- live `511` checks only when the bundle directly depends on live `511` behavior
+- DB-mutating integration suites must run sequentially, never in parallel, against the shared local Postgres instance
 
 ## Documentation Update Rules
 If a slice changes any of these contracts, update the paired doc in the same change:
@@ -48,6 +58,8 @@ Each agent should fill the `Completion notes` section in the slice doc with:
 - what tests were run
 - what passed
 - any known limitations or follow-up issues
+
+For bundles, use the same completion-notes pattern inside the bundle doc.
 
 ## Worker Completion Signal
 When a worker agent finishes a slice, it should send one final message and then stop. That final message should include:
@@ -77,6 +89,12 @@ Results:
 
 Blockers / follow-up:
 - ...
+```
+
+For bundle work, replace `SXX_<slice_name>` with the bundle id, for example:
+
+```text
+WORKER_DONE: B1_core_metrics_bundle
 ```
 
 Do not continue with the next slice automatically. Do not restate the overall roadmap. Wait for the central planner to review, request revisions, accept, and handle git.

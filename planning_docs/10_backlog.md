@@ -29,4 +29,4 @@
 - convert design direction into a light design system doc
 - add fixture naming conventions once endpoints are scaffolded
 - add deployment/runbook docs once code exists
-
+- decide later whether the superseded legacy slice docs `S08` through `S35` should be archived into a separate folder once the bundle plan is fully adopted

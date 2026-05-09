@@ -39,6 +39,11 @@ Current integration artifacts:
   - verifies the happy-path fixture rows join exactly and expose both scheduled and observed timestamps
   - verifies unmatched rows are surfaced through explicit join-status counts instead of silently entering the canonical observed model
   - includes an optional live archive-backed join check to confirm real `RG` observation rows remain visibly unmatched until historic schedule reconciliation exists
+- `integration/test_core_metrics_bundle.py`
+  - loads a controlled multi-trip GTFS + stop-observations fixture for the first `B1` metric layer
+  - materializes the SQL-first core metrics marts and verifies route-window, route-direction, and route-hour summaries
+  - confirms waiting loss, in-vehicle loss, and typical trip loss use the expected public field names
+  - confirms unmatched observation rows stay outside the metric numerators while remaining visible through separate counts
 - `integration/test_511_active_gtfs_fetch.py`
   - performs a live `511` fetch only if `TRANSIT_511_API_KEY` is configured locally
   - skips cleanly when no token is available or network access to `511` is blocked

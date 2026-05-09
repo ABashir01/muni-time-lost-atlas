@@ -51,6 +51,19 @@ So:
 
 - `L_wait = max(0, W_obs - W_sched)`
 
+### First Implementation Scope
+For the first SQL metric layer, waiting loss is measured from matched first-stop events only.
+
+Implementation rule:
+- identify the first scheduled stop on each trip
+- keep only trips whose first stop matched exactly in `canonical.observed_stop_events`
+- compute consecutive headways only when both adjacent scheduled trips have matched first-stop observations
+
+This keeps the first waiting metric conservative:
+- no fuzzy reconciliation
+- no inferred headways across missing trips
+- unmatched rows stay visible in audit counts but do not enter the waiting-loss numerator
+
 ## In-Vehicle Loss
 For a trip from stop `a` to stop `b` on trip `k`:
 
@@ -64,6 +77,23 @@ Then:
 This means:
 - if the vehicle took longer than baseline, the difference is time lost
 - if it took less time than baseline, the public-facing loss is clamped at zero
+
+### First Implementation Scope
+The current joined model exposes observed arrivals, not observed departures.
+
+For the first SQL metric layer, full-trip in-vehicle loss is therefore measured as:
+- observed arrival at the matched last stop
+- minus observed arrival at the matched first stop
+
+with baseline:
+- scheduled arrival at the last stop
+- minus scheduled arrival at the first stop
+
+The first implementation includes only trips where:
+- the first scheduled stop matched exactly
+- the last scheduled stop matched exactly
+
+This is a narrow proxy for full one-way trip delay on the current joined model.
 
 ## Baseline Choice
 Possible baselines:
@@ -90,11 +120,22 @@ Then define the headline route metric as:
 
 - `L_typical(route,W) = L_wait(route,W) + L_veh(route,W)`
 
+For the first SQL bundle:
+- `L_wait(route,W)` is computed from matched first-stop headways only
+- `L_veh(route,W)` is the median full-trip loss across matched terminal-to-terminal trips only
+- route summaries currently materialize one supported window: `all_day`
+- direction and hour summaries provide the first breakdowns beneath that route window
+
 ## What This Metric Does Not Claim
 The MVP metric does not claim to be:
 - a passenger-weighted population average
 - a perfect substitute for origin-destination rider burden
 - a causal claim about why the route is slow
+
+The first implementation also does not claim to:
+- cover unmatched historic observation rows
+- infer missing trips or missing stop matches
+- capture bunching as a separate published metric yet
 
 It is a route-level typical-trip estimate.
 
@@ -127,4 +168,3 @@ Avoid as homepage language:
   - [https://511.org/open-data/transit](https://511.org/open-data/transit)
 - 511 open data FAQ:
   - [https://511.org/about/faq/open-data](https://511.org/about/faq/open-data)
-

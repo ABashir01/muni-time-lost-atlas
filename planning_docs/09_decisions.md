@@ -193,3 +193,27 @@
 - Alternatives rejected:
   - fuzzy matching on nearby timestamps or partial trip keys in the first join
   - silently discarding unmatched observations without an audit surface
+
+## ADR 017: Post-S07 Bundle Architecture
+- Decision: replace the future fine-grained slices `S08` through `S35` with larger bundles `B1` through `B8`, and use lean validation as the default for the remaining roadmap
+- Why:
+  - the earlier roadmap described the feature path well but under-specified several infrastructure-transition steps such as real `511` acquisition boundaries and dbt introduction
+  - the original slice granularity created unnecessary agent churn and slowed execution for what should remain a relatively small public-facing full-stack app
+  - larger bundles keep the important subsystem boundaries while reducing repeated orchestration, review, and test overhead
+  - lean validation is sufficient once the project has a stable data foundation through `S07`
+- Alternatives rejected:
+- continuing the old one-feature-per-slice plan after `S07`
+- introducing dbt immediately before the first metrics layer is proven
+- keeping dense live/integration testing on every future work unit by default
+
+## ADR 018: First Core Metrics Scope
+- Decision: compute the first published waiting loss from exact matched first-stop headways only, compute the first published in-vehicle loss from exact matched terminal-to-terminal trips only, and keep unmatched observations outside the metric numerators while surfacing them through separate coverage counts
+- Why:
+  - matches the conservative exact-join posture established in `S07`
+  - avoids inflating waiting loss with inferred headways across missing matched trips
+  - produces a defensible full-trip proxy from the current joined model, which exposes observed arrivals but not observed departures
+  - gives downstream API work explicit matched-versus-unmatched diagnostics without broadening into fuzzy reconciliation
+- Alternatives rejected:
+  - blending unmatched rows into metric math with heuristic route or timing assumptions
+  - computing waiting loss across non-consecutive matched trips
+  - delaying all route-level metrics until a richer historic reconciliation layer exists

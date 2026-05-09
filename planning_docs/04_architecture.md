@@ -1,78 +1,121 @@
 # Architecture
 
 ## System Shape
-The MVP should be composed of four major parts:
-- frontend application
-- thin serving API
+The MVP is a simple four-part system:
 - data platform
-- planning/documentation layer
+- Postgres/PostGIS database
+- thin FastAPI service
+- Next.js frontend
 
-## Frontend
+The intended runtime flow is:
+- `511 -> Python fetch/load -> Postgres raw tables -> SQL/dbt transforms -> marts -> FastAPI -> Next.js`
+
+## Data Platform
 Use:
-- `Next.js + TypeScript`
+- `Python` for acquisition, archive handling, extraction, and raw loads
+- SQL-first transformations until the first metrics layer is stable
+- `dbt` after the first metrics bundle is proven
 
-Reason:
-- public-facing homepage and methodology content fit naturally
-- route pages and compare/map pages fit a page-oriented shell
-- the product needs more than a pure SPA map surface
+Data-platform responsibilities:
+- fetch active operator GTFS from `511`
+- fetch historic `RG` archives from `511`
+- fetch GTFS-RT later
+- load raw GTFS and raw stop observations into Postgres
+- materialize scheduled canonical models
+- materialize observed canonical models
+- materialize route and segment marts
 
-Frontend responsibilities:
-- route rankings presentation
-- map rendering
-- route detail views
-- compare views
-- methodology presentation
-- loading, error, and empty states
-
-## API
-Use:
-- separate `Python` API using `FastAPI`
-
-Reason:
-- clear boundary between serving and UI
-- cleaner tests and contracts
-- keeps transit/data logic closer to the pipeline language family
-- typed request and response models fit the documented contract-first workflow
-
-API responsibilities:
-- rankings endpoint
-- route summary endpoint
-- map geometry and metric endpoints
-- compare endpoint
-- live vehicle endpoint later
-
-Implementation preference:
-- use `Pydantic` models for request and response validation
-- prefer `SQLAlchemy Core` or `psycopg` for targeted DB access over a heavy ORM-first design
+Important boundary:
+- Python owns acquisition and raw landing
+- dbt will later own staged/canonical/mart modeling
+- dbt does not replace Python fetch/load code
 
 ## Database
 Use:
 - `Postgres + PostGIS`
 
-Responsibilities:
-- source-of-truth relational store
-- spatial storage and spatial joins
-- serving precomputed marts
-- route and segment geometry support
+Database responsibilities:
+- raw source-of-truth relational storage
+- canonical and mart storage
+- spatial storage for route/stop/segment geometry
+- thin serving queries for the API
 
-## Data Platform
+Layering model:
+- `raw`
+- `staging`
+- `canonical`
+- `marts`
+- `serving` only if a later API bundle needs extra read-optimized views
+
+Current implementation note:
+- the project is intentionally SQL-first today
+- after `B2`, the staged/canonical/mart graph should live inside dbt
+
+## API
 Use:
-- `Python` for ingest and parsing
-- `dbt` for transformations and marts
+- separate `Python` API using `FastAPI`
 
-Responsibilities:
-- GTFS static ingest
-- historic stop observation ingest
-- GTFS-RT ingest later
-- canonical scheduled models
-- canonical observed models
-- route/segment aggregate marts
+API responsibilities:
+- expose stable, documented response shapes
+- read from canonical or mart tables only
+- avoid embedding metric logic in request handlers
 
-## System Boundaries
+Implementation preference:
+- `Pydantic` request/response models
+- targeted SQL access through `SQLAlchemy Core` or `psycopg`
+- no heavy ORM-first design
+
+Historical/static endpoints:
+- `GET /health`
+- `GET /rankings`
+- `GET /routes/{route_id}/summary`
+- `GET /routes/{route_id}/segments`
+- `GET /routes/compare`
+- `GET /map/routes`
+
+Deferred realtime endpoint:
+- `GET /live/vehicles`
+
+## Frontend
+Use:
+- `Next.js + TypeScript`
+
+Frontend responsibilities:
+- homepage rankings and explainer hierarchy
+- route detail
+- compare view
+- map view
+- methodology page
+- loading, empty, and error states
+
+Important boundary:
 - frontend does not compute transit metrics directly
-- API serves stable response shapes from precomputed data
-- data platform owns ingest, normalization, and metric computation
-- methodology and planning docs describe the contract and rationale
+- frontend should consume fixture payloads first, then live API payloads
+- the product hierarchy remains:
+  - rankings first
+  - map second
+  - explanatory context third
+
+## dbt Role
+dbt is a later, explicit bundle rather than an implicit promise.
+
+dbt will own:
+- source declarations
+- `staging` models
+- `canonical` models
+- `marts`
+- dbt-native model tests
+
+dbt will not own:
+- `511` acquisition
+- zip archive downloads
+- raw file extraction
+- API serving
+- frontend logic
+
+The correct introduction point is:
+- after the first metric graph is proven in SQL-first form
+- before the API and frontend depend on a larger, still-moving transformation graph
 
 ## Deployment Shape
 Expected deployables:
@@ -80,4 +123,7 @@ Expected deployables:
 - one Python API service
 - one Postgres/PostGIS database
 
-Scheduling/orchestration can start simple and remain implementation-detail scope until the pipeline is active.
+Operational guidance:
+- keep historical analytics batch-driven
+- keep realtime ingestion separate from historical marts
+- do not recompute the full historical metrics layer on every realtime poll
