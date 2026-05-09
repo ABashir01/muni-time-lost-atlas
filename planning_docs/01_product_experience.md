@@ -95,13 +95,17 @@ The interface should feel:
 - punchy
 - flat-color
 - transit-signage inspired
+- editorial and newspaper-front-page-like rather than dashboard-like
 
 Use:
 - black / white structure
 - strong route-color accents
 - crisp geometry and strong typography
+- a large split hero with headline left and map right
+- oversized numeric route rankings
+- strong border-led structure instead of soft cards
 
 Reference planning mockups:
 - [dark mode mockup](./mockups/homepage-dark-mode.png)
 - [light mode mockup](./mockups/homepage-light-mode.png)
-
+- [design reference](./11_design_reference.md)
