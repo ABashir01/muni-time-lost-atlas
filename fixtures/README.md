@@ -15,3 +15,17 @@ Current `B3` geospatial fixture:
 - `geospatial/transit_only_lanes/minimal.geojson`
   - two small transit-lane line features aligned to the controlled route fixture
   - intended only to prove contextual overlay loading and spatial queryability
+
+Current `B4` API fixtures:
+- `api/health.json`
+- `api/rankings_all_day_typical_trip_loss_minutes_routes.json`
+- `api/route_14_summary_all_day.json`
+- `api/route_14_segments_direction_1_all_day.json`
+- `api/routes_compare_14_49_all_day.json`
+- `api/map_routes_all_day_typical_trip_loss_minutes.json`
+
+Current `B4` integration data fixture:
+- `gtfs_static/api_bundle/`
+  - two-route GTFS fixture used to cover rankings, compare, route detail, and map endpoints in one API suite
+- `stop_observations/regional_rg_api_bundle/`
+  - matching observed-arrival fixture for the same two-route API test scenario

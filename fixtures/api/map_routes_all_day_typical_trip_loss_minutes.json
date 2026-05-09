@@ -1,0 +1,87 @@
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            -122.418445,
+            37.752239
+          ],
+          [
+            -122.419671,
+            37.765051
+          ],
+          [
+            -122.414173,
+            37.778646
+          ]
+        ],
+        "type": "LineString"
+      },
+      "properties": {
+        "in_vehicle_loss_minutes": 1.5,
+        "matched_full_trip_count": 6,
+        "matched_headway_interval_count": 4,
+        "matched_observed_stop_event_count": 18,
+        "metric": "typical_trip_loss_minutes",
+        "metric_updated_at": "2026-05-08T19:30:00Z",
+        "metric_value": 2.329804,
+        "resolved_unmatched_observation_count": 1,
+        "route_id": "14",
+        "route_long_name": "Mission",
+        "route_name": "Mission",
+        "route_short_name": "14",
+        "typical_trip_loss_minutes": 2.329804,
+        "waiting_loss_minutes": 0.829804,
+        "window": "all_day",
+        "worst_segment_label": "16th St Mission -> 24th St Mission",
+        "worst_stop_wait_label": "8th St Market (Outbound)",
+        "worst_time_band": "09:00-09:59"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            -122.421045,
+            37.742813
+          ],
+          [
+            -122.413498,
+            37.779861
+          ],
+          [
+            -122.424956,
+            37.805892
+          ]
+        ],
+        "type": "LineString"
+      },
+      "properties": {
+        "in_vehicle_loss_minutes": 1.0,
+        "matched_full_trip_count": 3,
+        "matched_headway_interval_count": 2,
+        "matched_observed_stop_event_count": 9,
+        "metric": "typical_trip_loss_minutes",
+        "metric_updated_at": "2026-05-08T19:30:00Z",
+        "metric_value": 1.041667,
+        "resolved_unmatched_observation_count": 0,
+        "route_id": "49",
+        "route_long_name": "Van Ness/Mission",
+        "route_name": "Van Ness/Mission",
+        "route_short_name": "49",
+        "typical_trip_loss_minutes": 1.041667,
+        "waiting_loss_minutes": 0.041667,
+        "window": "all_day",
+        "worst_segment_label": "Civic Center -> North Point Van Ness",
+        "worst_stop_wait_label": "30th St Mission (Downtown)",
+        "worst_time_band": "07:00-07:59"
+      },
+      "type": "Feature"
+    }
+  ],
+  "metric": "typical_trip_loss_minutes",
+  "type": "FeatureCollection",
+  "window": "all_day"
+}

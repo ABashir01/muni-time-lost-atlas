@@ -24,20 +24,29 @@ Current `B1` limitation:
 - the only materialized route window is `all_day`
 - unmatched observations are surfaced through summary count fields, not blended into metric values
 
-## Planned Endpoints
+Current `B4` scope limits:
+- `window=all_day` is the only supported historical/static API window
+- `/rankings` currently supports only `mode=routes`
+- stop-wait hotspot data remains exposed through route-level labels and the serving layer, not a standalone public endpoint yet
+
+## Implemented Endpoints
 - `GET /health`
-- `GET /rankings?window=&metric=&mode=`
-- `GET /routes/{route_id}/summary?window=&direction=`
-- `GET /routes/{route_id}/segments?window=&direction=`
+- `GET /rankings?window=all_day&metric={typical_trip_loss_minutes|waiting_loss_minutes|in_vehicle_loss_minutes}&mode=routes`
+- `GET /routes/{route_id}/summary?window=all_day&direction={0|1 optional}`
+- `GET /routes/{route_id}/segments?window=all_day&direction={0|1 required}`
+- `GET /routes/compare?ids=14,49&window=all_day`
+- `GET /map/routes?window=all_day&metric={typical_trip_loss_minutes|waiting_loss_minutes|in_vehicle_loss_minutes}`
+
+Deferred endpoints:
 - `GET /routes/{route_id}/stops/wait?window=&direction=`
-- `GET /routes/compare?ids=&window=`
-- `GET /map/routes?window=&metric=`
 - `GET /live/vehicles`
 
 ## Core Shared Fields
 Most route-centric responses should use:
 - `route_id`
 - `route_name`
+- `route_short_name`
+- `route_long_name`
 - `window`
 - `direction` when applicable
 - `typical_trip_loss_minutes`
@@ -58,43 +67,67 @@ Current `B1` summary tables also expose diagnostic coverage fields:
 Purpose:
 - power homepage route ranking cards
 
-Expected shape:
-- selected `window`
-- selected `metric`
-- ordered list of route summaries
+Shape:
+- top-level `window`
+- top-level `metric`
+- top-level `mode`
+- ordered `routes` list
 
 Each route summary should include:
+- `rank`
 - route identity fields
 - total loss
 - waiting/travel split
 - worst time band
 - worst stop wait label
 - worst segment label
+- metric coverage counts
+- `metric_updated_at`
 
 ## Route Summary Response
 Purpose:
 - power route detail page header and summary section
 
-Should include:
+Shape:
+- a single route summary object
+- `direction_id` and `direction_label` only when `direction` is requested
+
+Includes:
 - total typical trip loss
 - waiting loss
 - in-vehicle loss
-- bunching rate when available
 - worst time band
 - worst stop wait label
 - worst segment label
-- short interpretive label if generated server-side later
+- metric coverage counts
+- `metric_updated_at`
 
 ## Segment Response
 Purpose:
 - power route detail map panels and selected corridor summaries
 
-Should include:
-- route and direction
-- segment identity or label
-- adjacent stop-pair identity for the first bundle
-- embedded segment geometry from PostGIS-serving tables
-- segment-level in-vehicle loss metric for the first implementation
+Shape:
+- top-level route metadata
+- top-level `window`
+- top-level `direction_id`
+- top-level `direction_label`
+- top-level `type = FeatureCollection`
+- `features[]`, each with GeoJSON `geometry` plus typed `properties`
+
+Segment feature properties include:
+- route identity fields
+- `shape_id`
+- `segment_strategy`
+- `segment_sequence`
+- `from_stop_id`
+- `from_stop_name`
+- `to_stop_id`
+- `to_stop_name`
+- `segment_label`
+- `scheduled_segment_minutes`
+- `segment_in_vehicle_loss_minutes`
+- `matched_trip_segment_count`
+- `metric_updated_at`
 
 Current `B3` implementation notes:
 - first segment strategy is `adjacent_stop_pair`
@@ -120,15 +153,25 @@ Should include:
 - waiting loss
 - matched headway interval count
 
+Current `B4` note:
+- this payload is not exposed as a standalone HTTP endpoint yet
+- route-level summaries and map payloads still surface `worst_stop_wait_label`
+
 ## Map Response
 Purpose:
 - power citywide route choropleth / thematic map
 
-Should include:
-- route geometry or geometry reference
-- route-level metric to color by
-- route identity
-- updated timestamp
+Shape:
+- top-level `window`
+- top-level `metric`
+- top-level `type = FeatureCollection`
+- `features[]`, each with route GeoJSON `geometry` and `properties`
+
+Route map feature properties include:
+- the shared route summary fields
+- metric coverage counts
+- selected `metric`
+- selected `metric_value`
 
 Current `B3` implementation notes:
 - route geometry is materialized in `serving.route_map_layer`
@@ -140,10 +183,15 @@ Current `B3` implementation notes:
 Purpose:
 - power 2-4 route compare view
 
-Should include:
-- shared selected time window
-- one summary block per route
-- same summary fields used in rankings/detail when possible
+Shape:
+- top-level `window`
+- top-level `route_ids` preserving requested order
+- one route summary block per route
+
+Rules:
+- accepts 2-4 comma-separated route ids
+- rejects duplicate route ids
+- uses the same route summary fields as rankings/detail when possible
 
 ## Live Vehicles Response
 Purpose:
@@ -162,3 +210,11 @@ This endpoint is deferred until static/historical data paths are correct.
 - every major endpoint should get fixture JSON before frontend live integration
 - fixture names should clearly map to endpoints
 - fixture data should be plausible and reflect documented field names exactly
+
+Current `B4` fixture set:
+- `fixtures/api/health.json`
+- `fixtures/api/rankings_all_day_typical_trip_loss_minutes_routes.json`
+- `fixtures/api/route_14_summary_all_day.json`
+- `fixtures/api/route_14_segments_direction_1_all_day.json`
+- `fixtures/api/routes_compare_14_49_all_day.json`
+- `fixtures/api/map_routes_all_day_typical_trip_loss_minutes.json`

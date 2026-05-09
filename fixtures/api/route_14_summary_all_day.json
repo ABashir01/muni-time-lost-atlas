@@ -1,0 +1,18 @@
+{
+  "in_vehicle_loss_minutes": 1.5,
+  "matched_full_trip_count": 6,
+  "matched_headway_interval_count": 4,
+  "matched_observed_stop_event_count": 18,
+  "metric_updated_at": "2026-05-08T19:30:00Z",
+  "resolved_unmatched_observation_count": 1,
+  "route_id": "14",
+  "route_long_name": "Mission",
+  "route_name": "Mission",
+  "route_short_name": "14",
+  "typical_trip_loss_minutes": 2.329804,
+  "waiting_loss_minutes": 0.829804,
+  "window": "all_day",
+  "worst_segment_label": "16th St Mission -> 24th St Mission",
+  "worst_stop_wait_label": "8th St Market (Outbound)",
+  "worst_time_band": "09:00-09:59"
+}

@@ -1,0 +1,10 @@
+route_id,service_id,trip_id,trip_headsign,direction_id,shape_id
+14,WKDY,14_WKDY_IB_0800,Downtown,0,14_IB
+14,WKDY,14_WKDY_IB_0810,Downtown,0,14_IB
+14,WKDY,14_WKDY_IB_0825,Downtown,0,14_IB
+14,WKDY,14_WKDY_OB_0900,Outbound,1,14_OB
+14,WKDY,14_WKDY_OB_0912,Outbound,1,14_OB
+14,WKDY,14_WKDY_OB_0924,Outbound,1,14_OB
+49,WKDY,49_WKDY_NB_0700,Downtown,0,49_NB
+49,WKDY,49_WKDY_NB_0712,Downtown,0,49_NB
+49,WKDY,49_WKDY_NB_0724,Downtown,0,49_NB

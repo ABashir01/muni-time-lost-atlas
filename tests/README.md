@@ -49,6 +49,10 @@ Current integration artifacts:
   - loads the controlled GTFS + stop-observations fixture plus a tiny transit-lane overlay fixture
   - runs the dbt GIS/segment graph and verifies route geometry, adjacent-stop segment metrics, stop points, and overlay layers are spatially queryable together
   - verifies `worst_segment_label` is populated without changing the accepted core route metric math
+- `integration/test_api_bundle.py`
+  - loads a dedicated two-route GTFS + stop-observations fixture plus the tiny transit-lane overlay fixture
+  - runs the dbt staged/canonical/mart/serving graph and exercises the full historical/static FastAPI surface
+  - verifies rankings, route summary, route segments, compare, and map payloads plus narrow validation/error behavior
 - `integration/test_511_active_gtfs_fetch.py`
   - performs a live `511` fetch only if `TRANSIT_511_API_KEY` is configured locally
   - skips cleanly when no token is available or network access to `511` is blocked
@@ -78,6 +82,8 @@ Current unit artifacts:
 - `unit/test_historic_stop_observations_archive_ingest.py`
   - verifies compact historic service-date parsing and service-day timestamp handling past `24:00:00`
   - verifies `-so` acquisition metadata validation and archive-backed snapshot labeling
+- `unit/test_api_contract_fixtures.py`
+  - validates the committed API fixture JSON payloads against the same frozen Pydantic response models used by the live FastAPI handlers
 
 Unit test command:
 

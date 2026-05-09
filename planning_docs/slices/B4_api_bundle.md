@@ -60,3 +60,9 @@ Once metrics and GIS outputs are stable, the API should be implemented as a thin
 `B5_frontend_static_bundle` should build all screens against the fixture payloads from this bundle.
 
 ## Completion notes
+- Added the full historical/static FastAPI read surface for `GET /health`, `GET /rankings`, `GET /routes/{route_id}/summary`, `GET /routes/{route_id}/segments`, `GET /routes/compare`, and `GET /map/routes`.
+- Kept the API thin by querying only the existing `marts.*` and `serving.*` relations with targeted SQL through `psycopg`, including route-hour lookups for `worst_time_band`.
+- Froze the public payloads in Pydantic response models and committed matching frontend fixture payloads under `fixtures/api/`.
+- Added a dedicated two-route API bundle fixture so rankings, compare, map, and route-detail responses can be exercised together without changing the earlier single-route metric fixture.
+- Added `tests/integration/test_api_bundle.py` as the primary historical/static API integration suite and `tests/unit/test_api_contract_fixtures.py` as the fixture contract check.
+- Updated the API contract doc to reflect the exact supported params and payload shapes, including the current `all_day`/`routes` scope and the deferred stop-wait and live-vehicle endpoints.

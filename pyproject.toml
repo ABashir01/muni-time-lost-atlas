@@ -12,6 +12,7 @@ dependencies = [
   "dbt-postgres==1.10.0",
   "fastapi>=0.115,<1.0",
   "mashumaro>=3.17,<3.18",
+  "psycopg[binary]>=3.2,<3.3",
   "tzdata>=2025.2",
 ]
 

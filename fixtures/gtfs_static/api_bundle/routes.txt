@@ -1,0 +1,3 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+14,SFMTA,14,Mission,3,DA291C,FFFFFF
+49,SFMTA,49,Van Ness/Mission,3,006E90,FFFFFF

@@ -1,0 +1,91 @@
+{
+  "direction_id": 1,
+  "direction_label": "Outbound",
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            -122.414173,
+            37.778646
+          ],
+          [
+            -122.419671,
+            37.765051
+          ],
+          [
+            -122.419629536,
+            37.764617696
+          ]
+        ],
+        "type": "LineString"
+      },
+      "properties": {
+        "direction_id": 1,
+        "direction_label": "Outbound",
+        "from_stop_id": "STP_8TH",
+        "from_stop_name": "8th St Market",
+        "matched_trip_segment_count": 3,
+        "metric_updated_at": "2026-05-08T19:29:00Z",
+        "route_id": "14",
+        "route_long_name": "Mission",
+        "route_name": "Mission",
+        "route_short_name": "14",
+        "scheduled_segment_minutes": 7.0,
+        "segment_in_vehicle_loss_minutes": 1.0,
+        "segment_label": "8th St Market -> 16th St Mission",
+        "segment_sequence": 1,
+        "segment_strategy": "adjacent_stop_pair",
+        "shape_id": "14_OB",
+        "to_stop_id": "STP_16TH",
+        "to_stop_name": "16th St Mission",
+        "window": "all_day"
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            -122.419629536,
+            37.764617696
+          ],
+          [
+            -122.418445,
+            37.752239
+          ]
+        ],
+        "type": "LineString"
+      },
+      "properties": {
+        "direction_id": 1,
+        "direction_label": "Outbound",
+        "from_stop_id": "STP_16TH",
+        "from_stop_name": "16th St Mission",
+        "matched_trip_segment_count": 3,
+        "metric_updated_at": "2026-05-08T19:29:00Z",
+        "route_id": "14",
+        "route_long_name": "Mission",
+        "route_name": "Mission",
+        "route_short_name": "14",
+        "scheduled_segment_minutes": 7.0,
+        "segment_in_vehicle_loss_minutes": 2.0,
+        "segment_label": "16th St Mission -> 24th St Mission",
+        "segment_sequence": 2,
+        "segment_strategy": "adjacent_stop_pair",
+        "shape_id": "14_OB",
+        "to_stop_id": "STP_24TH",
+        "to_stop_name": "24th St Mission",
+        "window": "all_day"
+      },
+      "type": "Feature"
+    }
+  ],
+  "metric_updated_at": "2026-05-08T19:29:00Z",
+  "route_id": "14",
+  "route_long_name": "Mission",
+  "route_name": "Mission",
+  "route_short_name": "14",
+  "type": "FeatureCollection",
+  "window": "all_day"
+}
