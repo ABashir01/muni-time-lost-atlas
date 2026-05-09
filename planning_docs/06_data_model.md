@@ -17,6 +17,12 @@ This layered model should be understood as closest to `dbt`-style `staging` / `i
 - `marts` contains product-facing aggregates
 - `serving` contains API-facing helpers and live-serving tables/views
 
+After `B2`, the in-repo dbt project maps these layers as:
+- `dbt/models/staging/...` -> Postgres schema `staging`
+- `dbt/models/canonical/...` -> Postgres schema `canonical`
+- `dbt/models/marts/...` -> Postgres schema `marts`
+- `raw` remains outside dbt and is populated only by Python fetch/load code
+
 `medallion` is a useful conceptual analogy only. Do not rename schemas to `bronze`, `silver`, or `gold`.
 
 Rules:
@@ -128,6 +134,8 @@ Future staged entity families should include:
 - `staging.stop_observations`
 - `staging.gtfs_rt_vehicle_positions`
 
+After `B2`, `staging.stop_observations` is now a dbt-managed staged model over `raw.stop_observations`.
+
 The staging layer is where later slices should reconcile:
 - active operator feed IDs versus historic regional feed IDs/namespacing
 - differing historic feed calendar/date representations
@@ -166,6 +174,8 @@ Deferred but reserved canonical entity names:
 - `canonical.observed_stop_events`
 - `canonical.route_geometries`
 - `canonical.stop_points`
+
+After `B2`, both the scheduled canonical entities and the observed join models are dbt-managed relations.
 
 `S07` should target `canonical.observed_stop_events` as the first stable observed-event interface after raw/staged observation ingest.
 
@@ -240,6 +250,8 @@ Current scope rules:
 - unmatched rows from `canonical.observed_stop_event_join_audit` are kept out of the metric numerators
 - route-level summaries expose separate coverage counts for matched rows and route-resolved unmatched rows
 - the only materialized route window in `B1` is `all_day`
+
+After `B2`, these marts are now materialized from dbt models without changing the accepted metric semantics.
 
 Key metric fields in these marts:
 - `typical_trip_loss_minutes`

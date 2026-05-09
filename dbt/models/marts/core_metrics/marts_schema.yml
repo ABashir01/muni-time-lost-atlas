@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: route_window_summary
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - route_id
+              - window_key
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_routes')
+                field: route_id
+      - name: window_key
+        tests:
+          - not_null
+
+  - name: route_direction_summary
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - route_id
+              - direction_id
+              - window_key
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_routes')
+                field: route_id
+      - name: window_key
+        tests:
+          - not_null
+
+  - name: route_hour_summary
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - route_id
+              - direction_id
+              - hour_local
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_routes')
+                field: route_id
+      - name: hour_local
+        tests:
+          - not_null

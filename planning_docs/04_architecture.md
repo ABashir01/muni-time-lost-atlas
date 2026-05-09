@@ -27,7 +27,7 @@ Data-platform responsibilities:
 
 Important boundary:
 - Python owns acquisition and raw landing
-- dbt will later own staged/canonical/mart modeling
+- dbt owns staged/canonical/mart modeling after raw data is landed
 - dbt does not replace Python fetch/load code
 
 ## Database
@@ -48,8 +48,8 @@ Layering model:
 - `serving` only if a later API bundle needs extra read-optimized views
 
 Current implementation note:
-- the project is intentionally SQL-first today
-- after `B2`, the staged/canonical/mart graph should live inside dbt
+- Python still owns raw acquisition and raw-table loads
+- after `B2`, the staged/canonical/mart graph lives in the in-repo `dbt/` project
 
 ## API
 Use:
@@ -116,6 +116,10 @@ dbt will not own:
 The correct introduction point is:
 - after the first metric graph is proven in SQL-first form
 - before the API and frontend depend on a larger, still-moving transformation graph
+
+Current implementation note:
+- that introduction point is now complete
+- use the Python loaders to land `raw` data first, then run dbt for `staging`, `canonical`, and `marts`
 
 ## Deployment Shape
 Expected deployables:

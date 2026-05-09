@@ -1,28 +1,24 @@
-"""Materialize the first canonical scheduled/observed stop-event join for slice S07."""
+"""Materialize the dbt observed stop-event graph on top of the scheduled models."""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-from muni_lta_pipeline.gtfs_static_fixture_ingest import (
-    DEFAULT_FIXTURE_DIR,
-    ensure_db_service,
-    execute_sql_file,
-    get_postgres_settings,
-    wait_for_database,
-)
-
-
-REPO_ROOT = Path(__file__).resolve().parents[3]
-MATERIALIZATION_SQL = REPO_ROOT / "db" / "sql" / "04-materialize-canonical-observed-stop-events.sql"
+from muni_lta_pipeline.dbt_runner import run_dbt_build
+from muni_lta_pipeline.gtfs_static_fixture_ingest import DEFAULT_FIXTURE_DIR
 
 
 def materialize_canonical_observed_stop_events() -> None:
-    settings = get_postgres_settings()
-    ensure_db_service()
-    wait_for_database(settings)
-    execute_sql_file(settings, MATERIALIZATION_SQL)
+    run_dbt_build(
+        [
+            "path:models/staging/gtfs",
+            "path:models/staging/observations",
+            "path:models/canonical/scheduled",
+            "path:models/canonical/observed",
+        ],
+        excludes=["path:models/marts"],
+    )
 
 
 def main() -> int:

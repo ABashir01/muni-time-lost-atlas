@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: gtfs_routes
+      - name: gtfs_trips
+      - name: gtfs_stops
+      - name: gtfs_stop_times
+      - name: gtfs_shapes
+      - name: gtfs_calendar
+      - name: gtfs_calendar_dates
+      - name: stop_observations

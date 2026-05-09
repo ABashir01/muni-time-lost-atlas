@@ -12,3 +12,6 @@ dist/
 build/
 coverage/
 artifacts/acquisitions/
+dbt/logs/
+dbt/target/
+dbt/.user.yml

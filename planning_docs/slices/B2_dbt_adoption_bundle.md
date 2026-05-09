@@ -61,3 +61,17 @@ dbt is part of the intended analytics-engineering signal, but it should be intro
 `B3_gis_segment_metrics_bundle` should build map-serving and segment outputs on top of the stabilized transformation graph.
 
 ## Completion notes
+- what changed
+  - added a real in-repo dbt project under `dbt/` with raw source declarations, schema-selection macros, and a generic composite-key uniqueness test
+  - migrated the proven scheduled, observed-join, and first-mart SQL graph into dbt `staging`, `canonical`, and `marts` models without changing the accepted metric semantics
+  - rewired the existing Python transformation entrypoints to call dbt build selectors so raw acquisition/load code stays in Python and downstream tests keep the same interface
+  - added dbt-native unique, not-null, and relationship tests on the core canonical and mart models
+- what tests were run
+  - `.\.venv\Scripts\python.exe -m unittest tests.integration.test_core_metrics_bundle -v`
+- what passed
+  - the dbt staged/canonical/mart graph built successfully against the local Postgres setup
+  - dbt-native tests passed during the build
+  - the route-window, route-direction, and route-hour summaries preserved the previously accepted waiting-loss and in-vehicle-loss semantics
+- any known limitations or follow-up issues
+  - local environments with an older persisted Postgres volume may need the DB user password realigned with the repo `.env` before host-side dbt connections succeed
+  - the legacy SQL files under `db/sql/` remain in the repo as historical references, but the active transformation path now runs through dbt

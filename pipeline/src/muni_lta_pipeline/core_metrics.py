@@ -1,28 +1,22 @@
-"""Materialize the first rider-time-loss marts for bundle B1."""
+"""Materialize the dbt route-summary marts for the first rider-time-loss graph."""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-from muni_lta_pipeline.gtfs_static_fixture_ingest import (
-    DEFAULT_FIXTURE_DIR,
-    ensure_db_service,
-    execute_sql_file,
-    get_postgres_settings,
-    wait_for_database,
-)
-
-
-REPO_ROOT = Path(__file__).resolve().parents[3]
-MATERIALIZATION_SQL = REPO_ROOT / "db" / "sql" / "05-materialize-core-metrics.sql"
+from muni_lta_pipeline.dbt_runner import run_dbt_build
+from muni_lta_pipeline.gtfs_static_fixture_ingest import DEFAULT_FIXTURE_DIR
 
 
 def materialize_core_metrics() -> None:
-    settings = get_postgres_settings()
-    ensure_db_service()
-    wait_for_database(settings)
-    execute_sql_file(settings, MATERIALIZATION_SQL)
+    run_dbt_build(
+        [
+            "path:models/staging",
+            "path:models/canonical",
+            "path:models/marts",
+        ]
+    )
 
 
 def main() -> int:

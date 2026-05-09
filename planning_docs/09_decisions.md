@@ -214,6 +214,18 @@
   - produces a defensible full-trip proxy from the current joined model, which exposes observed arrivals but not observed departures
   - gives downstream API work explicit matched-versus-unmatched diagnostics without broadening into fuzzy reconciliation
 - Alternatives rejected:
-  - blending unmatched rows into metric math with heuristic route or timing assumptions
-  - computing waiting loss across non-consecutive matched trips
-  - delaying all route-level metrics until a richer historic reconciliation layer exists
+- blending unmatched rows into metric math with heuristic route or timing assumptions
+- computing waiting loss across non-consecutive matched trips
+- delaying all route-level metrics until a richer historic reconciliation layer exists
+
+## ADR 019: dbt Adoption Boundary
+- Decision: keep Python responsible for acquisition and raw loads, but move the accepted staged, canonical, and mart transformation graph into an in-repo dbt project once `B1` metrics were proven
+- Why:
+  - preserves the working raw ingest entrypoints without mixing fetch/load concerns into dbt
+  - gives the project a real analytics-engineering layer with source declarations, model lineage, and dbt-native tests
+  - keeps the accepted metric and join semantics intact while removing the growing pile of one-off SQL materialization files from the execution path
+  - allows later bundles to build on stable dbt-managed canonical and mart relations instead of bespoke Python wrappers around SQL files
+- Alternatives rejected:
+  - keeping the whole transformation graph as raw SQL files invoked directly from Python
+  - broadening dbt into acquisition/orchestration responsibilities
+  - redesigning the scheduled, observed, or mart semantics during the dbt migration itself

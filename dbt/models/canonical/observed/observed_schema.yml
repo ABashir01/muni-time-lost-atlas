@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: observed_stop_events
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - service_date
+              - trip_id
+              - stop_id
+              - stop_sequence
+    columns:
+      - name: service_date
+        tests:
+          - not_null
+      - name: trip_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_trips')
+                field: trip_id
+      - name: route_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_routes')
+                field: route_id
+      - name: service_id
+        tests:
+          - not_null
+      - name: stop_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_stops')
+                field: stop_id
+      - name: stop_sequence
+        tests:
+          - not_null

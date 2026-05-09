@@ -45,6 +45,8 @@ This repository currently contains:
 - raw historic stop observations fixture ingest for `S06_historic_stop_observations_ingest`
 - real historic stop observations archive ingest for `S06b_real_historic_stop_observations_load`
 - scheduled/observed stop-event join for `S07_scheduled_observed_join`
+- first rider-time-loss marts for `B1_core_metrics_bundle`
+- an in-repo dbt transformation project for `B2_dbt_adoption_bundle`
 
 Not included yet:
 
@@ -63,6 +65,7 @@ Current transit data artifact:
 - a historic stop-observations fixture loader at `pipeline/src/muni_lta_pipeline/historic_stop_observations_fixture_ingest.py`
 - a real historic stop-observations archive loader at `pipeline/src/muni_lta_pipeline/historic_stop_observations_archive_ingest.py`
 - a canonical scheduled/observed join materializer at `pipeline/src/muni_lta_pipeline/canonical_observed_stop_events.py`
+- a dbt project under `dbt/` for staged, canonical, and mart transformations plus dbt-native tests
 - gitignored local acquisition artifacts under `artifacts/acquisitions/511/operator_active`
 
 ## Python bootstrap
@@ -226,4 +229,40 @@ Example command:
 
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\canonical_observed_stop_events.py
+```
+
+## Core metrics
+
+The project now also has the first route-summary marts for rider time loss.
+
+- `marts.route_window_summary`
+- `marts.route_direction_summary`
+- `marts.route_hour_summary`
+- matched observation coverage remains separate from unmatched audit counts
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\core_metrics.py
+```
+
+## dbt transformation project
+
+The proven transformation graph now lives in a real dbt project under `dbt/`.
+
+- `raw` sources stay outside dbt and are still loaded by the Python fixture/archive loaders
+- dbt owns `staging`, `canonical`, and `marts`
+- the existing Python transformation entrypoints now call dbt build selectors instead of raw SQL files
+- dbt-native tests cover core unique keys, not-null keys, and route/stop/trip relationships
+
+To install the dbt runtime into the local venv:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e .
+```
+
+To run the full staged/canonical/mart graph against the local Postgres instance:
+
+```powershell
+.\.venv\Scripts\python.exe .\pipeline\src\muni_lta_pipeline\core_metrics.py
 ```

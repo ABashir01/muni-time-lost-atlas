@@ -1,0 +1,12 @@
+muni_lta_atlas:
+  target: local
+  outputs:
+    local:
+      type: postgres
+      host: 127.0.0.1
+      port: 5432
+      dbname: "{{ env_var('POSTGRES_DB') }}"
+      user: "{{ env_var('POSTGRES_USER') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD') }}"
+      schema: public
+      threads: 1

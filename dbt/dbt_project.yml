@@ -1,0 +1,21 @@
+name: muni_lta_atlas
+version: 1.0.0
+config-version: 2
+
+profile: muni_lta_atlas
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  muni_lta_atlas:
+    staging:
+      +schema: staging
+    canonical:
+      +schema: canonical
+    marts:
+      +schema: marts
