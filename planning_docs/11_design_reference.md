@@ -7,6 +7,10 @@ The goal is not generic “modern UI.” The goal is a forceful civic/editorial 
 
 This reference should guide `B5_frontend_static_bundle` and any later frontend revisions unless a newer design decision replaces it.
 
+Use together with:
+- [12_frontend_design_system.md](./12_frontend_design_system.md)
+- [13_homepage_layout_spec.md](./13_homepage_layout_spec.md)
+
 ## Primary Reference
 Use the attached mockup the user approved as the main visual reference for:
 - hierarchy
@@ -17,6 +21,9 @@ Use the attached mockup the user approved as the main visual reference for:
 - card treatment
 
 The agent should follow the mockup’s tone and layout logic even if exact pixel matching is not possible.
+
+Primary review breakpoint:
+- `1440x900`
 
 ## Visual Direction
 The frontend should feel:
@@ -41,6 +48,7 @@ The homepage should open with a split-screen composition:
 - right: large map panel
 
 This split should remain the dominant above-the-fold structure on desktop.
+The homepage layout spec defines the exact desktop ratio and occupancy rules.
 
 ### Header
 The header should be compact, horizontal, and editorial:

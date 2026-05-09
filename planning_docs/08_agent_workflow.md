@@ -18,6 +18,8 @@ Agents should also read:
 - [06_data_model.md](./06_data_model.md) if touching ingest, transforms, or DB models
 - [09_decisions.md](./09_decisions.md) if there is any ambiguity about prior choices
 - [11_design_reference.md](./11_design_reference.md) for frontend work
+- [12_frontend_design_system.md](./12_frontend_design_system.md) for frontend work
+- [13_homepage_layout_spec.md](./13_homepage_layout_spec.md) for homepage-heavy frontend work
 
 ## Slice Ownership Rules
 - one completed work unit should prove one meaningful subsystem milestone
@@ -51,10 +53,11 @@ If a slice changes any of these contracts, update the paired doc in the same cha
 - data model -> `06_data_model.md`
 - public metric wording -> `01_product_experience.md` and `02_methodology.md`
 - frontend visual contract -> `01_product_experience.md` and `11_design_reference.md`
+- frontend size/ratio/layout contract -> `12_frontend_design_system.md` and `13_homepage_layout_spec.md`
 - architecture decision -> `09_decisions.md`
 - deferred work -> `10_backlog.md`
 
-For frontend bundles, acceptance should include a screenshot-based review against the approved design reference, not just functional or DOM-level checks.
+For frontend bundles, acceptance should include a screenshot-based review against the approved design reference and the hard layout spec, not just functional or DOM-level checks.
 
 ## Completion Notes
 Each agent should fill the `Completion notes` section in the slice doc with:
