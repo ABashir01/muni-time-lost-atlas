@@ -169,6 +169,17 @@ Deferred but reserved canonical entity names:
 
 `S07` should target `canonical.observed_stop_events` as the first stable observed-event interface after raw/staged observation ingest.
 
+### Initial canonical observed entity intent for `S07`
+- `canonical.observed_stop_events`
+  - exact-match scheduled/observed stop events only
+  - conservative join on `service_date`, `trip_id`, `stop_sequence`, and `stop_id`
+  - exposes both scheduled and observed timestamps for later waiting/runtime calculations
+- `canonical.observed_stop_event_join_audit`
+  - one row per raw observed stop event with explicit join status
+  - surfaces unmatched or mismatch cases instead of hiding them with heuristics
+- `canonical.observed_stop_event_join_summary`
+  - grouped counts by observed snapshot and join status for quick validation
+
 ## Naming Conventions
 ### Keys
 - use GTFS business identifiers directly as the canonical business keys for early slices:

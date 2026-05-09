@@ -34,6 +34,11 @@ Current integration artifacts:
   - performs a live historic `511` `RG` `-so` fetch only if `TRANSIT_511_API_KEY` is configured locally
   - loads a bounded set of real archive observations into `raw.stop_observations`
   - verifies required observation fields, typed timestamps, and snapshot labels distinguish fixture rows from archive-backed rows
+- `integration/test_scheduled_observed_join.py`
+  - materializes `canonical.observed_stop_events` after the scheduled and observed fixture loads
+  - verifies the happy-path fixture rows join exactly and expose both scheduled and observed timestamps
+  - verifies unmatched rows are surfaced through explicit join-status counts instead of silently entering the canonical observed model
+  - includes an optional live archive-backed join check to confirm real `RG` observation rows remain visibly unmatched until historic schedule reconciliation exists
 - `integration/test_511_active_gtfs_fetch.py`
   - performs a live `511` fetch only if `TRANSIT_511_API_KEY` is configured locally
   - skips cleanly when no token is available or network access to `511` is blocked

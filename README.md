@@ -44,6 +44,7 @@ This repository currently contains:
 - canonical scheduled GTFS models for `S05_canonical_scheduled_models`
 - raw historic stop observations fixture ingest for `S06_historic_stop_observations_ingest`
 - real historic stop observations archive ingest for `S06b_real_historic_stop_observations_load`
+- scheduled/observed stop-event join for `S07_scheduled_observed_join`
 
 Not included yet:
 
@@ -61,6 +62,7 @@ Current transit data artifact:
 - scheduled model materialization at `pipeline/src/muni_lta_pipeline/canonical_scheduled_models.py`
 - a historic stop-observations fixture loader at `pipeline/src/muni_lta_pipeline/historic_stop_observations_fixture_ingest.py`
 - a real historic stop-observations archive loader at `pipeline/src/muni_lta_pipeline/historic_stop_observations_archive_ingest.py`
+- a canonical scheduled/observed join materializer at `pipeline/src/muni_lta_pipeline/canonical_observed_stop_events.py`
 - gitignored local acquisition artifacts under `artifacts/acquisitions/511/operator_active`
 
 ## Python bootstrap
@@ -209,4 +211,19 @@ Example command:
 
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_stop_observations_archive_ingest.py --metadata-path .\artifacts\acquisitions\511\regional_historic\511_regional_historic_RG_202302_with_so_20260508T223557Z.json --max-rows 250
+```
+
+## Scheduled observed join
+
+The project now has a first canonical scheduled/observed stop-event join for validated happy-path work.
+
+- `canonical.observed_stop_events` keeps only exact matches on `service_date`, `trip_id`, `stop_sequence`, and `stop_id`
+- `canonical.observed_stop_event_join_audit` surfaces unmatched or mismatch cases per raw observation row
+- `canonical.observed_stop_event_join_summary` exposes grouped counts by observed snapshot and join status
+- scheduled timestamps are materialized alongside observed timestamps so later waiting/runtime calculations can compare them directly
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\canonical_observed_stop_events.py
 ```

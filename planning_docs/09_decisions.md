@@ -183,3 +183,13 @@
   - expanding `raw.stop_observations` immediately to every real archive column
   - treating `from_stop_id` as the raw stop join key
   - storing real archive arrival times only as text and deferring service-day timestamp parsing
+
+## ADR 016: First Scheduled/Observed Join Strictness
+- Decision: build the first `canonical.observed_stop_events` interface as an exact join on `service_date`, `trip_id`, `stop_sequence`, and `stop_id`, and publish unmatched cases separately through explicit audit/summary views
+- Why:
+  - keeps `S07` narrow enough to validate one real happy path before broader historic schedule reconciliation exists
+  - avoids hiding mismatch cases behind route-level or timing heuristics that would be difficult to defend this early
+  - gives later waiting/runtime slices both a clean matched interface and visible unmatched counts to reason about
+- Alternatives rejected:
+  - fuzzy matching on nearby timestamps or partial trip keys in the first join
+  - silently discarding unmatched observations without an audit surface

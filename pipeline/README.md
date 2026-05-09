@@ -90,3 +90,16 @@ Example command:
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_stop_observations_fixture_ingest.py
 ```
+
+Current scheduled/observed join artifact:
+
+- `src/muni_lta_pipeline/canonical_observed_stop_events.py`
+  - materializes the first conservative `canonical.observed_stop_events` join for `S07`
+  - keeps only exact matches on `service_date`, `trip_id`, `stop_sequence`, and `stop_id`
+  - creates audit and summary views so unmatched observations remain visible
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\canonical_observed_stop_events.py
+```

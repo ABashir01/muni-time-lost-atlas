@@ -1,6 +1,10 @@
 CREATE SCHEMA IF NOT EXISTS staging;
 CREATE SCHEMA IF NOT EXISTS canonical;
 
+DROP VIEW IF EXISTS canonical.observed_stop_events;
+DROP VIEW IF EXISTS canonical.observed_stop_event_join_summary;
+DROP VIEW IF EXISTS canonical.observed_stop_event_join_audit;
+
 DROP TABLE IF EXISTS canonical.scheduled_stop_events;
 DROP TABLE IF EXISTS canonical.service_dates;
 DROP TABLE IF EXISTS canonical.scheduled_trips;
