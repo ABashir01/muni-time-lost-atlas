@@ -1,0 +1,41 @@
+"""Materialize the dbt stop-wait hotspot graph for B3a."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+from muni_lta_pipeline.dbt_runner import run_dbt_build
+from muni_lta_pipeline.gtfs_static_fixture_ingest import DEFAULT_FIXTURE_DIR
+
+
+def materialize_stop_wait_metrics() -> None:
+    run_dbt_build(
+        [
+            "path:models/staging",
+            "path:models/canonical",
+            "path:models/marts",
+            "path:models/serving",
+        ],
+        excludes=[
+            "path:models/staging/geospatial",
+            "path:models/serving/spatial/transit_only_lane_overlay.sql",
+        ],
+    )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--fixture-dir",
+        type=Path,
+        default=DEFAULT_FIXTURE_DIR,
+        help="Unused in B3a; kept for interface symmetry with earlier pipeline entrypoints.",
+    )
+    parser.parse_args()
+    materialize_stop_wait_metrics()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

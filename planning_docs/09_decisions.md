@@ -251,3 +251,13 @@
   - inferring a generalized corridor layer before a stable route-detail consumer exists
   - allocating waiting loss onto segments in the first spatial bundle
   - using transit-lane overlays as inferential evidence instead of contextual GIS data
+
+## ADR 021: First Stop Wait Layer Scope
+- Decision: publish waiting loss as a separate stop-based spatial layer keyed to exact matched scheduled first stops, and keep any route-level worst-stop label separate from worst-segment labels
+- Why:
+  - waiting burden is fundamentally a boarding/stop phenomenon and should not be forced into `route_segment_metrics`
+  - the accepted first-stop headway methodology from `B1` already provides a conservative, defensible waiting basis without adding fuzzy stop reconciliation
+  - a dedicated stop-wait layer gives downstream API and map work serving-ready hotspot outputs while preserving the distinction between waiting burden and in-vehicle segment loss
+- Alternatives rejected:
+  - distributing waiting loss onto adjacent stop-pair segments in the first stop-wait bundle
+  - implying full stop-network waiting coverage before the exact-match first-stop strategy is broadened

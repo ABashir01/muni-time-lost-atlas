@@ -18,6 +18,7 @@ def materialize_core_metrics() -> None:
             "path:models/canonical/observed",
             "path:models/canonical/spatial",
             "path:models/marts/core_metrics",
+            "path:models/marts/stop_wait_metrics",
             "path:models/marts/segment_metrics",
         ],
         excludes=[

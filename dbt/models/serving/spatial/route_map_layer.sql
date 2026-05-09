@@ -16,6 +16,7 @@ select
     summaries.typical_trip_loss_minutes,
     summaries.waiting_loss_minutes,
     summaries.in_vehicle_loss_minutes,
+    summaries.worst_stop_wait_label,
     summaries.worst_segment_label,
     summaries.metric_updated_at,
     route_lines.geom

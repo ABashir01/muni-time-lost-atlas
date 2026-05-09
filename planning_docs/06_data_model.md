@@ -272,12 +272,15 @@ Current scope rules:
 
 After `B2`, these marts are now materialized from dbt models without changing the accepted metric semantics.
 After `B3`, `marts.route_segment_metrics` is also materialized from dbt with one explicit segment identity strategy.
+After `B3a`, `marts.stop_wait_metrics` is materialized as a separate stop-based waiting layer.
 
 Key metric fields in these marts:
 - `typical_trip_loss_minutes`
 - `waiting_loss_minutes`
 - `in_vehicle_loss_minutes`
 - `segment_in_vehicle_loss_minutes`
+- `scheduled_effective_wait_minutes`
+- `observed_effective_wait_minutes`
 
 Key diagnostic fields in these marts:
 - `matched_observed_stop_event_count`
@@ -291,6 +294,9 @@ Current serving entities after `B3`:
 - `serving.route_segment_layer`
 - `serving.stop_map_layer`
 - `serving.transit_only_lane_overlay`
+
+Current serving entities after `B3a`:
+- `serving.stop_wait_hotspots`
 
 Expected serving entities later:
 - API-ready route summary views or tables beyond the current map layers
@@ -346,3 +352,24 @@ This is intentionally narrow:
 - it is an in-vehicle segment loss layer, not a segment-level waiting-loss allocation
 - it is suitable for route-detail and map explanation of where time is lost
 - it does not attempt corridor generalization or causal overlay inference
+
+### B3a stop wait identity
+The first accepted stop-wait identity is:
+- exact matched scheduled first stop per route and direction
+
+`marts.stop_wait_metrics` keeps that strategy explicit with:
+- `route_id`
+- `direction_id`
+- `stop_id`
+- `window_key`
+- `stop_wait_strategy`
+
+`serving.stop_wait_hotspots` uses the same identity and computes only:
+- effective scheduled wait from matched first-stop scheduled headways
+- effective observed wait from matched first-stop observed headways
+- stop-level waiting loss as the non-negative difference
+
+This is intentionally narrow:
+- it is a stop-based waiting layer, not a segment allocation
+- only scheduled first stops with consecutive exact matched observations participate
+- route summaries may expose `worst_stop_wait_label` separately from `worst_segment_label`

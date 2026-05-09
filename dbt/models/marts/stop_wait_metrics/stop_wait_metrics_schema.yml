@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: stop_wait_metrics
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - route_id
+              - direction_id
+              - stop_id
+              - window_key
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_routes')
+                field: route_id
+      - name: direction_id
+      - name: stop_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('scheduled_stops')
+                field: stop_id
+      - name: window_key
+        tests:
+          - not_null
+      - name: stop_wait_strategy
+        tests:
+          - not_null

@@ -67,6 +67,7 @@ select
     end as typical_trip_loss_minutes,
     waiting_metrics.waiting_loss_minutes,
     runtime_metrics.in_vehicle_loss_minutes,
+    worst_stop_wait.stop_wait_label as worst_stop_wait_label,
     worst_segment.segment_label as worst_segment_label,
     coalesce(matched_coverage.matched_observed_stop_event_count, 0)
         as matched_observed_stop_event_count,
@@ -80,6 +81,17 @@ select
 from {{ ref('int_route_keys') }} as route_keys
 join {{ ref('scheduled_routes') }} as routes
   on routes.route_id = route_keys.route_id
+left join lateral (
+    select stop_wait_label
+    from {{ ref('stop_wait_metrics') }} as stop_wait_metrics
+    where stop_wait_metrics.route_id = route_keys.route_id
+      and stop_wait_metrics.window_key = 'all_day'
+    order by
+        stop_wait_metrics.waiting_loss_minutes desc nulls last,
+        stop_wait_metrics.direction_id,
+        stop_wait_metrics.stop_id
+    limit 1
+) as worst_stop_wait on true
 left join lateral (
     select segment_label
     from {{ ref('route_segment_metrics') }} as route_segment_metrics

@@ -33,6 +33,26 @@ models:
           - not_null
           - unique
 
+  - name: stop_wait_hotspots
+    tests:
+      - unique_column_combination:
+          arguments:
+            columns:
+              - route_id
+              - direction_id
+              - stop_id
+              - window_key
+    columns:
+      - name: route_id
+        tests:
+          - not_null
+      - name: stop_id
+        tests:
+          - not_null
+      - name: stop_wait_strategy
+        tests:
+          - not_null
+
   - name: transit_only_lane_overlay
     columns:
       - name: overlay_id

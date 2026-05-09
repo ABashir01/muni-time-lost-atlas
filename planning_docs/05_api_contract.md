@@ -17,8 +17,8 @@ Current spatial/segment sources after `B3`:
 - `serving.stop_map_layer`
 - `serving.transit_only_lane_overlay`
 
-Planned stop-wait source after `B3a`:
-- `serving.stop_wait_hotspots` or equivalent stop-based waiting metric layer
+Current stop-wait source after `B3a`:
+- `serving.stop_wait_hotspots`
 
 Current `B1` limitation:
 - the only materialized route window is `all_day`
@@ -29,6 +29,7 @@ Current `B1` limitation:
 - `GET /rankings?window=&metric=&mode=`
 - `GET /routes/{route_id}/summary?window=&direction=`
 - `GET /routes/{route_id}/segments?window=&direction=`
+- `GET /routes/{route_id}/stops/wait?window=&direction=`
 - `GET /routes/compare?ids=&window=`
 - `GET /map/routes?window=&metric=`
 - `GET /live/vehicles`
@@ -43,6 +44,7 @@ Most route-centric responses should use:
 - `waiting_loss_minutes`
 - `in_vehicle_loss_minutes`
 - `worst_time_band`
+- `worst_stop_wait_label`
 - `worst_segment_label`
 - `metric_updated_at`
 
@@ -66,6 +68,7 @@ Each route summary should include:
 - total loss
 - waiting/travel split
 - worst time band
+- worst stop wait label
 - worst segment label
 
 ## Route Summary Response
@@ -78,6 +81,7 @@ Should include:
 - in-vehicle loss
 - bunching rate when available
 - worst time band
+- worst stop wait label
 - worst segment label
 - short interpretive label if generated server-side later
 
@@ -97,8 +101,24 @@ Current `B3` implementation notes:
 - labels use stop-to-stop rider language such as `16th St Mission -> 24th St Mission`
 - `segment_in_vehicle_loss_minutes` is the first published segment metric; waiting loss is not allocated to segments in `B3`
 
-Planned `B3a` follow-up:
-- stop-based waiting burden should be exposed as a separate stop metric layer rather than folded into segment loss
+Current `B3a` implementation notes:
+- stop-based waiting burden is exposed as `serving.stop_wait_hotspots`
+- `stop_wait_strategy` keeps the first-stop-only conservative scope explicit
+- stop waiting remains separate from segment loss
+
+## Stop Wait Hotspots Response
+Purpose:
+- power route-detail stop hotspot panels and future stop-wait map overlays
+
+Should include:
+- route and direction
+- stop identity and label
+- stop geometry from serving tables
+- `stop_wait_strategy` so the first-stop-only scope remains explicit
+- scheduled effective wait
+- observed effective wait
+- waiting loss
+- matched headway interval count
 
 ## Map Response
 Purpose:

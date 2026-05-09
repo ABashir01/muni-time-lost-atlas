@@ -54,3 +54,8 @@ Waiting loss is naturally a stop/boarding phenomenon, not a street-segment pheno
 `B4_api_bundle` should expose both route/segment summaries and, if included in scope, stop-based waiting hotspot outputs from stabilized serving tables.
 
 ## Completion notes
+- Added `marts.stop_wait_metrics` as a separate stop-based waiting mart using the accepted first-stop exact-match headway methodology and an explicit `first_stop_exact_match` strategy label.
+- Added `serving.stop_wait_hotspots` so stop wait loss is queryable with stop geometry without folding waiting burden into `route_segment_metrics`.
+- Added separate `worst_stop_wait_label` fields to route window/direction summaries and the route map layer while keeping prior waiting and segment loss math unchanged.
+- Added `tests/integration/test_stop_wait_metrics_bundle.py` for the primary bundle integration path.
+- Updated methodology, API contract, data model, and decision docs to document the separate stop-wait layer and the conservative first-stop scope.

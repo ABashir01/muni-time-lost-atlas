@@ -64,6 +64,19 @@ This keeps the first waiting metric conservative:
 - no inferred headways across missing trips
 - unmatched rows stay visible in audit counts but do not enter the waiting-loss numerator
 
+### First Stop Wait Spatial Layer
+For `B3a`, the stop-based waiting layer reuses this same headway-loss math without allocating waiting onto segments.
+
+Implementation rule:
+- group matched first-stop headway intervals by `route_id`, `direction_id`, and matched first stop
+- publish stop waiting loss only for stops that are explicit scheduled first stops with consecutive exact matched observations
+- keep the strategy label explicit as first-stop-only rather than implying full stop-network coverage
+
+This means:
+- `marts.stop_wait_metrics` and `serving.stop_wait_hotspots` expose conservative stop waiting burden
+- the first stop hotspot output is spatially honest about where waiting is observed
+- segment in-vehicle loss remains a separate metric family
+
 ## In-Vehicle Loss
 For a trip from stop `a` to stop `b` on trip `k`:
 
