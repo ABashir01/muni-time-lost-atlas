@@ -58,6 +58,12 @@ Important source notes from 511:
   - `trips.txt` records are hashed and compared
   - global IDs are namespaced
 
+Important implementation assumption:
+- the project treats `stop_observations.txt` as an arrival-event file
+- for the current raw ingest path, source `to_stop_id` is narrowed into raw `stop_id`
+- this is a deliberate implementation choice for arrival-event joins, not a claim that the public 511 docs fully formalize every `stop_observations.txt` column the way GTFS does
+- the conservative exact-join strategy and separate unmatched audit counts are intended to limit the risk of over-interpreting ambiguous archive fields
+
 This means historical analysis should be modeled from the historic regional feed and then filtered to Muni/SFMTA in staging or canonical layers.
 
 ## GTFS-RT

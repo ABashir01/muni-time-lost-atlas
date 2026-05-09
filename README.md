@@ -210,6 +210,10 @@ The project now also has a real archive-backed raw ingest path for historic `RG`
 - parses compact `service_date` values and derives a typed `observed_arrival_ts` from service-day local times
 - uses `archive_...` snapshot labels so real loads remain distinguishable from fixture loads
 
+Important assumption:
+- the loader treats `stop_observations.txt` as an arrival-event file and currently narrows source `to_stop_id` into raw `stop_id`
+- that mapping is a documented repo assumption used for conservative exact arrival-event joins; it should not be mistaken for a fully formalized public-schema guarantee from 511
+
 Example command:
 
 ```powershell

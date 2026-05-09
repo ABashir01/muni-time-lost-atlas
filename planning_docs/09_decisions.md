@@ -184,6 +184,16 @@
   - treating `from_stop_id` as the raw stop join key
   - storing real archive arrival times only as text and deferring service-day timestamp parsing
 
+### ADR 015b: Observation-Field Assumption Disclosure
+- Decision: explicitly document that the `to_stop_id` to raw `stop_id` mapping is a repository-level implementation assumption, not a fully formalized 511 public-schema guarantee
+- Why:
+  - standard GTFS files have externally documented semantics, but `stop_observations.txt` is less formally documented in the public materials used by the project
+  - the project should distinguish between source-documented meaning and repo-level narrowing assumptions
+  - making the assumption explicit reduces the risk of accidental overclaiming in methodology, code review, or portfolio presentation
+- Alternatives rejected:
+  - leaving the mapping implicit in code only
+  - describing the mapping as certain without a stronger public schema reference from 511
+
 ## ADR 016: First Scheduled/Observed Join Strictness
 - Decision: build the first `canonical.observed_stop_events` interface as an exact join on `service_date`, `trip_id`, `stop_sequence`, and `stop_id`, and publish unmatched cases separately through explicit audit/summary views
 - Why:

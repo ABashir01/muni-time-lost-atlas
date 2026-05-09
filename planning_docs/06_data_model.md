@@ -113,6 +113,12 @@ For the real historic `RG` archive path:
 - derive `observed_arrival_ts` from service-day clock times such as `25:15:00` in local Bay Area time
 - keep snapshot labeling explicit enough to distinguish fixture loads from real archive-backed loads
 
+Assumption note:
+- `raw.stop_observations` intentionally narrows the richer 511 historic archive row into an arrival-event shape
+- the current loader interprets source `to_stop_id` as the observed arrival stop and stores it in raw `stop_id`
+- this mapping is a repository-level implementation assumption chosen to support exact arrival-event joins; it should be treated as a documented narrowing rule rather than as a fully proven public-schema guarantee from 511
+- if later source documentation or archive inspection contradicts this assumption, the raw ingest contract and downstream joins should be revised explicitly rather than silently reinterpreted
+
 ## Staging Layer
 ### Staging goals
 - normalize column names only where source quirks would leak into downstream models
