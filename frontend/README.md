@@ -1,12 +1,13 @@
 # Frontend
 
-Reserved for the public-facing `Next.js + TypeScript` application.
+Static Next.js product shell for the Muni Lost Time Atlas public MVP.
 
-Expected future ownership:
+This bundle intentionally reads accepted fixture payloads from `../fixtures/api` and does not call the live API.
 
-- homepage and rankings experience
-- map view
-- route detail view
-- compare view
-- methodology presentation
-- frontend fixture-driven tests
+Primary commands:
+
+- `npm install`
+- `npm run dev`
+- `npm test`
+- `npm run smoke`
+- `npm run build`
