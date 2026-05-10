@@ -24,6 +24,9 @@ The agent should follow the approved light-mode mockup's structure and tone even
 If the current implementation conflicts with the mockup, the current implementation should be treated as disposable.
 The homepage may be rebuilt from scratch rather than iterated piecemeal.
 
+Approved light-mode mockup file:
+- [homepage-light-mode.png](/C:/Users/ahadb/Documents/New%20project%203/planning_docs/mockups/homepage-light-mode.png)
+
 Primary review breakpoint:
 - `1440x900`
 

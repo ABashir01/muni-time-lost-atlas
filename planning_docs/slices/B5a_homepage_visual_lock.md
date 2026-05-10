@@ -22,6 +22,8 @@ The homepage is the visual anchor of the product. The earlier combined frontend 
 ## Inputs
 - homepage-related fixture payloads from `fixtures/api`
 - approved mockup and design-reference documents
+- approved light-mode mockup file:
+  - [homepage-light-mode.png](/C:/Users/ahadb/Documents/New%20project%203/planning_docs/mockups/homepage-light-mode.png)
 - hard layout rules targeting `1440x900`
 - explicit rebuild permission and structure from `14_homepage_rebuild_contract.md`
 

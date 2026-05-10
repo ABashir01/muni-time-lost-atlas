@@ -19,6 +19,7 @@ If there is conflict:
 ## Source Of Truth
 Primary visual source of truth:
 - the approved light-mode homepage mockup in the project thread
+- [homepage-light-mode.png](/C:/Users/ahadb/Documents/New%20project%203/planning_docs/mockups/homepage-light-mode.png)
 
 Do not use as the primary reference:
 - the current homepage implementation
