@@ -13,6 +13,7 @@ The homepage is the visual anchor of the product. The earlier combined frontend 
   - `11_design_reference.md`
   - `12_frontend_design_system.md`
   - `13_homepage_layout_spec.md`
+  - `14_homepage_rebuild_contract.md`
 
 ## Touches
 - homepage only
@@ -22,6 +23,7 @@ The homepage is the visual anchor of the product. The earlier combined frontend 
 - homepage-related fixture payloads from `fixtures/api`
 - approved mockup and design-reference documents
 - hard layout rules targeting `1440x900`
+- explicit rebuild permission and structure from `14_homepage_rebuild_contract.md`
 
 ## Outputs
 - a homepage that is visually close to the approved mockup
@@ -34,6 +36,7 @@ The homepage is the visual anchor of the product. The earlier combined frontend 
 - preserve the hero split ratio and dense lower-band composition
 - enforce the three-card ranking rhythm on the lower band
 - treat the "What makes you lose time?" explainer as a peer panel with the ranking cards, not leftover space
+- if the current homepage structure conflicts with the contract, scrap it and rebuild it
 - do not broaden scope to route detail, compare, map-only pages, or methodology unless a shared primitive absolutely must change
 - do not accept generic centered-column or dashboard drift
 

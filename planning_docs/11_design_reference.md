@@ -20,7 +20,9 @@ Use the attached mockup the user approved as the main visual reference for:
 - map prominence
 - card treatment
 
-The agent should follow the mockup’s tone and layout logic even if exact pixel matching is not possible.
+The agent should follow the approved light-mode mockup's structure and tone even if exact pixel matching is not possible.
+If the current implementation conflicts with the mockup, the current implementation should be treated as disposable.
+The homepage may be rebuilt from scratch rather than iterated piecemeal.
 
 Primary review breakpoint:
 - `1440x900`
@@ -51,17 +53,24 @@ This split should remain the dominant above-the-fold structure on desktop.
 The homepage layout spec defines the exact desktop ratio and occupancy rules.
 
 ### Header
-The header should be compact, horizontal, and editorial:
-- strong wordmark / brand block on the left
-- terse navigation on the right
+The header should be compact, horizontal, editorial, and extremely close to the approved mockup:
+- left: `Muni Lost Time Atlas`
+- right: one flex grouping of links
 - minimal chrome
+- no extra stacked rows
+
+Required nav labels:
+- `Explore the Map`
+- `Rankings`
+- `Compare`
+- `Data & Methods`
 
 ### Below-the-fold order
 Below the hero, preserve this order:
-1. rankings / worst routes block
-2. explanatory “what makes you lose time?” strip
-3. compare section
-4. lower-supporting content
+1. one combined row split into:
+   - left half: three ranking cards
+   - right half: the `What makes you lose time?` explainer group
+2. one thin compare/footer strip
 
 ### Map priority
 The map should be visible immediately and feel like a primary product surface, not a secondary widget.
@@ -136,10 +145,12 @@ Avoid:
 The homepage should preserve these mockup ideas:
 - giant civic headline
 - route-ranking cards with oversized numbers
-- map legend embedded inside the map
+- a map-dedicated right hero half, even if it is a placeholder for now
 - route badges that feel like transit route markers
 - clear distinction between waiting, slow travel, and bunching
 - compare controls visible without deep scrolling
+- the red `Worst Routes Right Now` banner should live only inside the left hero panel
+- the lower row should read as a six-column rhythm split into two equal halves
 
 ## Motion
 Motion should be restrained and structural:
@@ -171,5 +182,6 @@ The frontend bundle should not be accepted unless the review can honestly say:
 When building `B5`:
 - start from this design reference before selecting colors, type, or spacing
 - prefer custom CSS variables and deliberate composition over library-default appearance
-- treat the approved mockup as a style target, not just inspiration
-- if a design tradeoff is necessary, preserve hierarchy and tone before preserving exact layout details
+- treat the approved light-mode mockup as a source of truth, not loose inspiration
+- if the current homepage structure fights the contract, scrap it and rebuild the layout from the top down
+- if a design tradeoff is necessary, preserve composition and hierarchy before polish

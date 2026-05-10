@@ -6,11 +6,13 @@ This is the strict visual-system document for the public frontend.
 It exists to reduce design drift by turning the approved homepage direction into concrete reusable rules. It should be used together with:
 - `11_design_reference.md`
 - `13_homepage_layout_spec.md`
+- `14_homepage_rebuild_contract.md`
 
 If those documents conflict:
-1. `13_homepage_layout_spec.md`
-2. `11_design_reference.md`
-3. this design system
+1. `14_homepage_rebuild_contract.md`
+2. `13_homepage_layout_spec.md`
+3. `11_design_reference.md`
+4. this design system
 
 ## Primary Desktop Target
 Primary design target:
@@ -18,7 +20,16 @@ Primary design target:
 
 This is the main review breakpoint for homepage fidelity.
 
-Secondary desktop breakpoints may exist later, but workers should optimize the first strong visual pass for `1440x900`.
+Secondary review target:
+- large high-density laptop setups after browser scaling, but only after the `1440x900` lock is correct
+
+Primary visual source of truth:
+- the approved light-mode homepage mockup shared in the project thread
+
+Do not design from:
+- any dark-mode variant
+- the current implementation if it conflicts with the approved mockup
+- generic dashboard instincts
 
 ## Design Philosophy
 The frontend should default toward:
@@ -37,8 +48,9 @@ It should not default toward:
 ## Canvas Rules
 ### Desktop content width
 At desktop widths `>= 1280px`:
-- content should use nearly the full browser width
-- preferred content width: `min(1520px, calc(100vw - 48px))`
+- content should use essentially the full browser width
+- preferred content width: `calc(100vw - 24px)`
+- maximum allowed outer gutter at the primary breakpoint: `12px` on each side
 - avoid narrow centered article-style containers
 
 ### Horizontal occupancy rule
@@ -46,6 +58,41 @@ At desktop widths `>= 1280px`:
 - the homepage should prefer side-by-side composition over stacking
 - do not collapse major horizontal bands into vertical stacks unless technically necessary
 - empty white space inside a major homepage panel should be treated as a layout bug, not a feature
+- the homepage should visually read edge-to-edge inside the allowed outer gutter
+- any section that narrows into a centered content column should be treated as a failure unless the contract explicitly allows it
+
+### Large-screen expansion rule
+At desktop widths `>= 1600px`:
+- keep the same composition
+- increase horizontal span before increasing white space
+- do not center the content into a narrow column
+- allow the map half to breathe, but do not let the headline half become timid
+
+## Homepage Height Tokens
+For homepage work, define easy-to-edit custom properties near the top of the homepage stylesheet or page-level component.
+
+Use this pattern:
+- `--home-row-header`
+- `--home-row-hero`
+- `--home-row-insights`
+- `--home-row-compare`
+- `--home-gutter-inline`
+- `--home-hero-left`
+- `--home-hero-right`
+
+Preferred default values at `1440x900`:
+- `--home-row-header: 8fr`
+- `--home-row-hero: 43fr`
+- `--home-row-insights: 38fr`
+- `--home-row-compare: 11fr`
+- `--home-gutter-inline: 12px`
+- `--home-hero-left: 38%`
+- `--home-hero-right: 62%`
+
+These values are intentionally simple and should be easy to tweak by hand later.
+The implementation should prefer a single page-level grid whose row sizing is controlled by these tokens.
+
+If the implementation uses CSS grid, those custom properties should be the only place a reviewer needs to edit to rebalance the four major homepage section heights.
 
 ## Color Tokens
 ### Base
@@ -68,6 +115,7 @@ At desktop widths `>= 1280px`:
 - red is reserved for the strongest emphasis moments
 - yellow is for selected controls and CTA emphasis
 - route colors are for route identity and map signals, not for general UI decoration
+- this homepage is light-mode only for the primary implementation pass
 
 ## Border And Radius Rules
 - outer section borders: `2px`
@@ -123,6 +171,13 @@ Use:
 - dense interior spacing
 - compact labels
 
+For the homepage lower band:
+- left ranking cards should be full cards with outer borders
+- right explainer cards should not read as isolated boxed cards
+- the right explainer group should use internal dividers only between cards, with no extra top or bottom boxing beyond the section container
+- the left ranking area and right explainer area should read as peer halves of one row
+- the three ranking cards must stay visible as a deliberate triptych, even if placeholder data is needed to preserve rhythm
+
 ### Buttons
 - rectangular
 - strong outline or solid fill
@@ -137,9 +192,13 @@ Use:
 Frontend workers should assume the following unless explicitly overridden:
 - do not optimize for comfortable article reading width on the homepage
 - do not make the page more minimal if that reduces punch
-- do not add whitespace just to make the page feel “cleaner”
+- do not add whitespace just to make the page feel cleaner
 - do not convert horizontal bands into vertical stacks at desktop width
 - do not use default component-library proportions without overriding them
+- do not keep iterating on the current homepage if its structure conflicts with the contract; rebuild it
+- do not let the map, compare strip, or explainer group shrink the main horizontal composition into a narrow center block
+- do not span the `Worst Routes Right Now` banner across the full page; keep it local to the left hero panel
+- do not use the current homepage implementation as a layout source of truth if it conflicts with the light-mode mockup or rebuild contract
 
 ## Review Rules
 When reviewing a homepage-oriented frontend pass:
@@ -148,3 +207,5 @@ When reviewing a homepage-oriented frontend pass:
 - reject if it reads as a generic dashboard
 - reject if the hero feels under-scaled
 - reject if major panels fail to occupy width
+- reject if the top-level section heights do not approximately follow the documented ratios
+- reject if the page drifts away from the approved light-mode mockup
