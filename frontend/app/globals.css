@@ -1896,17 +1896,14 @@ body:has(.homepage-viewport) {
   overflow: hidden;
 }
 
-body:has(.homepage-viewport) .site-header,
-body:has(.homepage-viewport) .site-footer {
-  display: none;
-}
-
+.site-frame.homepage-active-frame,
 body:has(.homepage-viewport) .site-frame {
   min-height: 100vh;
   height: 100vh;
   grid-template-rows: minmax(0, 1fr);
 }
 
+.site-frame.homepage-active-frame main,
 body:has(.homepage-viewport) main {
   min-height: 100vh;
   height: 100vh;
@@ -1915,8 +1912,8 @@ body:has(.homepage-viewport) main {
 
 .homepage-viewport {
   --home-row-header: 8fr;
-  --home-row-hero: 43fr;
-  --home-row-insights: 38fr;
+  --home-row-hero: 47fr;
+  --home-row-insights: 34fr;
   --home-row-compare: 11fr;
   --home-gutter-inline: 12px;
   --home-hero-left: 38%;
@@ -2037,13 +2034,13 @@ body:has(.homepage-viewport) main {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto auto;
   border-right: 2px solid var(--rule);
-  padding: 16px 12px 0;
+  padding: 14px 12px 0;
 }
 
 .homepage-story-copy {
   display: grid;
   align-content: start;
-  gap: 12px;
+  gap: 14px;
   min-height: 0;
 }
 
@@ -2051,7 +2048,7 @@ body:has(.homepage-viewport) main {
   margin: 0;
   color: var(--ink-strong, #000);
   font-family: var(--font-display);
-  font-size: clamp(78px, 5.9vw, 112px);
+  font-size: clamp(72px, 5.3vw, 102px);
   font-weight: 900;
   line-height: 0.86;
   letter-spacing: -0.05em;
@@ -2138,8 +2135,8 @@ body:has(.homepage-viewport) main {
 .homepage-story-controls {
   display: grid;
   justify-content: start;
-  gap: 8px;
-  padding: 4px 0 14px;
+  gap: 6px;
+  padding: 6px 0 12px;
 }
 
 .homepage-story-controls .window-strip {
@@ -2147,16 +2144,16 @@ body:has(.homepage-viewport) main {
 }
 
 .homepage-story-controls .window-tab {
-  min-width: 120px;
+  min-width: 108px;
   justify-content: center;
-  padding: 10px 18px;
-  font-size: 0.98rem;
+  padding: 8px 14px;
+  font-size: 0.9rem;
 }
 
 .homepage-story-controls p {
   margin: 0;
   color: #303030;
-  font-size: 0.95rem;
+  font-size: 0.86rem;
 }
 
 .homepage-story-banner {
@@ -2803,6 +2800,8 @@ body:has(.homepage-viewport) main {
     overflow: auto;
   }
 
+  .site-frame.homepage-active-frame,
+  .site-frame.homepage-active-frame main,
   body:has(.homepage-viewport) .site-frame,
   body:has(.homepage-viewport) main {
     height: auto;

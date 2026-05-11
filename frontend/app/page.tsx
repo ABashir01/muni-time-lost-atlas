@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { CompareSelector } from "@/components/compare-selector";
-import { HomeBodyClass } from "@/components/home-body-class";
 import { MapSchematic } from "@/components/map-schematic";
 import { RouteBadge } from "@/components/route-badge";
 import { TimeWindowStrip } from "@/components/time-window-strip";
@@ -20,7 +19,6 @@ export default function HomePage() {
 
   return (
     <div className="homepage-viewport">
-      <HomeBodyClass />
       <header className="homepage-masthead">
         <Link className="homepage-brand" href="/">
           <span aria-hidden="true" className="homepage-brand-mark">
