@@ -16,7 +16,7 @@
   --radius: 0.2rem;
   --max-width: 100vw;
   --page-pad: 0px;
-  --font-display: "Barlow Condensed", sans-serif;
+  --font-display: "Oswald", sans-serif;
   --font-body: "Public Sans", sans-serif;
 }
 
@@ -1919,6 +1919,7 @@ body:has(.homepage-viewport) main {
   --home-hero-left: 45%;
   --home-hero-right: 55%;
   display: grid;
+  font-family: var(--font-display);
   grid-template-rows:
     minmax(66px, var(--home-row-header))
     minmax(0, var(--home-row-hero))
@@ -2277,6 +2278,8 @@ body:has(.homepage-viewport) main {
 .homepage-ranking-card .route-badge {
   width: 2.5rem;
   height: 2.5rem;
+  border: 0;
+  box-shadow: none;
   font-size: 1.25rem;
 }
 

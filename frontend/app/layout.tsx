@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, Public_Sans } from "next/font/google";
+import { Oswald, Public_Sans } from "next/font/google";
 import { AppChrome } from "@/components/app-chrome";
 import "./globals.css";
 
-const display = Barlow_Condensed({
+const display = Oswald({
   subsets: ["latin"],
-  weight: ["700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-display",
 });
 
