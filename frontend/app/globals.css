@@ -1916,8 +1916,8 @@ body:has(.homepage-viewport) main {
   --home-row-insights: 34fr;
   --home-row-compare: 11fr;
   --home-gutter-inline: 12px;
-  --home-hero-left: 38%;
-  --home-hero-right: 62%;
+  --home-hero-left: 45%;
+  --home-hero-right: 55%;
   display: grid;
   grid-template-rows:
     minmax(66px, var(--home-row-header))
@@ -2280,14 +2280,6 @@ body:has(.homepage-viewport) main {
   font-size: 1.25rem;
 }
 
-.homepage-ranking-card-placeholder {
-  background: linear-gradient(180deg, #fbfbfb 0%, #f1f1f1 100%);
-}
-
-.homepage-placeholder-badge {
-  background: #111;
-}
-
 .homepage-ranking-header {
   display: grid;
   grid-template-columns: 34px 44px minmax(0, 1fr);
@@ -2368,15 +2360,15 @@ body:has(.homepage-viewport) main {
 
 .homepage-ranking-notes span {
   color: #4a4a4a;
-  font-size: 0.84rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
 .homepage-ranking-notes strong {
   color: #151515;
-  font-size: 1.02rem;
-  line-height: 1.18;
+  font-size: 0.82rem;
+  line-height: 1.08;
   font-weight: 600;
 }
 
@@ -2384,7 +2376,7 @@ body:has(.homepage-viewport) main {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 0;
-  padding: 14px 12px 10px;
+  padding: 14px 12px 0;
 }
 
 .homepage-explainer-head {
@@ -2403,6 +2395,7 @@ body:has(.homepage-viewport) main {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   min-height: 0;
+  padding-bottom: 8px;
 }
 
 .homepage-explainer-item {
@@ -2427,11 +2420,11 @@ body:has(.homepage-viewport) main {
 .homepage-explainer-symbol {
   display: grid;
   place-items: center;
-  width: 60px;
-  min-height: 104px;
+  width: 54px;
+  min-height: 88px;
   border: 2px solid transparent;
   font-family: var(--font-display);
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 900;
   line-height: 1;
 }
@@ -2454,12 +2447,12 @@ body:has(.homepage-viewport) main {
 .homepage-explainer-copy {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 6px;
 }
 
 .homepage-explainer-copy h3 {
   margin: 0;
-  font-size: clamp(1.9rem, 1.85vw, 2.5rem);
+  font-size: clamp(1.5rem, 1.45vw, 1.95rem);
   font-weight: 900;
   line-height: 0.9;
 }
@@ -2479,16 +2472,23 @@ body:has(.homepage-viewport) main {
 .homepage-explainer-copy p {
   margin: 0;
   color: #1e1e1e;
-  font-size: 1rem;
-  line-height: 1.45;
+  font-size: 0.84rem;
+  line-height: 1.28;
+}
+
+.homepage-explainer-footer {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 0 10px;
+  border-top: 1.5px solid rgba(0, 0, 0, 0.2);
 }
 
 .homepage-explainer-link {
   width: fit-content;
-  margin-top: 12px;
   color: #111;
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 0.96rem;
   font-weight: 800;
   line-height: 1;
   text-transform: uppercase;

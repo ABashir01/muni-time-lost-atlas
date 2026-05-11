@@ -9,13 +9,16 @@ import { getHomepageData } from "@/lib/site-data";
 
 export default function HomePage() {
   const data = getHomepageData();
-  const rankingSlots = [
-    ...data.rankings.map((route) => ({ kind: "route" as const, route })),
-    ...Array.from({ length: Math.max(0, 3 - data.rankings.length) }, (_, index) => ({
-      kind: "placeholder" as const,
-      rank: data.rankings.length + index + 1,
-    })),
-  ];
+  const mockedThirdRanking = {
+    rank: 3,
+    route_id: "38",
+    route_name: "Geary",
+    route_short_name: "38",
+    typical_trip_loss_minutes: 0.9,
+    worst_time_band: "16:00-16:59",
+    worst_segment_label: "33rd Ave -> Stanyan St",
+  };
+  const rankingSlots = [...data.rankings, mockedThirdRanking].slice(0, 3);
 
   return (
     <div className="homepage-viewport">
@@ -84,82 +87,49 @@ export default function HomePage() {
 
       <section className="homepage-insights" id="rankings">
         <div className="homepage-rankings">
-          {rankingSlots.map((slot) =>
-            slot.kind === "route" ? (
-              <article
-                className="homepage-ranking-card"
-                key={slot.route.route_id}
-                style={
-                  {
-                    "--route-accent": getRouteTheme(slot.route.route_id).color,
-                  } as CSSProperties
-                }
-              >
-                <div className="homepage-ranking-header">
-                  <span className="homepage-ranking-rank">{slot.route.rank}</span>
-                  <RouteBadge
-                    label={slot.route.route_short_name}
-                    routeId={slot.route.route_id}
-                  />
-                  <div className="homepage-ranking-route">
-                    <p>{slot.route.route_name}</p>
-                  </div>
+          {rankingSlots.map((route) => (
+            <article
+              className="homepage-ranking-card"
+              key={route.route_id}
+              style={
+                {
+                  "--route-accent": getRouteTheme(route.route_id).color,
+                } as CSSProperties
+              }
+            >
+              <div className="homepage-ranking-header">
+                <span className="homepage-ranking-rank">{route.rank}</span>
+                <RouteBadge
+                  label={route.route_short_name}
+                  routeId={route.route_id}
+                />
+                <div className="homepage-ranking-route">
+                  <p>{route.route_name}</p>
                 </div>
+              </div>
 
-                <div className="homepage-ranking-metric">
-                  <div className="homepage-ranking-value">
-                    <strong>{`+${slot.route.typical_trip_loss_minutes.toFixed(1)}`}</strong>
-                    <span>min</span>
-                  </div>
-                  <p>extra time per trip</p>
+              <div className="homepage-ranking-metric">
+                <div className="homepage-ranking-value">
+                  <strong>{`+${route.typical_trip_loss_minutes.toFixed(1)}`}</strong>
+                  <span>min</span>
                 </div>
+                <p>extra time per trip</p>
+              </div>
 
-                <div className="homepage-ranking-divider" />
+              <div className="homepage-ranking-divider" />
 
-                <div className="homepage-ranking-notes">
-                  <p>
-                    <span>Worst on</span>
-                    <strong>{slot.route.worst_time_band}</strong>
-                  </p>
-                  <p>
-                    <span>Most loss</span>
-                    <strong>{slot.route.worst_segment_label}</strong>
-                  </p>
-                </div>
-              </article>
-            ) : (
-              <article className="homepage-ranking-card homepage-ranking-card-placeholder" key={`slot-${slot.rank}`}>
-                <div className="homepage-ranking-header">
-                  <span className="homepage-ranking-rank">{slot.rank}</span>
-                  <span className="route-badge homepage-placeholder-badge">?</span>
-                  <div className="homepage-ranking-route">
-                    <p>Published route pending</p>
-                  </div>
-                </div>
-
-                <div className="homepage-ranking-metric">
-                  <div className="homepage-ranking-value">
-                    <strong>&mdash;</strong>
-                    <span>min</span>
-                  </div>
-                  <p>third ranking slot reserved</p>
-                </div>
-
-                <div className="homepage-ranking-divider" />
-
-                <div className="homepage-ranking-notes">
-                  <p>
-                    <span>Status</span>
-                    <strong>Awaiting a third ranked fixture route</strong>
-                  </p>
-                  <p>
-                    <span>Why</span>
-                    <strong>Triptych preserved for the locked homepage layout</strong>
-                  </p>
-                </div>
-              </article>
-            ),
-          )}
+              <div className="homepage-ranking-notes">
+                <p>
+                  <span>Worst on</span>
+                  <strong>{route.worst_time_band}</strong>
+                </p>
+                <p>
+                  <span>Most loss</span>
+                  <strong>{route.worst_segment_label}</strong>
+                </p>
+              </div>
+            </article>
+          ))}
         </div>
 
         <aside className="homepage-explainer">
@@ -184,9 +154,11 @@ export default function HomePage() {
             ))}
           </div>
 
-          <Link className="homepage-explainer-link" href="/methodology">
-            Learn more about lost time
-          </Link>
+          <div className="homepage-explainer-footer">
+            <Link className="homepage-explainer-link" href="/methodology">
+              Learn more about lost time
+            </Link>
+          </div>
         </aside>
       </section>
 

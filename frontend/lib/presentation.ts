@@ -3,6 +3,7 @@ export const routeThemes: Record<
   { color: string; shortLabel: string; label: string }
 > = {
   "14": { color: "#d71920", shortLabel: "14", label: "Mission" },
+  "38": { color: "#7a48b7", shortLabel: "38", label: "Geary" },
   "49": { color: "#ff7a00", shortLabel: "49", label: "Van Ness/Mission" },
 };
 
