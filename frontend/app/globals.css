@@ -4,19 +4,28 @@
   --ink: #050505;
   --muted: #4f4f4f;
   --rule: #101010;
-  --red: #d71920;
-  --yellow: #f0b400;
-  --blue: #0f63d8;
-  --orange: #ff7a00;
-  --green: #16934f;
-  --route-14: #d71920;
-  --route-49: #ff7a00;
-  --route-neutral: #0f63d8;
+  --red: #e31e24;
+  --yellow: #efb100;
+  --blue: #1f66d1;
+  --orange: #f47c20;
+  --green: #1e9c52;
+  --purple: #7a4bc2;
+  --teal: #20a8d8;
+  --route-14: #e31e24;
+  --route-49: #f47c20;
+  --route-neutral: #1f66d1;
   --shadow: none;
   --radius: 0.2rem;
   --max-width: 100vw;
   --page-pad: 0px;
   --font-display: "Oswald", sans-serif;
+  --font-oswald: "Oswald", sans-serif;
+  --font-anton: "Anton", sans-serif;
+  --font-league-gothic: "League Gothic", sans-serif;
+  --font-roboto-condensed: "Roboto Condensed", sans-serif;
+  --font-bebas-neue: "Bebas Neue", sans-serif;
+  --font-archivo-narrow: "Archivo Narrow", sans-serif;
+  --font-fjalla-one: "Fjalla One", sans-serif;
   --font-body: "Public Sans", sans-serif;
 }
 
@@ -1919,7 +1928,7 @@ body:has(.homepage-viewport) main {
   --home-hero-left: 45%;
   --home-hero-right: 55%;
   display: grid;
-  font-family: var(--font-display);
+  font-family: var(--home-font-ui, var(--font-display));
   grid-template-rows:
     minmax(66px, var(--home-row-header))
     minmax(0, var(--home-row-hero))
@@ -1929,6 +1938,41 @@ body:has(.homepage-viewport) main {
   height: 100vh;
   padding: 12px var(--home-gutter-inline);
   background: var(--page-bg, #fff);
+}
+
+.homepage-font-oswald {
+  --home-font-headline: var(--font-oswald);
+  --home-font-ui: var(--font-oswald);
+}
+
+.homepage-font-anton-oswald {
+  --home-font-headline: var(--font-anton);
+  --home-font-ui: var(--font-oswald);
+}
+
+.homepage-font-league-roboto {
+  --home-font-headline: var(--font-league-gothic);
+  --home-font-ui: var(--font-roboto-condensed);
+}
+
+.homepage-font-bebas-archivo {
+  --home-font-headline: var(--font-bebas-neue);
+  --home-font-ui: var(--font-archivo-narrow);
+}
+
+.homepage-font-fjalla-archivo {
+  --home-font-headline: var(--font-fjalla-one);
+  --home-font-ui: var(--font-archivo-narrow);
+}
+
+.homepage-font-archivo-narrow {
+  --home-font-headline: var(--font-archivo-narrow);
+  --home-font-ui: var(--font-archivo-narrow);
+}
+
+.homepage-font-oswald-roboto {
+  --home-font-headline: var(--font-oswald);
+  --home-font-ui: var(--font-roboto-condensed);
 }
 
 .homepage-masthead,
@@ -1980,7 +2024,7 @@ body:has(.homepage-viewport) main {
 .homepage-explainer-head h2,
 .homepage-explainer-copy h3,
 .homepage-compare-copy h2 {
-  font-family: var(--font-display);
+  font-family: var(--home-font-ui, var(--font-display));
   text-transform: uppercase;
 }
 
@@ -2048,7 +2092,7 @@ body:has(.homepage-viewport) main {
 .homepage-headline {
   margin: 0;
   color: var(--ink-strong, #000);
-  font-family: var(--font-display);
+  font-family: var(--home-font-headline, var(--font-display));
   font-size: clamp(62px, 4.7vw, 88px);
   font-weight: 900;
   line-height: 0.88;
@@ -2304,7 +2348,7 @@ body:has(.homepage-viewport) main {
 .homepage-ranking-route p {
   margin: 0;
   color: #111;
-  font-family: var(--font-display);
+  font-family: var(--home-font-ui, var(--font-display));
   font-size: clamp(1.7rem, 1.5vw, 2.1rem);
   font-weight: 800;
   line-height: 0.88;
@@ -2324,7 +2368,7 @@ body:has(.homepage-viewport) main {
 
 .homepage-ranking-value strong {
   min-width: 0;
-  color: var(--route-accent, var(--accent-red, #e21b23));
+  color: var(--red);
   font-size: clamp(4.4rem, 4vw, 5.6rem);
   font-weight: 900;
   line-height: 0.82;
@@ -2333,8 +2377,8 @@ body:has(.homepage-viewport) main {
 
 .homepage-ranking-value span {
   margin-bottom: 10px;
-  color: var(--route-accent, var(--accent-red, #e21b23));
-  font-family: var(--font-display);
+  color: var(--red);
+  font-family: var(--home-font-ui, var(--font-display));
   font-size: 1.15rem;
   font-weight: 800;
 }
@@ -2433,18 +2477,18 @@ body:has(.homepage-viewport) main {
 }
 
 .homepage-explainer-symbol-waiting {
-  background: var(--accent-red, #e21b23);
+  background: var(--red);
   color: #fff;
 }
 
 .homepage-explainer-symbol-travel {
-  background: #fff2bf;
-  color: #f2a400;
+  background: #fef0bf;
+  color: var(--yellow);
 }
 
 .homepage-explainer-symbol-bunching {
-  background: #dbe8ff;
-  color: #185fd0;
+  background: #dce7ff;
+  color: var(--blue);
 }
 
 .homepage-explainer-copy {
@@ -2461,15 +2505,15 @@ body:has(.homepage-viewport) main {
 }
 
 .homepage-explainer-symbol-waiting + .homepage-explainer-copy h3 {
-  color: var(--accent-red, #e21b23);
+  color: var(--red);
 }
 
 .homepage-explainer-symbol-travel + .homepage-explainer-copy h3 {
-  color: #f2a400;
+  color: var(--yellow);
 }
 
 .homepage-explainer-symbol-bunching + .homepage-explainer-copy h3 {
-  color: #185fd0;
+  color: var(--blue);
 }
 
 .homepage-explainer-copy p {
@@ -2490,7 +2534,7 @@ body:has(.homepage-viewport) main {
 .homepage-explainer-link {
   width: fit-content;
   color: #111;
-  font-family: var(--font-display);
+  font-family: var(--home-font-ui, var(--font-display));
   font-size: 0.96rem;
   font-weight: 800;
   line-height: 1;
@@ -2555,7 +2599,13 @@ body:has(.homepage-viewport) main {
 
 .homepage-compare .compare-controls button {
   padding: 0 20px;
+  color: #111;
   font-size: 1rem;
+}
+
+.homepage-compare .compare-controls button:disabled {
+  color: #111;
+  opacity: 1;
 }
 
 .homepage-compare .compare-vs {

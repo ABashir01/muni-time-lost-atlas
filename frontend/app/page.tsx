@@ -7,7 +7,31 @@ import { TimeWindowStrip } from "@/components/time-window-strip";
 import { getRouteTheme } from "@/lib/presentation";
 import { getHomepageData } from "@/lib/site-data";
 
-export default function HomePage() {
+const homepageFontVariants = {
+  "anton-oswald": "homepage-font-anton-oswald",
+  "league-roboto": "homepage-font-league-roboto",
+  "bebas-archivo": "homepage-font-bebas-archivo",
+  "fjalla-archivo": "homepage-font-fjalla-archivo",
+  "archivo-narrow": "homepage-font-archivo-narrow",
+  "oswald-roboto": "homepage-font-oswald-roboto",
+  oswald: "homepage-font-oswald",
+} as const;
+
+type HomepageFontVariant = keyof typeof homepageFontVariants;
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ font?: string | string[] }> | { font?: string | string[] };
+}) {
+  const resolvedSearchParams =
+    searchParams && "then" in searchParams ? await searchParams : searchParams;
+  const requestedVariant = Array.isArray(resolvedSearchParams?.font)
+    ? resolvedSearchParams?.font[0]
+    : resolvedSearchParams?.font;
+  const homepageFontClass =
+    homepageFontVariants[(requestedVariant as HomepageFontVariant) ?? "oswald"] ??
+    homepageFontVariants.oswald;
   const data = getHomepageData();
   const mockedThirdRanking = {
     rank: 3,
@@ -21,7 +45,7 @@ export default function HomePage() {
   const rankingSlots = [...data.rankings, mockedThirdRanking].slice(0, 3);
 
   return (
-    <div className="homepage-viewport">
+    <div className={`homepage-viewport ${homepageFontClass === "homepage-font-oswald" ? "homepage-font-oswald-roboto" : homepageFontClass}`}>
       <header className="homepage-masthead">
         <Link className="homepage-brand" href="/">
           <span aria-hidden="true" className="homepage-brand-mark">

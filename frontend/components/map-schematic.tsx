@@ -4,44 +4,44 @@ import { getRouteTheme } from "@/lib/presentation";
 import type { FeatureLine } from "@/lib/types";
 
 const legendItems = [
-  { color: "#d71920", label: "+10 min or more" },
-  { color: "#ff7a00", label: "+5 to +10 min" },
-  { color: "#f0b400", label: "+2 to +5 min" },
-  { color: "#1d6fd8", label: "+0 to +2 min" },
-  { color: "#16934f", label: "On time / better" },
+  { color: "#e31e24", label: "+10 min or more" },
+  { color: "#f47c20", label: "+5 to +10 min" },
+  { color: "#efb100", label: "+2 to +5 min" },
+  { color: "#1f66d1", label: "+0 to +2 min" },
+  { color: "#1e9c52", label: "On time / better" },
   { color: "#111111", label: "Live vehicle" },
 ];
 
 const editorialContextLines = [
   {
-    color: "#1968d2",
+    color: "#1f66d1",
     width: 4,
     path:
       "M 84 145 L 190 145 L 270 120 L 402 120 L 402 240 L 540 240 L 640 215 L 760 208 L 842 168",
   },
   {
-    color: "#f0b400",
+    color: "#efb100",
     width: 3.5,
     path:
       "M 530 95 L 810 95 L 860 132 L 860 228 L 780 282 L 780 370 L 720 422 L 720 520",
   },
   {
-    color: "#7a48b7",
+    color: "#7a4bc2",
     width: 3.5,
     path: "M 118 348 L 346 348 L 430 338 L 502 338 L 502 456 L 566 512",
   },
   {
-    color: "#17a04e",
+    color: "#1e9c52",
     width: 3.5,
     path: "M 244 350 L 244 458 L 386 458 L 454 515",
   },
   {
-    color: "#16a8d5",
+    color: "#20a8d8",
     width: 3.5,
     path: "M 744 276 L 744 480 L 806 542",
   },
   {
-    color: "#f0b400",
+    color: "#efb100",
     width: 3.5,
     path: "M 218 492 L 318 492 L 386 544 L 520 544 L 650 544 L 790 544",
   },
@@ -62,11 +62,11 @@ const editorialContextStops = [
 ];
 
 const editorialContextMarkers = [
-  { x: 362, y: 120, label: "5", color: "#1968d2" },
-  { x: 258, y: 348, label: "38", color: "#7a48b7" },
-  { x: 410, y: 482, label: "T", color: "#1968d2" },
-  { x: 794, y: 346, label: "22", color: "#16a8d5" },
-  { x: 612, y: 150, label: "N", color: "#f0b400" },
+  { x: 362, y: 120, label: "5", color: "#1f66d1" },
+  { x: 258, y: 348, label: "38", color: "#7a4bc2" },
+  { x: 410, y: 482, label: "T", color: "#1f66d1" },
+  { x: 794, y: 346, label: "22", color: "#20a8d8" },
+  { x: 612, y: 150, label: "N", color: "#efb100" },
 ];
 
 const editorialDistrictLabels = [
@@ -230,7 +230,7 @@ export function MapSchematic({
             className="route-line secondary"
             d={feature.path}
             key={`overlay-${index}`}
-            stroke="#0f63d8"
+            stroke="#1f66d1"
             strokeDasharray="14 12"
             strokeWidth={6}
           />
