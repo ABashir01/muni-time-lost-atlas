@@ -81,6 +81,11 @@ Deferred realtime endpoint:
 Use:
 - `Next.js + TypeScript`
 
+Current implementation note:
+- the first public frontend used a controlled SVG/schematic map surface to stabilize the homepage composition and static review workflow
+- a later explicit bundle should replace that schematic surface with a real map engine
+- preferred map-engine direction: `MapLibre GL JS`
+
 Frontend responsibilities:
 - homepage rankings and explainer hierarchy
 - route detail
@@ -96,6 +101,16 @@ Important boundary:
   - rankings first
   - map second
   - explanatory context third
+
+Map-engine guidance:
+- the accepted homepage composition should survive the map-library transition
+- the real map should support:
+  - route geometry
+  - segment layers
+  - stop wait hotspots later
+  - transit-lane overlay context
+  - GTFS-RT vehicle overlays later
+- the map engine should not force a generic full-screen mapping app layout if that breaks the editorial product structure
 
 ## dbt Role
 dbt is a later, explicit bundle rather than an implicit promise.
@@ -133,3 +148,18 @@ Operational guidance:
 - keep historical analytics batch-driven
 - keep realtime ingestion separate from historical marts
 - do not recompute the full historical metrics layer on every realtime poll
+
+## Real Dataset Cutover
+Current implementation note:
+- the system has real historic/archive acquisition and raw-load plumbing
+- but the app-facing development path initially used a constrained published dataset to keep tests and UI wiring deterministic
+
+The explicit cutover bundle should:
+- choose one or more real historical months
+- run the full staged/canonical/mart graph against real scheduled and observed data
+- populate the historical/static API from that larger real dataset
+- replace the visible two-route development cut with broader route coverage
+
+Important boundary:
+- the real dataset cutover should happen before or alongside the real map-engine bundle
+- it should happen before realtime is treated as the next major user-facing priority

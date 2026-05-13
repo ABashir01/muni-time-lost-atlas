@@ -24,6 +24,8 @@
 - final map geometry serving strategy
 - whether bunching rate appears in the first public UI pass or only after metric stabilization
 - whether interpretive labels are computed in the API or the frontend
+- which historical month or bounded historical cut becomes the first real app-facing dataset snapshot
+- whether the transit-only lane overlay should eventually be API-served instead of fixture-served
 
 ## Process Backlog
 - convert design direction into a light design system doc

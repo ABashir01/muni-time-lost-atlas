@@ -79,6 +79,16 @@ The current baseline now includes:
 - replaces: `S26` through `S29`
 - doc: [B6_frontend_api_integration_bundle.md](./slices/B6_frontend_api_integration_bundle.md)
 
+### B6a Real Dataset Cutover Bundle
+- goal: replace the controlled two-route development dataset with a real historical 511-backed cutover dataset for the app-facing marts and API
+- replaces: the currently implicit jump from validated development fixtures to production-like historical coverage
+- doc: [B6a_real_dataset_cutover_bundle.md](./slices/B6a_real_dataset_cutover_bundle.md)
+
+### B6b Real Map Engine Bundle
+- goal: replace the homepage and route/map schematic surfaces with a real interactive map engine while preserving the accepted visual hierarchy
+- replaces: the currently implicit map-library migration
+- doc: [B6b_real_map_engine_bundle.md](./slices/B6b_real_map_engine_bundle.md)
+
 ### B7 Realtime Bundle
 - goal: add GTFS-RT ingestion and live vehicle overlays
 - replaces: `S30` through `S32`
@@ -113,6 +123,8 @@ Keep the old slice docs only as planning history. Do not resume implementation f
 - if route-detail stop-wait hotspots are intended in the first live integration pass, `B4a` is complete
 
 ### Before B7
+- `B6a` real dataset cutover is complete so the app is no longer limited to the tiny development route set
+- `B6b` real map engine cutover is complete if realtime will be shown on an actual map rather than a schematic placeholder
 - the historical/static product is complete and trustworthy without realtime
 - map and route detail screens already work from static/historical data
 
