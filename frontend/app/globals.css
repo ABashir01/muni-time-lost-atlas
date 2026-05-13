@@ -2092,7 +2092,7 @@ body:has(.homepage-viewport) main {
   margin: 0;
   color: var(--ink-strong, #000);
   font-family: var(--home-font-headline, var(--font-display));
-  font-size: clamp(62px, 4.7vw, 88px);
+  font-size: clamp(64px, 4.85vw, 90px);
   font-weight: 900;
   line-height: 0.88;
   letter-spacing: -0.04em;
@@ -2107,7 +2107,7 @@ body:has(.homepage-viewport) main {
 .homepage-headline-emphasis {
   display: flex;
   align-items: baseline;
-  gap: 0.3ch;
+  gap: 0.36ch;
   white-space: nowrap;
 }
 
@@ -2118,14 +2118,15 @@ body:has(.homepage-viewport) main {
 
 .homepage-headline-emphasis strong {
   color: var(--accent-red, #e21b23);
+  margin-inline-start: 0.04ch;
 }
 
 .homepage-subhead {
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr);
-  align-items: start;
-  gap: 12px;
-  max-width: 94%;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
   padding-top: 12px;
   border-top: 2px solid var(--rule);
 }
@@ -2141,6 +2142,7 @@ body:has(.homepage-viewport) main {
   position: relative;
   display: grid;
   place-items: center;
+  align-self: center;
   width: 40px;
   height: 40px;
   border-radius: 999px;

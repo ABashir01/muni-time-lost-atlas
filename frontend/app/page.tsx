@@ -69,7 +69,7 @@ export default async function HomePage({
               <span>Riders Lose</span>
               <span className="homepage-headline-emphasis">
                 <span>The</span>
-                <strong>Most Time</strong>
+                <strong>&nbsp;Most Time</strong>
               </span>
             </h1>
 
