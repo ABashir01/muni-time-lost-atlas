@@ -1,6 +1,10 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { CompareSelector } from "@/components/compare-selector";
+import {
+  HomepageExplainerSymbol,
+  HomepageTransitSymbol,
+} from "@/components/homepage-symbols";
 import { MapSchematic } from "@/components/map-schematic";
 import { RouteBadge } from "@/components/route-badge";
 import { TimeWindowStrip } from "@/components/time-window-strip";
@@ -75,7 +79,7 @@ export default async function HomePage({
 
             <div className="homepage-subhead">
               <div aria-hidden="true" className="homepage-subhead-icon">
-                <span />
+                <HomepageTransitSymbol />
               </div>
               <p>
                 Live and historical data on delays, congestion, and crowding across
@@ -168,7 +172,9 @@ export default async function HomePage({
                   aria-hidden="true"
                   className={`homepage-explainer-symbol homepage-explainer-symbol-${item.icon}`}
                 >
-                  {item.symbol}
+                  <HomepageExplainerSymbol
+                    icon={item.icon as "waiting" | "travel" | "bunching"}
+                  />
                 </div>
                 <div className="homepage-explainer-copy">
                   <h3>{item.title}</h3>

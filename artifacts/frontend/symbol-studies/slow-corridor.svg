@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 220" role="img" aria-labelledby="title">
+  <title>Slow travel option three</title>
+  <rect width="160" height="220" fill="#feedb1"/>
+  <path d="M36 48L56 172" stroke="#f1af00" stroke-width="8" stroke-linecap="round"/>
+  <path d="M124 48L104 172" stroke="#f1af00" stroke-width="8" stroke-linecap="round"/>
+  <rect x="40" y="88" width="80" height="38" rx="11" fill="none" stroke="#f1af00" stroke-width="8"/>
+  <rect x="52" y="97" width="17" height="10" rx="3" fill="#f1af00"/>
+  <rect x="72" y="97" width="17" height="10" rx="3" fill="#f1af00"/>
+  <rect x="92" y="97" width="17" height="10" rx="3" fill="#f1af00"/>
+  <path d="M50 114H110" stroke="#f1af00" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="60" cy="126" r="6" fill="#f1af00"/>
+  <circle cx="100" cy="126" r="6" fill="#f1af00"/>
+  <path d="M80 160V182" stroke="#f1af00" stroke-width="8" stroke-linecap="round"/>
+</svg>

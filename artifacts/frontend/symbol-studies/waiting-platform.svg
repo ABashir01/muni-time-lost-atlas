@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 220" role="img" aria-labelledby="title">
+  <title>Waiting option three</title>
+  <rect width="160" height="220" fill="#ed1c24"/>
+  <path d="M42 162H118" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+  <path d="M80 60V148" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="80" cy="74" r="24" fill="none" stroke="#ffffff" stroke-width="8"/>
+  <path d="M80 74V60" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M80 74L92 82" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="60" cy="128" r="8" fill="#ffffff"/>
+  <circle cx="100" cy="128" r="8" fill="#ffffff"/>
+</svg>

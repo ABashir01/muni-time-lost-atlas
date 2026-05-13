@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 220" role="img" aria-labelledby="title">
+  <title>Bunching option five</title>
+  <rect width="160" height="220" fill="#c7d4f4"/>
+  <path d="M22 156C42 126 60 126 80 156C100 186 118 186 138 156" fill="none" stroke="#2467d6" stroke-width="8" stroke-linecap="round"/>
+  <rect x="22" y="90" width="36" height="28" rx="9" fill="none" stroke="#2467d6" stroke-width="7"/>
+  <rect x="29" y="97" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="37" y="97" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="45" y="97" width="6" height="6" rx="2" fill="#2467d6"/>
+  <path d="M27 108H53" stroke="#2467d6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="32" cy="118" r="4.5" fill="#2467d6"/>
+  <circle cx="48" cy="118" r="4.5" fill="#2467d6"/>
+  <rect x="62" y="90" width="36" height="28" rx="9" fill="none" stroke="#2467d6" stroke-width="7"/>
+  <rect x="69" y="97" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="77" y="97" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="85" y="97" width="6" height="6" rx="2" fill="#2467d6"/>
+  <path d="M67 108H93" stroke="#2467d6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="72" cy="118" r="4.5" fill="#2467d6"/>
+  <circle cx="88" cy="118" r="4.5" fill="#2467d6"/>
+  <rect x="102" y="90" width="36" height="28" rx="9" fill="none" stroke="#2467d6" stroke-width="7"/>
+  <rect x="109" y="97" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="117" y="97" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="125" y="97" width="6" height="6" rx="2" fill="#2467d6"/>
+  <path d="M107 108H133" stroke="#2467d6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="112" cy="118" r="4.5" fill="#2467d6"/>
+  <circle cx="128" cy="118" r="4.5" fill="#2467d6"/>
+</svg>

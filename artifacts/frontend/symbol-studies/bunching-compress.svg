@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 220" role="img" aria-labelledby="title">
+  <title>Bunching option six</title>
+  <rect width="160" height="220" fill="#c7d4f4"/>
+  <path d="M28 110H48" stroke="#2467d6" stroke-width="8" stroke-linecap="round"/>
+  <path d="M112 110H132" stroke="#2467d6" stroke-width="8" stroke-linecap="round"/>
+  <path d="M42 110L54 98" stroke="#2467d6" stroke-width="8" stroke-linecap="round"/>
+  <path d="M42 110L54 122" stroke="#2467d6" stroke-width="8" stroke-linecap="round"/>
+  <path d="M118 110L106 98" stroke="#2467d6" stroke-width="8" stroke-linecap="round"/>
+  <path d="M118 110L106 122" stroke="#2467d6" stroke-width="8" stroke-linecap="round"/>
+  <rect x="42" y="94" width="30" height="24" rx="8" fill="none" stroke="#2467d6" stroke-width="7"/>
+  <rect x="48" y="100" width="5" height="5" rx="1.8" fill="#2467d6"/>
+  <rect x="55" y="100" width="5" height="5" rx="1.8" fill="#2467d6"/>
+  <rect x="62" y="100" width="5" height="5" rx="1.8" fill="#2467d6"/>
+  <path d="M46 110H68" stroke="#2467d6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="50" cy="118" r="4" fill="#2467d6"/>
+  <circle cx="64" cy="118" r="4" fill="#2467d6"/>
+  <rect x="66" y="94" width="30" height="24" rx="8" fill="none" stroke="#2467d6" stroke-width="7"/>
+  <rect x="72" y="100" width="5" height="5" rx="1.8" fill="#2467d6"/>
+  <rect x="79" y="100" width="5" height="5" rx="1.8" fill="#2467d6"/>
+  <rect x="86" y="100" width="5" height="5" rx="1.8" fill="#2467d6"/>
+  <path d="M70 110H92" stroke="#2467d6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="74" cy="118" r="4" fill="#2467d6"/>
+  <circle cx="88" cy="118" r="4" fill="#2467d6"/>
+  <rect x="90" y="94" width="30" height="24" rx="8" fill="none" stroke="#2467d6" stroke-width="7"/>
+  <rect x="96" y="100" width="5" height="5" rx="1.8" fill="#2467d6"/>
+  <rect x="103" y="100" width="5" height="5" rx="1.8" fill="#2467d6"/>
+  <rect x="110" y="100" width="5" height="5" rx="1.8" fill="#2467d6"/>
+  <path d="M94 110H116" stroke="#2467d6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="98" cy="118" r="4" fill="#2467d6"/>
+  <circle cx="112" cy="118" r="4" fill="#2467d6"/>
+</svg>

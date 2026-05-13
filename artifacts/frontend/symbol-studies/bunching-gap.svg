@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 220" role="img" aria-labelledby="title">
+  <title>Bunching option four</title>
+  <rect width="160" height="220" fill="#c7d4f4"/>
+  <path d="M28 166H132" stroke="#2467d6" stroke-width="8" stroke-linecap="round"/>
+  <rect x="22" y="96" width="36" height="28" rx="9" fill="none" stroke="#2467d6" stroke-width="7"/>
+  <rect x="29" y="103" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="37" y="103" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="45" y="103" width="6" height="6" rx="2" fill="#2467d6"/>
+  <path d="M27 114H53" stroke="#2467d6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="32" cy="124" r="4.5" fill="#2467d6"/>
+  <circle cx="48" cy="124" r="4.5" fill="#2467d6"/>
+  <rect x="56" y="96" width="36" height="28" rx="9" fill="none" stroke="#2467d6" stroke-width="7"/>
+  <rect x="63" y="103" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="71" y="103" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="79" y="103" width="6" height="6" rx="2" fill="#2467d6"/>
+  <path d="M61 114H87" stroke="#2467d6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="66" cy="124" r="4.5" fill="#2467d6"/>
+  <circle cx="82" cy="124" r="4.5" fill="#2467d6"/>
+  <rect x="90" y="96" width="36" height="28" rx="9" fill="none" stroke="#2467d6" stroke-width="7"/>
+  <rect x="97" y="103" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="105" y="103" width="6" height="6" rx="2" fill="#2467d6"/>
+  <rect x="113" y="103" width="6" height="6" rx="2" fill="#2467d6"/>
+  <path d="M95 114H121" stroke="#2467d6" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="100" cy="124" r="4.5" fill="#2467d6"/>
+  <circle cx="116" cy="124" r="4.5" fill="#2467d6"/>
+  <path d="M120 114H144" stroke="#2467d6" stroke-width="8" stroke-dasharray="8 10" stroke-linecap="round"/>
+</svg>
