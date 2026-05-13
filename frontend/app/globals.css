@@ -1921,10 +1921,10 @@ body:has(.homepage-viewport) main {
 
 .homepage-viewport {
   --home-row-header: 8fr;
-  --home-row-hero: 47fr;
-  --home-row-insights: 34fr;
+  --home-row-hero: 49fr;
+  --home-row-insights: 32fr;
   --home-row-compare: 11fr;
-  --home-gutter-inline: 12px;
+  --home-gutter-inline: 0px;
   --home-hero-left: 45%;
   --home-hero-right: 55%;
   display: grid;
@@ -1936,7 +1936,7 @@ body:has(.homepage-viewport) main {
     minmax(74px, var(--home-row-compare));
   width: 100vw;
   height: 100vh;
-  padding: 12px var(--home-gutter-inline);
+  padding: 0;
   background: var(--page-bg, #fff);
 }
 
@@ -1989,7 +1989,7 @@ body:has(.homepage-viewport) main {
   justify-content: space-between;
   gap: 1.5rem;
   padding: 0 12px 0 0;
-  border: 2px solid var(--rule);
+  border-bottom: 2px solid var(--rule);
   background: #fff;
 }
 
@@ -2064,8 +2064,7 @@ body:has(.homepage-viewport) main {
 .homepage-hero {
   display: grid;
   grid-template-columns: minmax(0, var(--home-hero-left)) minmax(0, var(--home-hero-right));
-  border: 2px solid var(--rule);
-  border-top: 0;
+  border-bottom: 2px solid var(--rule);
   background: #fff;
   overflow: hidden;
 }
@@ -2108,7 +2107,7 @@ body:has(.homepage-viewport) main {
 .homepage-headline-emphasis {
   display: flex;
   align-items: baseline;
-  gap: 0.12ch;
+  gap: 0.3ch;
   white-space: nowrap;
 }
 
@@ -2287,8 +2286,7 @@ body:has(.homepage-viewport) main {
 .homepage-insights {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  border: 2px solid var(--rule);
-  border-top: 0;
+  border-bottom: 2px solid var(--rule);
   background: #fff;
   overflow: hidden;
 }
@@ -2308,9 +2306,9 @@ body:has(.homepage-viewport) main {
 .homepage-ranking-card {
   display: grid;
   grid-template-rows: auto auto auto 1px minmax(0, 1fr);
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  padding: 14px 12px 10px;
+  padding: 12px 12px 8px;
   border-right: 1.5px solid rgba(0, 0, 0, 0.8);
   background: #fff;
 }
@@ -2330,7 +2328,7 @@ body:has(.homepage-viewport) main {
 .homepage-ranking-header {
   display: grid;
   grid-template-columns: 34px 44px minmax(0, 1fr);
-  align-items: start;
+  align-items: center;
   gap: 8px;
   min-width: 0;
 }
@@ -2342,16 +2340,19 @@ body:has(.homepage-viewport) main {
 }
 
 .homepage-ranking-route {
+  display: flex;
+  align-items: center;
   min-width: 0;
+  min-height: 46px;
 }
 
 .homepage-ranking-route p {
   margin: 0;
   color: #111;
   font-family: var(--home-font-ui, var(--font-display));
-  font-size: clamp(1.7rem, 1.5vw, 2.1rem);
+  font-size: clamp(1.55rem, 1.4vw, 1.95rem);
   font-weight: 800;
-  line-height: 0.88;
+  line-height: 0.9;
 }
 
 .homepage-ranking-metric {
@@ -2369,24 +2370,24 @@ body:has(.homepage-viewport) main {
 .homepage-ranking-value strong {
   min-width: 0;
   color: var(--red);
-  font-size: clamp(4.4rem, 4vw, 5.6rem);
+  font-size: clamp(3.95rem, 3.7vw, 5rem);
   font-weight: 900;
   line-height: 0.82;
   letter-spacing: -0.05em;
 }
 
 .homepage-ranking-value span {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   color: var(--red);
   font-family: var(--home-font-ui, var(--font-display));
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 800;
 }
 
 .homepage-ranking-metric p {
   margin: 0;
   color: #222;
-  font-size: 0.98rem;
+  font-size: 0.9rem;
 }
 
 .homepage-ranking-divider {
@@ -2396,7 +2397,7 @@ body:has(.homepage-viewport) main {
 .homepage-ranking-notes {
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: 8px;
 }
 
 .homepage-ranking-notes p {
@@ -2407,15 +2408,15 @@ body:has(.homepage-viewport) main {
 
 .homepage-ranking-notes span {
   color: #4a4a4a;
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
 .homepage-ranking-notes strong {
   color: #151515;
-  font-size: 0.82rem;
-  line-height: 1.08;
+  font-size: 0.74rem;
+  line-height: 1.04;
   font-weight: 600;
 }
 
@@ -2551,8 +2552,6 @@ body:has(.homepage-viewport) main {
   align-items: center;
   gap: 14px;
   padding: 8px 12px;
-  border: 2px solid var(--rule);
-  border-top: 0;
   background: linear-gradient(90deg, #f3f7ff 0%, #fff 18%, #fff 100%);
 }
 
