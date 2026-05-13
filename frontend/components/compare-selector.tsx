@@ -19,7 +19,7 @@ export function CompareSelector({
   const routeOptions = useMemo(
     () =>
       routes.map((route) => ({
-        label: `${route.route_short_name} ${route.route_name}`,
+        label: `${route.route_short_name || route.route_id} ${route.route_name}`,
         value: route.route_id,
       })),
     [routes],

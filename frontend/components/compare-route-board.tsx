@@ -1,16 +1,19 @@
 import { RouteBadge } from "@/components/route-badge";
 import { MetricBreakout } from "@/components/metric-breakout";
-import type { RouteSummary } from "@/lib/types";
+import { DataStatePanel } from "@/components/data-state-panel";
+import type { DataNotice, RouteSummary } from "@/lib/types";
 import { formatMinutes, formatSignedMinutes, routeDominantProblem } from "@/lib/utils";
 
 export function CompareRouteBoard({
   compareLimitations,
   leadingRoute,
+  notices,
   routes,
   systemMedianTypicalTripLoss,
 }: {
   compareLimitations: string[];
   leadingRoute: RouteSummary | null;
+  notices: DataNotice[];
   routes: RouteSummary[];
   systemMedianTypicalTripLoss: number;
 }) {
@@ -53,7 +56,7 @@ export function CompareRouteBoard({
           ) : null}
         </article>
         <article className="panel-card compare-callout compare-callout-muted">
-          <p className="eyebrow">Static bundle note</p>
+          <p className="eyebrow">Historical/static note</p>
           <ul className="compare-note-list">
             {compareLimitations.map((note) => (
               <li key={note}>{note}</li>
@@ -61,6 +64,10 @@ export function CompareRouteBoard({
           </ul>
         </article>
       </div>
+
+      {notices.map((notice) => (
+        <DataStatePanel key={`${notice.title}-${notice.message}`} notice={notice} />
+      ))}
 
       <div className="compare-grid">
         {routes.map((route) => (
@@ -80,7 +87,7 @@ export function CompareRouteBoard({
             <MetricBreakout route={route} />
             <div className="compare-delta-strip">
               <article>
-                <span className="eyebrow">Vs. fixture median</span>
+                <span className="eyebrow">Vs. system median</span>
                 <strong>
                   {formatSignedMinutes(
                     route.typical_trip_loss_minutes - systemMedianTypicalTripLoss,

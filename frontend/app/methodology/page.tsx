@@ -46,7 +46,7 @@ export default function MethodologyPage() {
         </article>
         <article className="info-panel">
           <p className="eyebrow">Current caveats</p>
-          <h2>Where the first published static bundle is still thin.</h2>
+          <h2>Where the first published historical/static layer is still thin.</h2>
           <ul className="method-list">
             {data.caveats.map((caveat) => (
               <li key={caveat}>{caveat}</li>

@@ -1,8 +1,10 @@
 import { MapPageSurface } from "@/components/map-page-surface";
 import { getMapPageData } from "@/lib/site-data";
 
-export default function MapPage() {
-  const data = getMapPageData();
+export const dynamic = "force-dynamic";
+
+export default async function MapPage() {
+  const data = await getMapPageData();
 
   return (
     <div className="page-stack">

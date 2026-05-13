@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DataStamp } from "@/components/data-stamp";
+import { DataStatePanel } from "@/components/data-state-panel";
 import { MapSchematic } from "@/components/map-schematic";
 import { RouteBadge } from "@/components/route-badge";
 import type { MapPageData } from "@/lib/site-data";
@@ -9,28 +10,41 @@ import { formatMinutes } from "@/lib/utils";
 
 export function MapPageSurface({ data }: { data: MapPageData }) {
   const [lanesOn, setLanesOn] = useState(true);
+  const hasRoutes = data.routes.features.length > 0;
 
   return (
     <section className="map-surface-shell">
       <div className="map-summary-grid">
         <article className="metric-tile">
           <span>Highest published loss</span>
-          <strong>{formatMinutes(data.highestLossRoute.typical_trip_loss_minutes)}</strong>
+          <strong>
+            {data.highestLossRoute
+              ? formatMinutes(data.highestLossRoute.typical_trip_loss_minutes)
+              : "--"}
+          </strong>
           <small>
-            Route {data.highestLossRoute.route_short_name} {data.highestLossRoute.route_name}
+            {data.highestLossRoute
+              ? `Route ${data.highestLossRoute.route_short_name} ${data.highestLossRoute.route_name}`
+              : "Waiting for a published top route"}
           </small>
         </article>
         <article className="metric-tile">
           <span>Lower published loss</span>
-          <strong>{formatMinutes(data.lowestLossRoute.typical_trip_loss_minutes)}</strong>
+          <strong>
+            {data.lowestLossRoute
+              ? formatMinutes(data.lowestLossRoute.typical_trip_loss_minutes)
+              : "--"}
+          </strong>
           <small>
-            Route {data.lowestLossRoute.route_short_name} {data.lowestLossRoute.route_name}
+            {data.lowestLossRoute
+              ? `Route ${data.lowestLossRoute.route_short_name} ${data.lowestLossRoute.route_name}`
+              : "Waiting for a published comparison route"}
           </small>
         </article>
         <article className="metric-tile">
-          <span>Fixture corridors</span>
-          <strong>{data.fixtureRouteCount}</strong>
-          <small>Current route geometries in the static map bundle</small>
+          <span>Published corridors</span>
+          <strong>{data.routeCount}</strong>
+          <small>Current route geometries in the historical/static map layer</small>
         </article>
       </div>
 
@@ -53,28 +67,43 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
           <label className="fixture-toggle">
             <span>Live vehicles</span>
             <button disabled type="button">
-              Deferred in static set
+              Deferred in this bundle
             </button>
           </label>
           <label className="fixture-toggle">
             <span>Stop hotspots</span>
             <button disabled type="button">
-              Deferred in static set
+              Route detail only
             </button>
           </label>
         </div>
       </div>
 
+      {data.notices.map((notice) => (
+        <DataStatePanel key={`${notice.title}-${notice.message}`} notice={notice} />
+      ))}
+
       <div className="map-layout">
         <div className="map-panel">
-          <MapSchematic
-            features={data.routes.features}
-            overlayFeatures={lanesOn ? data.transitLaneOverlay : []}
-            showLegend
-            showDistrictLabels
-            title="Typical extra time"
-            subtitle="Route corridors colored by published route loss"
-          />
+          {hasRoutes ? (
+            <MapSchematic
+              features={data.routes.features}
+              overlayFeatures={lanesOn ? data.transitLaneOverlay : []}
+              showLegend
+              showDistrictLabels
+              title="Typical extra time"
+              subtitle="Route corridors colored by published route loss"
+            />
+          ) : (
+            <DataStatePanel
+              eyebrow="Map surface"
+              notice={{
+                message:
+                  "The live map panel will render once the API publishes at least one route geometry.",
+                title: "No corridor geometry is available for the map yet.",
+              }}
+            />
+          )}
         </div>
         <aside className="map-sidebar">
           <article className="panel-card map-card">
@@ -87,7 +116,7 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
             <DataStamp value={data.metricUpdatedAt} />
           </article>
           <article className="panel-card map-card">
-            <p className="map-card-label">Routes in this fixture</p>
+            <p className="map-card-label">Routes in this dataset</p>
             <ul className="map-list">
               {data.rankings.map((route) => (
                 <li key={route.route_id}>
@@ -121,7 +150,7 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
               <li>
                 <div>
                   <strong>Route coverage</strong>
-                  <small>The current published map fixture includes two route corridors.</small>
+                  <small>The live map shows whichever corridors the historical API publishes.</small>
                 </div>
               </li>
             </ul>

@@ -1,35 +1,26 @@
 import {
-  compareFixture,
-  loadTransitLaneOverlay,
-  rankingsFixture,
-  route14SegmentsFixture,
-  route14StopWaitFixture,
-  route14SummaryFixture,
-  routeMapFixture,
-} from "@/lib/fixtures";
-import type { MethodologySection, RouteSummary } from "@/lib/types";
+  ApiRequestError,
+  getCompare,
+  getMapRoutes,
+  getRankings,
+  getRouteSegments,
+  getRouteStopWait,
+  getRouteSummary,
+} from "@/lib/api";
+import { loadTransitLaneOverlay } from "@/lib/fixtures";
+import type {
+  CompareResponse,
+  DataNotice,
+  MethodologySection,
+  RouteMapResponse,
+  RouteSegmentsResponse,
+  RouteStopWaitResponse,
+  RouteSummary,
+} from "@/lib/types";
 import { median, routeLossShares } from "@/lib/utils";
 
-const routeSummaries = (() => {
-  const map = new Map<string, RouteSummary>();
-  rankingsFixture.routes.forEach((route) => map.set(route.route_id, route));
-  compareFixture.routes.forEach((route) => {
-    if (!map.has(route.route_id)) {
-      map.set(route.route_id, route);
-    }
-  });
-  map.set(route14SummaryFixture.route_id, route14SummaryFixture);
-  return Array.from(map.values()).sort(
-    (left, right) => right.typical_trip_loss_minutes - left.typical_trip_loss_minutes,
-  );
-})();
-
-const routeMapById = new Map(
-  routeMapFixture.features.map((feature) => [feature.properties.route_id, feature]),
-);
-
 const transitLaneOverlay = loadTransitLaneOverlay();
-const routeSummaryById = new Map(routeSummaries.map((route) => [route.route_id, route]));
+const preferredDirections = [1, 0] as const;
 
 const methodologySections: MethodologySection[] = [
   {
@@ -69,7 +60,7 @@ const methodologySections: MethodologySection[] = [
     title: "What the metric does not claim",
     paragraphs: [
       "It is not a passenger-weighted population average, not a causal proof for why a route is slow, and not full coverage of unmatched historic rows.",
-      "The static B5 frontend intentionally keeps those caveats visible instead of burying them behind generic dashboard chrome.",
+      "The historical/static frontend keeps those caveats visible instead of burying them behind generic dashboard chrome.",
     ],
     bullets: [
       "Current historical window support is all_day only",
@@ -79,57 +70,131 @@ const methodologySections: MethodologySection[] = [
   },
 ];
 
-export type MapPageData = ReturnType<typeof getMapPageData>;
+export type MapPageData = Awaited<ReturnType<typeof getMapPageData>>;
+export type RouteDetailPageData = Awaited<ReturnType<typeof getRouteDetailPageData>>;
 
-export function getRouteIds() {
-  return routeSummaries.map((route) => route.route_id);
+type ReadyRouteDetailPageData = {
+  kind: "ready";
+  mapFeatures: RouteMapResponse["features"];
+  mapNotice?: DataNotice;
+  peers: RouteSummary[];
+  peersNotice?: DataNotice;
+  routeRank: number | null;
+  segmentCollection: RouteSegmentsResponse | null;
+  segmentNotice?: DataNotice;
+  stopWaitCollection: RouteStopWaitResponse | null;
+  stopWaitNotice?: DataNotice;
+  summary: RouteSummary;
+  systemMedianTypicalTripLoss: number;
+  waitingShare: number;
+};
+
+type FailedRouteDetailPageData = {
+  kind: "error";
+  notice: DataNotice;
+  routeId: string;
+};
+
+type SuccessfulResult<T> = { data: T; ok: true };
+type FailedResult = { error: unknown; ok: false };
+
+export async function getRouteIds() {
+  const rankingsResult = await safeLoad(getRankings);
+  return rankingsResult.ok ? rankingsResult.data.routes.map((route) => route.route_id) : [];
 }
 
-export function getHomepageData() {
+export async function getHomepageData() {
+  const [rankingsResult, mapResult] = await Promise.all([
+    safeLoad(getRankings),
+    safeLoad(getMapRoutes),
+  ]);
+  const rankings = rankingsResult.ok ? rankingsResult.data.routes : [];
+  const map = mapResult.ok ? mapResult.data : emptyMapResponse();
+  const notices: DataNotice[] = [];
+
+  if (!rankingsResult.ok) {
+    notices.push(
+      buildErrorNotice(
+        "Homepage rankings are unavailable right now.",
+        "The live rankings feed could not be loaded.",
+        rankingsResult.error,
+      ),
+    );
+  } else if (rankings.length === 0) {
+    notices.push(
+      buildEmptyNotice(
+        "No published route rankings are available yet.",
+        "The homepage will populate once the API returns at least one ranked route.",
+      ),
+    );
+  }
+
+  if (!mapResult.ok) {
+    notices.push(
+      buildErrorNotice(
+        "Homepage map data is unavailable right now.",
+        "The live map surface could not be loaded.",
+        mapResult.error,
+      ),
+    );
+  } else if (map.features.length === 0) {
+    notices.push(
+      buildEmptyNotice(
+        "No published route geometries are available yet.",
+        "The map hero will populate once the API returns route corridors.",
+      ),
+    );
+  }
+
   return {
-    rankings: rankingsFixture.routes,
-    map: routeMapFixture,
-    windowLabel: "All day",
-    metricUpdatedAt: rankingsFixture.routes[0]?.metric_updated_at ?? route14SummaryFixture.metric_updated_at,
+    map,
+    notices,
     problemTypes: [
       {
-        icon: "waiting",
-        symbol: "○",
-        title: "Waiting",
         copy: "Longer or more irregular headways push effective wait above the scheduled baseline.",
+        icon: "waiting",
+        symbol: "O",
+        title: "Waiting",
       },
       {
-        icon: "travel",
-        symbol: "═",
-        title: "Slow travel",
         copy: "Traffic, signals, and dwell pressure extend the in-vehicle part of the trip.",
+        icon: "travel",
+        symbol: "=",
+        title: "Slow travel",
       },
       {
-        icon: "bunching",
-        symbol: "≡",
-        title: "Bunching",
         copy: "Vehicles clump together and leave gaps behind, amplifying rider delay even when service is present.",
+        icon: "bunching",
+        symbol: "|||",
+        title: "Bunching",
       },
     ],
+    rankings,
+    windowLabel: "All day",
   };
 }
 
-export function getComparePageData(ids?: string | string[]) {
-  const requestedIds =
-    typeof ids === "string"
-      ? ids.split(",")
-      : Array.isArray(ids)
-        ? ids.flatMap((value) => value.split(","))
-        : compareFixture.route_ids;
-  const uniqueIds = Array.from(
-    new Set(
-      requestedIds.filter((routeId) => routeSummaries.some((route) => route.route_id === routeId)),
-    ),
+export async function getComparePageData(ids?: string | string[]) {
+  const rankingsResult = await safeLoad(getRankings);
+  const requestedIds = parseRequestedIds(ids);
+  const rankedRoutes = rankingsResult.ok ? rankingsResult.data.routes : [];
+  const defaultIds = rankedRoutes.slice(0, 2).map((route) => route.route_id);
+  const selectedIds =
+    requestedIds.length >= 2 ? requestedIds.slice(0, 4) : defaultIds.slice(0, 4);
+  const compareResult =
+    selectedIds.length >= 2 ? await safeLoad(() => getCompare(selectedIds)) : null;
+  const availableRoutes = buildRouteCatalog(
+    rankedRoutes,
+    compareResult?.ok ? compareResult.data : undefined,
   );
-  const selectedIds = uniqueIds.length >= 2 ? uniqueIds.slice(0, 4) : compareFixture.route_ids;
-  const selectedRoutes = selectedIds
-    .map((routeId) => routeSummaryById.get(routeId))
-    .filter((route): route is RouteSummary => Boolean(route));
+  const availableRouteById = new Map(
+    availableRoutes.map((route) => [route.route_id, route] as const),
+  );
+  const selectedRoutes = compareResult?.ok
+    ? compareResult.data.routes
+    : selectedIds
+        .map((routeId) => availableRouteById.get(routeId))
+        .filter((route): route is RouteSummary => Boolean(route));
   const leadingRoute = selectedRoutes.reduce<RouteSummary | null>((currentLeader, route) => {
     if (!currentLeader) {
       return route;
@@ -139,59 +204,196 @@ export function getComparePageData(ids?: string | string[]) {
       ? route
       : currentLeader;
   }, null);
+  const notices: DataNotice[] = [];
 
-  return {
-    availableRoutes: routeSummaries,
-    compareLimitations: [
-      "The static compare view accepts up to four route slots, but the current fixture bundle only publishes two route summaries.",
-      "Additional route summaries will appear here once the broader compare fixture set is expanded.",
-    ],
-    leadingRoute,
-    selectedIds,
-    selectedRoutes,
-    systemMedianTypicalTripLoss: median(routeSummaries.map((route) => route.typical_trip_loss_minutes)),
-  };
-}
-
-export function getRouteDetailPageData(routeId: string) {
-  const summary = routeSummaryById.get(routeId);
-  if (!summary) {
-    return null;
+  if (!rankingsResult.ok) {
+    notices.push(
+      buildErrorNotice(
+        "Route selection is unavailable right now.",
+        "The compare controls could not load the published route catalog.",
+        rankingsResult.error,
+      ),
+    );
+  } else if (availableRoutes.length < 2) {
+    notices.push(
+      buildEmptyNotice(
+        "At least two published routes are required to compare.",
+        "The compare view will populate once the rankings surface returns enough routes.",
+      ),
+    );
   }
 
-  const peers = routeSummaries.filter((route) => route.route_id !== routeId);
-  const segmentCollection =
-    routeId === route14SegmentsFixture.route_id ? route14SegmentsFixture : null;
-  const stopWaitCollection =
-    routeId === route14StopWaitFixture.route_id ? route14StopWaitFixture : null;
-  const mapFeature = routeMapById.get(routeId);
-  const routeRankIndex = routeSummaries.findIndex((route) => route.route_id === routeId);
-  const routeRank = routeRankIndex >= 0 ? routeRankIndex + 1 : null;
+  if (compareResult && !compareResult.ok) {
+    notices.push(
+      buildErrorNotice(
+        "Compare results are unavailable right now.",
+        "The live compare endpoint did not return a usable route set.",
+        compareResult.error,
+      ),
+    );
+  } else if (selectedRoutes.length < 2) {
+    notices.push(
+      buildEmptyNotice(
+        "Pick two to four routes to produce a compare readout.",
+        "The current selection does not contain enough published routes yet.",
+      ),
+    );
+  }
 
   return {
-    peers,
-    routeRank,
-    summary,
-    segmentCollection,
-    stopWaitCollection,
-    mapFeatures: mapFeature ? [mapFeature] : [],
-    waitingShare: routeLossShares(summary).waiting,
-    systemMedianTypicalTripLoss: median(routeSummaries.map((route) => route.typical_trip_loss_minutes)),
+    availableRoutes,
+    compareLimitations: [
+      "Compare accepts two to four route ids from the published all_day rankings surface.",
+      "The current historical/static bundle still exposes only the all_day window.",
+    ],
+    leadingRoute,
+    notices,
+    selectedIds,
+    selectedRoutes,
+    systemMedianTypicalTripLoss: median(
+      availableRoutes.length > 0
+        ? availableRoutes.map((route) => route.typical_trip_loss_minutes)
+        : selectedRoutes.map((route) => route.typical_trip_loss_minutes),
+    ),
   };
 }
 
-export function getMapPageData() {
-  const highestLossRoute = rankingsFixture.routes[0] ?? route14SummaryFixture;
-  const lowestLossRoute = rankingsFixture.routes[rankingsFixture.routes.length - 1] ?? route14SummaryFixture;
+export async function getRouteDetailPageData(
+  routeId: string,
+): Promise<ReadyRouteDetailPageData | FailedRouteDetailPageData | null> {
+  const [summaryResult, rankingsResult, mapResult] = await Promise.all([
+    safeLoad(() => getRouteSummary(routeId)),
+    safeLoad(getRankings),
+    safeLoad(getMapRoutes),
+  ]);
+
+  if (!summaryResult.ok) {
+    if (summaryResult.error instanceof ApiRequestError && summaryResult.error.status === 404) {
+      return null;
+    }
+
+    return {
+      kind: "error",
+      notice: buildErrorNotice(
+        "Route detail is unavailable right now.",
+        `The live summary for route ${routeId} could not be loaded.`,
+        summaryResult.error,
+      ),
+      routeId,
+    };
+  }
+
+  const summary = summaryResult.data;
+  const rankedRoutes = rankingsResult.ok ? rankingsResult.data.routes : [];
+  const peers = rankedRoutes.filter((route) => route.route_id !== routeId);
+  const routeRankIndex = rankedRoutes.findIndex((route) => route.route_id === routeId);
+  const routeRank = routeRankIndex >= 0 ? routeRankIndex + 1 : null;
+  const routeMapFeatures = mapResult.ok
+    ? mapResult.data.features.filter((feature) => feature.properties.route_id === routeId)
+    : [];
+  const segmentResult = await loadDirectionalResource(
+    (direction) => getRouteSegments(routeId, direction),
+    "No directional segment layer is published for this route yet.",
+    "The directional segment layer could not be loaded.",
+  );
+  const stopWaitResult = await loadDirectionalResource(
+    (direction) => getRouteStopWait(routeId, direction),
+    "No stop-wait hotspot layer is published for this route yet.",
+    "The stop-wait hotspot layer could not be loaded.",
+    segmentResult.direction,
+  );
 
   return {
-    highestLossRoute,
-    lowestLossRoute,
-    fixtureRouteCount: rankingsFixture.routes.length,
-    routes: routeMapFixture,
-    rankings: rankingsFixture.routes,
+    kind: "ready",
+    mapFeatures: routeMapFeatures,
+    mapNotice: mapResult.ok
+      ? routeMapFeatures.length === 0
+        ? buildEmptyNotice(
+            "No corridor geometry is published for this route yet.",
+            "The route detail page can still show the route summary while the map layer catches up.",
+          )
+        : undefined
+      : buildErrorNotice(
+          "Route map context is unavailable right now.",
+          "The route-level geometry could not be loaded from the live map endpoint.",
+          mapResult.error,
+        ),
+    peers,
+    peersNotice: rankingsResult.ok
+      ? peers.length === 0
+        ? buildEmptyNotice(
+            "No peer routes are published alongside this route yet.",
+            "Peer comparisons will appear once the rankings endpoint includes more routes.",
+          )
+        : undefined
+      : buildErrorNotice(
+          "Peer rankings are unavailable right now.",
+          "The route detail page could not load the broader rankings context.",
+          rankingsResult.error,
+        ),
+    routeRank,
+    segmentCollection: segmentResult.data,
+    segmentNotice: segmentResult.notice,
+    stopWaitCollection: stopWaitResult.data,
+    stopWaitNotice: stopWaitResult.notice,
+    summary,
+    systemMedianTypicalTripLoss: median(
+      rankedRoutes.length > 0
+        ? rankedRoutes.map((route) => route.typical_trip_loss_minutes)
+        : [summary.typical_trip_loss_minutes],
+    ),
+    waitingShare: routeLossShares(summary).waiting,
+  };
+}
+
+export async function getMapPageData() {
+  const [rankingsResult, mapResult] = await Promise.all([
+    safeLoad(getRankings),
+    safeLoad(getMapRoutes),
+  ]);
+  const notices: DataNotice[] = [];
+  const map = mapResult.ok ? mapResult.data : emptyMapResponse();
+  const rankings = rankingsResult.ok
+    ? rankingsResult.data.routes
+    : map.features.map((feature) => routeSummaryFromFeature(feature.properties));
+
+  if (!mapResult.ok) {
+    notices.push(
+      buildErrorNotice(
+        "The citywide map is unavailable right now.",
+        "The live route choropleth could not be loaded.",
+        mapResult.error,
+      ),
+    );
+  } else if (map.features.length === 0) {
+    notices.push(
+      buildEmptyNotice(
+        "No published route corridors are available yet.",
+        "The citywide map will populate once the API returns route geometry.",
+      ),
+    );
+  }
+
+  if (!rankingsResult.ok) {
+    notices.push(
+      buildErrorNotice(
+        "The ranking sidebar is unavailable right now.",
+        "The live rankings endpoint could not be loaded.",
+        rankingsResult.error,
+      ),
+    );
+  }
+
+  return {
+    highestLossRoute: rankings[0] ?? null,
+    lowestLossRoute: rankings[rankings.length - 1] ?? null,
+    metricUpdatedAt:
+      rankings[0]?.metric_updated_at ?? map.features[0]?.properties.metric_updated_at ?? null,
+    notices,
+    rankings,
+    routeCount: map.features.length,
+    routes: map,
     transitLaneOverlay,
-    metricUpdatedAt: rankingsFixture.routes[0]?.metric_updated_at ?? route14SummaryFixture.metric_updated_at,
   };
 }
 
@@ -199,7 +401,7 @@ export function getMethodologyPageData() {
   return {
     caveats: [
       "The published historical window is all_day only in the current contract.",
-      "Only route 14 currently has dedicated adjacent-stop segment and stop-wait hotspot fixtures.",
+      "Directional segment and stop-wait detail appears only where the API publishes route-direction layers.",
       "Transit-only lanes remain a context overlay, not causal proof.",
     ],
     contractFacts: [
@@ -210,17 +412,155 @@ export function getMethodologyPageData() {
     sections: methodologySections,
     sources: [
       {
-        label: "TRB: Evaluating Potential Effectiveness of Headway Control Strategies for Transit Systems",
         href: "https://onlinepubs.trb.org/Onlinepubs/trr/1980/746/746-005.pdf",
+        label: "TRB: Evaluating Potential Effectiveness of Headway Control Strategies for Transit Systems",
       },
       {
-        label: "511 transit open data",
         href: "https://511.org/open-data/transit",
+        label: "511 transit open data",
       },
       {
-        label: "511 open data FAQ",
         href: "https://511.org/about/faq/open-data",
+        label: "511 open data FAQ",
       },
     ],
   };
+}
+
+async function safeLoad<T>(loader: () => Promise<T>): Promise<SuccessfulResult<T> | FailedResult> {
+  try {
+    return { data: await loader(), ok: true };
+  } catch (error) {
+    return { error, ok: false };
+  }
+}
+
+async function loadDirectionalResource<T>(
+  loader: (direction: number) => Promise<T>,
+  emptyTitle: string,
+  errorTitle: string,
+  preferredDirection?: number | null,
+) {
+  const orderedDirections = preferredDirection == null
+    ? [...preferredDirections]
+    : [preferredDirection, ...preferredDirections.filter((direction) => direction !== preferredDirection)];
+
+  for (const direction of orderedDirections) {
+    const result = await safeLoad(() => loader(direction));
+
+    if (result.ok) {
+      return {
+        data: result.data,
+        direction,
+        notice: undefined,
+      };
+    }
+
+    if (result.error instanceof ApiRequestError && result.error.status === 404) {
+      continue;
+    }
+
+    return {
+      data: null,
+      direction: null,
+      notice: buildErrorNotice(errorTitle, "The live endpoint returned an error.", result.error),
+    };
+  }
+
+  return {
+    data: null,
+    direction: null,
+    notice: buildEmptyNotice(
+      emptyTitle,
+      "The summary is available, but the matching directional layer is not published for this route yet.",
+    ),
+  };
+}
+
+function buildRouteCatalog(
+  rankedRoutes: RouteSummary[],
+  compareResponse?: CompareResponse,
+) {
+  const routeMap = new Map<string, RouteSummary>();
+
+  rankedRoutes.forEach((route) => routeMap.set(route.route_id, route));
+  compareResponse?.routes.forEach((route) => {
+    if (!routeMap.has(route.route_id)) {
+      routeMap.set(route.route_id, route);
+    }
+  });
+
+  return Array.from(routeMap.values()).sort(
+    (left, right) => right.typical_trip_loss_minutes - left.typical_trip_loss_minutes,
+  );
+}
+
+function parseRequestedIds(ids?: string | string[]) {
+  const rawIds =
+    typeof ids === "string"
+      ? ids.split(",")
+      : Array.isArray(ids)
+        ? ids.flatMap((value) => value.split(","))
+        : [];
+
+  return Array.from(new Set(rawIds.map((routeId) => routeId.trim()).filter(Boolean)));
+}
+
+function buildEmptyNotice(title: string, message: string): DataNotice {
+  return { message, title };
+}
+
+function buildErrorNotice(title: string, message: string, error: unknown): DataNotice {
+  return {
+    detail: formatApiError(error),
+    message,
+    title,
+  };
+}
+
+function emptyMapResponse(): RouteMapResponse {
+  return {
+    features: [],
+    metric: "typical_trip_loss_minutes",
+    type: "FeatureCollection",
+    window: "all_day",
+  };
+}
+
+function routeSummaryFromFeature(feature: RouteMapResponse["features"][number]["properties"]): RouteSummary {
+  return {
+    direction_id: feature.direction_id,
+    direction_label: feature.direction_label,
+    in_vehicle_loss_minutes: feature.in_vehicle_loss_minutes ?? 0,
+    matched_full_trip_count: feature.matched_full_trip_count ?? 0,
+    matched_headway_interval_count: feature.matched_headway_interval_count ?? 0,
+    matched_observed_stop_event_count: feature.matched_observed_stop_event_count ?? 0,
+    metric_updated_at: feature.metric_updated_at,
+    rank: feature.rank,
+    resolved_unmatched_observation_count: feature.resolved_unmatched_observation_count ?? 0,
+    route_id: feature.route_id,
+    route_long_name: feature.route_long_name,
+    route_name: feature.route_name,
+    route_short_name: feature.route_short_name,
+    typical_trip_loss_minutes: feature.typical_trip_loss_minutes ?? feature.metric_value ?? 0,
+    waiting_loss_minutes: feature.waiting_loss_minutes ?? 0,
+    window: feature.window,
+    worst_segment_label: feature.worst_segment_label ?? "Not published",
+    worst_stop_wait_label: feature.worst_stop_wait_label ?? "Not published",
+    worst_time_band: feature.worst_time_band ?? "Not published",
+  };
+}
+
+function formatApiError(error: unknown) {
+  if (error instanceof ApiRequestError) {
+    return error.detail
+      ? `${error.path} returned ${error.status}: ${error.detail}`
+      : `${error.path} returned ${error.status}.`;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Unknown API error.";
 }

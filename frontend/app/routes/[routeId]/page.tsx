@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { DataStamp } from "@/components/data-stamp";
+import { DataStatePanel } from "@/components/data-state-panel";
 import { MapSchematic } from "@/components/map-schematic";
 import { RouteBadge } from "@/components/route-badge";
-import { getRouteDetailPageData, getRouteIds } from "@/lib/site-data";
+import { getRouteDetailPageData } from "@/lib/site-data";
 import {
   formatMinutes,
   formatPercent,
@@ -10,9 +11,7 @@ import {
   routeDominantProblem,
 } from "@/lib/utils";
 
-export function generateStaticParams() {
-  return getRouteIds().map((routeId) => ({ routeId }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function RouteDetailPage({
   params,
@@ -20,10 +19,31 @@ export default async function RouteDetailPage({
   params: Promise<{ routeId: string }> | { routeId: string };
 }) {
   const resolvedParams: { routeId: string } = "then" in params ? await params : params;
-  const data = getRouteDetailPageData(resolvedParams.routeId);
+  const data = await getRouteDetailPageData(resolvedParams.routeId);
 
   if (!data) {
     notFound();
+  }
+
+  if (data.kind === "error") {
+    return (
+      <div className="page-stack detail-stack">
+        <section className="section-shell detail-hero">
+          <div className="detail-heading">
+            <div className="route-heading">
+              <div>
+                <p className="eyebrow">Route detail</p>
+                <h1>
+                  Route {data.routeId}
+                  <span>Live detail unavailable</span>
+                </h1>
+              </div>
+            </div>
+          </div>
+          <DataStatePanel notice={data.notice} />
+        </section>
+      </div>
+    );
   }
 
   const dominantProblem = routeDominantProblem(data.summary);
@@ -76,7 +96,7 @@ export default async function RouteDetailPage({
           <article className="metric-tile">
             <span>System comparison</span>
             <strong>{formatSignedMinutes(peerGap)}</strong>
-            <small>Compared with the current fixture-set route median</small>
+            <small>Compared with the current published route median</small>
           </article>
         </div>
         <DataStamp value={data.summary.metric_updated_at} />
@@ -99,6 +119,7 @@ export default async function RouteDetailPage({
                 : "Route corridor from the citywide map layer"
             }
           />
+          {data.mapNotice ? <DataStatePanel eyebrow="Route map" notice={data.mapNotice} /> : null}
           {data.segmentCollection ? (
             <ol className="segment-list">
               {data.segmentCollection.features.map((feature) => (
@@ -117,11 +138,7 @@ export default async function RouteDetailPage({
               ))}
             </ol>
           ) : (
-            <p className="fixture-note">
-              This route reuses the shared summary and map fixtures. A dedicated
-              adjacent-stop segment payload has only been published for route 14
-              in the current static set.
-            </p>
+            data.segmentNotice ? <DataStatePanel eyebrow="Segment layer" notice={data.segmentNotice} /> : null
           )}
         </article>
 
@@ -153,7 +170,7 @@ export default async function RouteDetailPage({
                 </div>
                 <div>
                   <dt>Strategy</dt>
-                  <dd>{topStopWait.properties.stop_wait_strategy ?? "fixture only"}</dd>
+                  <dd>{topStopWait.properties.stop_wait_strategy ?? "direction-specific"}</dd>
                 </div>
                 <div>
                   <dt>Matched intervals</dt>
@@ -162,11 +179,7 @@ export default async function RouteDetailPage({
               </dl>
             </div>
           ) : (
-            <p className="fixture-note">
-              Dedicated stop-wait hotspot data is currently published only for
-              route 14 outbound. Other route detail pages keep the route-level
-              worst stop label visible until broader fixtures land.
-            </p>
+            data.stopWaitNotice ? <DataStatePanel eyebrow="Stop hotspot layer" notice={data.stopWaitNotice} /> : null
           )}
         </article>
 
@@ -179,9 +192,8 @@ export default async function RouteDetailPage({
             <span>Worst time window</span>
             <strong>{data.summary.worst_time_band}</strong>
             <p>
-              The accepted historical API bundle currently publishes the
-              all-day window plus this route-level worst time band label. The
-              frontend keeps that language intact.
+              The historical/static API currently publishes the all-day window
+              plus this route-level worst time band label.
             </p>
           </div>
           <div className="interpretation-stack">
@@ -208,7 +220,7 @@ export default async function RouteDetailPage({
           <dl className="detail-definition-grid">
             <div>
               <dt>Route rank</dt>
-              <dd>{data.routeRank ? `#${data.routeRank}` : "Fixture-only"}</dd>
+              <dd>{data.routeRank ? `#${data.routeRank}` : "Not ranked yet"}</dd>
             </div>
             <div>
               <dt>Matched full trips</dt>
@@ -230,20 +242,24 @@ export default async function RouteDetailPage({
             <p className="eyebrow">How does it compare?</p>
             <h2>Peer context without dashboard sprawl.</h2>
           </div>
-          <ul className="peer-list">
-            {data.peers.map((peer) => (
-              <li key={peer.route_id}>
-                <div className="peer-route">
-                  <RouteBadge routeId={peer.route_id} label={peer.route_short_name} />
-                  <div>
-                    <strong>{peer.route_name}</strong>
-                    <span>{peer.worst_time_band}</span>
+          {data.peers.length > 0 ? (
+            <ul className="peer-list">
+              {data.peers.map((peer) => (
+                <li key={peer.route_id}>
+                  <div className="peer-route">
+                    <RouteBadge routeId={peer.route_id} label={peer.route_short_name} />
+                    <div>
+                      <strong>{peer.route_name}</strong>
+                      <span>{peer.worst_time_band}</span>
+                    </div>
                   </div>
-                </div>
-                <b>{formatMinutes(peer.typical_trip_loss_minutes)}</b>
-              </li>
-            ))}
-          </ul>
+                  <b>{formatMinutes(peer.typical_trip_loss_minutes)}</b>
+                </li>
+              ))}
+            </ul>
+          ) : data.peersNotice ? (
+            <DataStatePanel eyebrow="Peer context" notice={data.peersNotice} />
+          ) : null}
         </article>
       </section>
     </div>

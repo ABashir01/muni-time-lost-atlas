@@ -3317,3 +3317,24 @@ body:has(.homepage-viewport) main {
     display: none;
   }
 }
+
+.state-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.state-panel h2 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  text-transform: uppercase;
+}
+
+.state-panel p,
+.state-panel small {
+  margin: 0;
+}
+
+.state-panel small {
+  color: rgba(0, 0, 0, 0.68);
+  font-size: 0.78rem;
+}

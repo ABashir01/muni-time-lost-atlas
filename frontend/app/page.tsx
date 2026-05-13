@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { CompareSelector } from "@/components/compare-selector";
+import { DataStatePanel } from "@/components/data-state-panel";
 import {
   HomepageExplainerSymbol,
   HomepageTransitSymbol,
@@ -23,6 +24,8 @@ const homepageFontVariants = {
 
 type HomepageFontVariant = keyof typeof homepageFontVariants;
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage({
   searchParams,
 }: {
@@ -36,17 +39,8 @@ export default async function HomePage({
   const homepageFontClass =
     homepageFontVariants[(requestedVariant as HomepageFontVariant) ?? "oswald"] ??
     homepageFontVariants.oswald;
-  const data = getHomepageData();
-  const mockedThirdRanking = {
-    rank: 3,
-    route_id: "38",
-    route_name: "Geary",
-    route_short_name: "38",
-    typical_trip_loss_minutes: 0.9,
-    worst_time_band: "16:00-16:59",
-    worst_segment_label: "33rd Ave -> Stanyan St",
-  };
-  const rankingSlots = [...data.rankings, mockedThirdRanking].slice(0, 3);
+  const data = await getHomepageData();
+  const rankingSlots = data.rankings.slice(0, 3);
 
   return (
     <div className={`homepage-viewport ${homepageFontClass === "homepage-font-oswald" ? "homepage-font-oswald-roboto" : homepageFontClass}`}>
@@ -82,20 +76,20 @@ export default async function HomePage({
                 <HomepageTransitSymbol />
               </div>
               <p>
-                Live and historical data on delays, congestion, and crowding across
-                San Francisco.
+                Historical route-delay evidence across San Francisco, wired to the
+                published static API surface.
               </p>
             </div>
           </div>
 
           <div className="homepage-story-controls">
-            <TimeWindowStrip currentWindow="Now" />
-            <p>Updates every 60 seconds</p>
+            <TimeWindowStrip currentWindow={data.windowLabel} />
+            <p>Historical/static API snapshot</p>
           </div>
 
           <div className="homepage-story-banner">
-            <span>Worst Routes Right Now</span>
-            <Link href="/map">See all rankings</Link>
+            <span>Worst Published Routes</span>
+            <Link href="/map">See full rankings</Link>
           </div>
         </div>
 
@@ -113,51 +107,86 @@ export default async function HomePage({
         </div>
       </section>
 
+      {data.notices.map((notice) => (
+        <section className="section-shell" key={`${notice.title}-${notice.message}`}>
+          <DataStatePanel notice={notice} />
+        </section>
+      ))}
+
       <section className="homepage-insights" id="rankings">
         <div className="homepage-rankings">
-          {rankingSlots.map((route) => (
-            <article
-              className="homepage-ranking-card"
-              key={route.route_id}
-              style={
-                {
-                  "--route-accent": getRouteTheme(route.route_id).color,
-                } as CSSProperties
-              }
-            >
-              <div className="homepage-ranking-header">
-                <span className="homepage-ranking-rank">{route.rank}</span>
-                <RouteBadge
-                  label={route.route_short_name}
-                  routeId={route.route_id}
-                />
-                <div className="homepage-ranking-route">
-                  <p>{route.route_name}</p>
+          {Array.from({ length: 3 }, (_, index) => rankingSlots[index]).map((route, index) =>
+            route ? (
+              <article
+                className="homepage-ranking-card"
+                key={route.route_id}
+                style={
+                  {
+                    "--route-accent": getRouteTheme(route.route_id).color,
+                  } as CSSProperties
+                }
+              >
+                <div className="homepage-ranking-header">
+                  <span className="homepage-ranking-rank">{route.rank ?? index + 1}</span>
+                  <RouteBadge
+                    label={route.route_short_name}
+                    routeId={route.route_id}
+                  />
+                  <div className="homepage-ranking-route">
+                    <p>{route.route_name}</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="homepage-ranking-metric">
-                <div className="homepage-ranking-value">
-                  <strong>{`+${route.typical_trip_loss_minutes.toFixed(1)}`}</strong>
-                  <span>min</span>
+                <div className="homepage-ranking-metric">
+                  <div className="homepage-ranking-value">
+                    <strong>{`+${route.typical_trip_loss_minutes.toFixed(1)}`}</strong>
+                    <span>min</span>
+                  </div>
+                  <p>extra time per trip</p>
                 </div>
-                <p>extra time per trip</p>
-              </div>
 
-              <div className="homepage-ranking-divider" />
+                <div className="homepage-ranking-divider" />
 
-              <div className="homepage-ranking-notes">
-                <p>
-                  <span>Worst on</span>
-                  <strong>{route.worst_time_band}</strong>
-                </p>
-                <p>
-                  <span>Most loss</span>
-                  <strong>{route.worst_segment_label}</strong>
-                </p>
-              </div>
-            </article>
-          ))}
+                <div className="homepage-ranking-notes">
+                  <p>
+                    <span>Worst on</span>
+                    <strong>{route.worst_time_band}</strong>
+                  </p>
+                  <p>
+                    <span>Most loss</span>
+                    <strong>{route.worst_segment_label}</strong>
+                  </p>
+                </div>
+              </article>
+            ) : (
+              <article className="homepage-ranking-card" key={`empty-ranking-${index}`}>
+                <div className="homepage-ranking-header">
+                  <span className="homepage-ranking-rank">{index + 1}</span>
+                  <div className="homepage-ranking-route">
+                    <p>Awaiting published route data</p>
+                  </div>
+                </div>
+                <div className="homepage-ranking-metric">
+                  <div className="homepage-ranking-value">
+                    <strong>--</strong>
+                    <span>min</span>
+                  </div>
+                  <p>extra time per trip</p>
+                </div>
+                <div className="homepage-ranking-divider" />
+                <div className="homepage-ranking-notes">
+                  <p>
+                    <span>Worst on</span>
+                    <strong>Not published</strong>
+                  </p>
+                  <p>
+                    <span>Most loss</span>
+                    <strong>Not published</strong>
+                  </p>
+                </div>
+              </article>
+            ),
+          )}
         </div>
 
         <aside className="homepage-explainer">

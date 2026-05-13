@@ -1,4 +1,6 @@
 export type RouteSummary = {
+  direction_id?: number | null;
+  direction_label?: string | null;
   in_vehicle_loss_minutes: number;
   matched_full_trip_count: number;
   matched_headway_interval_count: number;
@@ -18,21 +20,48 @@ export type RouteSummary = {
   worst_time_band: string;
 };
 
+export type LineStringGeometry = {
+  type: "LineString";
+  coordinates: [number, number][];
+};
+
+export type MultiLineStringGeometry = {
+  type: "MultiLineString";
+  coordinates: [number, number][][];
+};
+
+export type PointGeometry = {
+  type: "Point";
+  coordinates: [number, number];
+};
+
+export type RouteIdentity = {
+  metric_updated_at: string;
+  route_id: string;
+  route_long_name: string;
+  route_name: string;
+  route_short_name: string;
+  window: string;
+};
+
 export type FeatureLine = {
   type: "Feature";
-  geometry: {
-    type: "LineString";
-    coordinates: [number, number][];
-  };
-  properties: RouteSummary &
+  geometry: LineStringGeometry | MultiLineStringGeometry;
+  properties: RouteIdentity &
     Partial<{
-      direction_id: number;
-      direction_label: string;
+      direction_id: number | null;
+      direction_label: string | null;
       from_stop_id: string;
       from_stop_name: string;
+      in_vehicle_loss_minutes: number;
       matched_trip_segment_count: number;
+      matched_full_trip_count: number;
+      matched_headway_interval_count: number;
+      matched_observed_stop_event_count: number;
       metric: string;
       metric_value: number;
+      rank: number;
+      resolved_unmatched_observation_count: number;
       scheduled_segment_minutes: number;
       segment_in_vehicle_loss_minutes: number;
       segment_label: string;
@@ -41,43 +70,55 @@ export type FeatureLine = {
       shape_id: string;
       to_stop_id: string;
       to_stop_name: string;
+      typical_trip_loss_minutes: number;
+      waiting_loss_minutes: number;
+      worst_segment_label: string;
+      worst_stop_wait_label: string;
+      worst_time_band: string;
     }>;
 };
 
 export type StopWaitFeature = {
   type: "Feature";
-  geometry: {
-    type: "Point";
-    coordinates: [number, number];
-  };
-  properties: RouteSummary &
+  geometry: PointGeometry;
+  properties: RouteIdentity &
     Partial<{
-      direction_id: number;
-      direction_label: string;
+      direction_id: number | null;
+      direction_label: string | null;
+      in_vehicle_loss_minutes: number;
       matched_headway_interval_count: number;
+      matched_full_trip_count: number;
+      matched_observed_stop_event_count: number;
       observed_effective_wait_minutes: number;
+      rank: number;
+      resolved_unmatched_observation_count: number;
       scheduled_effective_wait_minutes: number;
       stop_id: string;
       stop_name: string;
       stop_wait_label: string;
       stop_wait_strategy: string;
+      typical_trip_loss_minutes: number;
+      waiting_loss_minutes: number;
+      worst_segment_label: string;
+      worst_stop_wait_label: string;
+      worst_time_band: string;
     }>;
 };
 
-export type RankingsFixture = {
+export type RankingsResponse = {
   metric: string;
   mode: string;
   routes: RouteSummary[];
   window: string;
 };
 
-export type CompareFixture = {
+export type CompareResponse = {
   route_ids: string[];
   routes: RouteSummary[];
   window: string;
 };
 
-export type RouteSegmentFixture = {
+export type RouteSegmentsResponse = {
   direction_id: number;
   direction_label: string;
   features: FeatureLine[];
@@ -90,14 +131,14 @@ export type RouteSegmentFixture = {
   window: string;
 };
 
-export type RouteMapFixture = {
+export type RouteMapResponse = {
   features: FeatureLine[];
   metric: string;
   type: "FeatureCollection";
   window: string;
 };
 
-export type RouteStopWaitFixture = {
+export type RouteStopWaitResponse = {
   direction_id: number;
   direction_label: string;
   features: StopWaitFeature[];
@@ -116,4 +157,10 @@ export type MethodologySection = {
   formula?: string;
   paragraphs: string[];
   bullets?: string[];
+};
+
+export type DataNotice = {
+  detail?: string;
+  message: string;
+  title: string;
 };

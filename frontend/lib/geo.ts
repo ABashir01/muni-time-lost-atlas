@@ -25,7 +25,9 @@ export function projectLineCollection(
     return [];
   }
 
-  const points = features.flatMap((feature) => feature.geometry.coordinates);
+  const points = features.flatMap((feature) =>
+    flattenGeometry(feature.geometry).flatMap((segment) => segment),
+  );
   const xs = points.map(([x]) => x);
   const ys = points.map(([, y]) => y);
   const minX = Math.min(...xs);
@@ -42,9 +44,14 @@ export function projectLineCollection(
   });
 
   return features.map((feature) => {
-    const nodes = feature.geometry.coordinates.map(projectPoint);
-    const path = nodes
-      .map((node, index) => `${index === 0 ? "M" : "L"} ${node.x.toFixed(2)} ${node.y.toFixed(2)}`)
+    const nodes = flattenGeometry(feature.geometry).flatMap((segment) => segment.map(projectPoint));
+    const path = flattenGeometry(feature.geometry)
+      .map((segment) =>
+        segment
+          .map(projectPoint)
+          .map((node, index) => `${index === 0 ? "M" : "L"} ${node.x.toFixed(2)} ${node.y.toFixed(2)}`)
+          .join(" "),
+      )
       .join(" ");
     const labelNode = nodes[Math.floor(nodes.length / 2)] ?? { x: width / 2, y: height / 2 };
 
@@ -55,4 +62,8 @@ export function projectLineCollection(
       label: labelNode,
     };
   });
+}
+
+function flattenGeometry(geometry: FeatureLine["geometry"]) {
+  return geometry.type === "MultiLineString" ? geometry.coordinates : [geometry.coordinates];
 }

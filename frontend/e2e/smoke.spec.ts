@@ -8,16 +8,16 @@ test("homepage renders and a desktop review screenshot is captured", async ({ pa
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  await expect(page.getByText("Worst Routes Right Now")).toBeVisible();
+  await expect(page.getByText("Worst Published Routes")).toBeVisible();
   await page.waitForTimeout(500);
   await page.screenshot({ path: path.join(screenshotDir, "b5-homepage-desktop.png") });
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.getByText(/Updates every 60 seconds/i)).toBeVisible();
+  await expect(page.getByText(/Historical\/static API snapshot/i)).toBeVisible();
 });
 
-test("remaining static public routes render from fixtures", async ({ page }) => {
+test("remaining public routes render from the live historical api", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
 
   await page.goto("/routes/14");

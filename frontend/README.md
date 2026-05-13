@@ -1,8 +1,10 @@
 # Frontend
 
-Static Next.js product shell for the Muni Lost Time Atlas public MVP.
+Next.js product shell for the Muni Lost Time Atlas public MVP.
 
-This bundle intentionally reads accepted fixture payloads from `../fixtures/api` and does not call the live API.
+This bundle reads the historical/static API directly. By default it targets
+`http://127.0.0.1:8000`; override with `API_BASE_URL` or
+`NEXT_PUBLIC_API_BASE_URL` when needed.
 
 Primary commands:
 

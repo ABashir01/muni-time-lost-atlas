@@ -1,39 +1,5 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import type {
-  CompareFixture,
-  RankingsFixture,
-  RouteMapFixture,
-  RouteSegmentFixture,
-  RouteStopWaitFixture,
-  RouteSummary,
-} from "@/lib/types";
-
-const fixturesDir = path.join(process.cwd(), "..", "fixtures", "api");
-
-function loadJson<T>(fileName: string): T {
-  return JSON.parse(readFileSync(path.join(fixturesDir, fileName), "utf8")) as T;
-}
-
-export const rankingsFixture = loadJson<RankingsFixture>(
-  "rankings_all_day_typical_trip_loss_minutes_routes.json",
-);
-
-export const route14SummaryFixture = loadJson<RouteSummary>("route_14_summary_all_day.json");
-
-export const route14SegmentsFixture = loadJson<RouteSegmentFixture>(
-  "route_14_segments_direction_1_all_day.json",
-);
-
-export const route14StopWaitFixture = loadJson<RouteStopWaitFixture>(
-  "route_14_stops_wait_direction_1_all_day.json",
-);
-
-export const compareFixture = loadJson<CompareFixture>("routes_compare_14_49_all_day.json");
-
-export const routeMapFixture = loadJson<RouteMapFixture>(
-  "map_routes_all_day_typical_trip_loss_minutes.json",
-);
 
 export function loadTransitLaneOverlay() {
   const overlayDir = path.join(
@@ -57,11 +23,22 @@ export function loadTransitLaneOverlay() {
       coordinates: feature.geometry.coordinates,
     },
     properties: {
-      ...rankingsFixture.routes[0],
+      in_vehicle_loss_minutes: 0,
+      matched_full_trip_count: 0,
+      matched_headway_interval_count: 0,
+      matched_observed_stop_event_count: 0,
+      metric_updated_at: "1970-01-01T00:00:00Z",
+      resolved_unmatched_observation_count: 0,
       route_id: `overlay-${featureIndex}`,
-      route_short_name: "TL",
-      route_name: "Transit lane",
       route_long_name: "Transit lane context",
+      route_name: "Transit lane",
+      route_short_name: "TL",
+      typical_trip_loss_minutes: 0,
+      waiting_loss_minutes: 0,
+      window: "all_day",
+      worst_segment_label: "Context only",
+      worst_stop_wait_label: "Context only",
+      worst_time_band: "Not published",
       metric_value: 0,
     },
   }));
