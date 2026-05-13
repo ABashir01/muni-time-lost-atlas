@@ -3,7 +3,12 @@ import { DataStamp } from "@/components/data-stamp";
 import { MapSchematic } from "@/components/map-schematic";
 import { RouteBadge } from "@/components/route-badge";
 import { getRouteDetailPageData, getRouteIds } from "@/lib/site-data";
-import { formatMinutes, formatPercent, routeDominantProblem } from "@/lib/utils";
+import {
+  formatMinutes,
+  formatPercent,
+  formatSignedMinutes,
+  routeDominantProblem,
+} from "@/lib/utils";
 
 export function generateStaticParams() {
   return getRouteIds().map((routeId) => ({ routeId }));
@@ -24,6 +29,7 @@ export default async function RouteDetailPage({
   const dominantProblem = routeDominantProblem(data.summary);
   const peerGap =
     data.summary.typical_trip_loss_minutes - data.systemMedianTypicalTripLoss;
+  const topStopWait = data.stopWaitCollection?.features[0];
 
   return (
     <div className="page-stack detail-stack">
@@ -69,10 +75,7 @@ export default async function RouteDetailPage({
           </article>
           <article className="metric-tile">
             <span>System comparison</span>
-            <strong>
-              {peerGap >= 0 ? "+" : "-"}
-              {Math.abs(peerGap).toFixed(1)} min
-            </strong>
+            <strong>{formatSignedMinutes(peerGap)}</strong>
             <small>Compared with the current fixture-set route median</small>
           </article>
         </div>
@@ -124,6 +127,51 @@ export default async function RouteDetailPage({
 
         <article className="panel-card">
           <div className="panel-heading">
+            <p className="eyebrow">Where does the wait pile up?</p>
+            <h2>Stop-hotspot evidence is separate from segment travel loss.</h2>
+          </div>
+          {topStopWait ? (
+            <div className="stop-hotspot-card">
+              <div className="time-band-card">
+                <span>Worst published stop wait</span>
+                <strong>{topStopWait.properties.stop_wait_label}</strong>
+                <p>
+                  Scheduled effective wait {formatMinutes(
+                    topStopWait.properties.scheduled_effective_wait_minutes ?? 0,
+                  )}, observed effective wait{" "}
+                  {formatMinutes(topStopWait.properties.observed_effective_wait_minutes ?? 0)}.
+                </p>
+              </div>
+              <dl className="detail-definition-grid">
+                <div>
+                  <dt>Waiting loss</dt>
+                  <dd>{formatMinutes(topStopWait.properties.waiting_loss_minutes ?? 0)}</dd>
+                </div>
+                <div>
+                  <dt>Direction</dt>
+                  <dd>{topStopWait.properties.direction_label ?? data.summary.window}</dd>
+                </div>
+                <div>
+                  <dt>Strategy</dt>
+                  <dd>{topStopWait.properties.stop_wait_strategy ?? "fixture only"}</dd>
+                </div>
+                <div>
+                  <dt>Matched intervals</dt>
+                  <dd>{topStopWait.properties.matched_headway_interval_count ?? 0}</dd>
+                </div>
+              </dl>
+            </div>
+          ) : (
+            <p className="fixture-note">
+              Dedicated stop-wait hotspot data is currently published only for
+              route 14 outbound. Other route detail pages keep the route-level
+              worst stop label visible until broader fixtures land.
+            </p>
+          )}
+        </article>
+
+        <article className="panel-card">
+          <div className="panel-heading">
             <p className="eyebrow">When does it break down?</p>
             <h2>The current public window points to one especially bad band.</h2>
           </div>
@@ -150,6 +198,31 @@ export default async function RouteDetailPage({
               <strong>{data.summary.worst_segment_label}</strong>
             </div>
           </div>
+        </article>
+
+        <article className="panel-card">
+          <div className="panel-heading">
+            <p className="eyebrow">Evidence coverage</p>
+            <h2>Keep the public metric tied to what was actually matched.</h2>
+          </div>
+          <dl className="detail-definition-grid">
+            <div>
+              <dt>Route rank</dt>
+              <dd>{data.routeRank ? `#${data.routeRank}` : "Fixture-only"}</dd>
+            </div>
+            <div>
+              <dt>Matched full trips</dt>
+              <dd>{data.summary.matched_full_trip_count}</dd>
+            </div>
+            <div>
+              <dt>Matched stop events</dt>
+              <dd>{data.summary.matched_observed_stop_event_count}</dd>
+            </div>
+            <div>
+              <dt>Unmatched rows resolved</dt>
+              <dd>{data.summary.resolved_unmatched_observation_count}</dd>
+            </div>
+          </dl>
         </article>
 
         <article className="panel-card">

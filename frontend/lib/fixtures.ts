@@ -5,6 +5,7 @@ import type {
   RankingsFixture,
   RouteMapFixture,
   RouteSegmentFixture,
+  RouteStopWaitFixture,
   RouteSummary,
 } from "@/lib/types";
 
@@ -22,6 +23,10 @@ export const route14SummaryFixture = loadJson<RouteSummary>("route_14_summary_al
 
 export const route14SegmentsFixture = loadJson<RouteSegmentFixture>(
   "route_14_segments_direction_1_all_day.json",
+);
+
+export const route14StopWaitFixture = loadJson<RouteStopWaitFixture>(
+  "route_14_stops_wait_direction_1_all_day.json",
 );
 
 export const compareFixture = loadJson<CompareFixture>("routes_compare_14_49_all_day.json");

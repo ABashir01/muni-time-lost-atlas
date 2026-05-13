@@ -3,10 +3,10 @@ import {
   loadTransitLaneOverlay,
   rankingsFixture,
   route14SegmentsFixture,
+  route14StopWaitFixture,
   route14SummaryFixture,
   routeMapFixture,
 } from "@/lib/fixtures";
-import { getRouteTheme } from "@/lib/presentation";
 import type { MethodologySection, RouteSummary } from "@/lib/types";
 import { median, routeLossShares } from "@/lib/utils";
 
@@ -29,6 +29,7 @@ const routeMapById = new Map(
 );
 
 const transitLaneOverlay = loadTransitLaneOverlay();
+const routeSummaryById = new Map(routeSummaries.map((route) => [route.route_id, route]));
 
 const methodologySections: MethodologySection[] = [
   {
@@ -125,13 +126,27 @@ export function getComparePageData(ids?: string | string[]) {
       requestedIds.filter((routeId) => routeSummaries.some((route) => route.route_id === routeId)),
     ),
   );
-  const selectedIds = uniqueIds.length >= 2 ? uniqueIds.slice(0, 2) : compareFixture.route_ids;
+  const selectedIds = uniqueIds.length >= 2 ? uniqueIds.slice(0, 4) : compareFixture.route_ids;
   const selectedRoutes = selectedIds
-    .map((routeId) => routeSummaries.find((route) => route.route_id === routeId))
+    .map((routeId) => routeSummaryById.get(routeId))
     .filter((route): route is RouteSummary => Boolean(route));
+  const leadingRoute = selectedRoutes.reduce<RouteSummary | null>((currentLeader, route) => {
+    if (!currentLeader) {
+      return route;
+    }
+
+    return route.typical_trip_loss_minutes > currentLeader.typical_trip_loss_minutes
+      ? route
+      : currentLeader;
+  }, null);
 
   return {
     availableRoutes: routeSummaries,
+    compareLimitations: [
+      "The static compare view accepts up to four route slots, but the current fixture bundle only publishes two route summaries.",
+      "Additional route summaries will appear here once the broader compare fixture set is expanded.",
+    ],
+    leadingRoute,
     selectedIds,
     selectedRoutes,
     systemMedianTypicalTripLoss: median(routeSummaries.map((route) => route.typical_trip_loss_minutes)),
@@ -139,7 +154,7 @@ export function getComparePageData(ids?: string | string[]) {
 }
 
 export function getRouteDetailPageData(routeId: string) {
-  const summary = routeSummaries.find((route) => route.route_id === routeId);
+  const summary = routeSummaryById.get(routeId);
   if (!summary) {
     return null;
   }
@@ -147,20 +162,32 @@ export function getRouteDetailPageData(routeId: string) {
   const peers = routeSummaries.filter((route) => route.route_id !== routeId);
   const segmentCollection =
     routeId === route14SegmentsFixture.route_id ? route14SegmentsFixture : null;
+  const stopWaitCollection =
+    routeId === route14StopWaitFixture.route_id ? route14StopWaitFixture : null;
   const mapFeature = routeMapById.get(routeId);
+  const routeRankIndex = routeSummaries.findIndex((route) => route.route_id === routeId);
+  const routeRank = routeRankIndex >= 0 ? routeRankIndex + 1 : null;
 
   return {
+    peers,
+    routeRank,
     summary,
     segmentCollection,
+    stopWaitCollection,
     mapFeatures: mapFeature ? [mapFeature] : [],
-    peers,
     waitingShare: routeLossShares(summary).waiting,
     systemMedianTypicalTripLoss: median(routeSummaries.map((route) => route.typical_trip_loss_minutes)),
   };
 }
 
 export function getMapPageData() {
+  const highestLossRoute = rankingsFixture.routes[0] ?? route14SummaryFixture;
+  const lowestLossRoute = rankingsFixture.routes[rankingsFixture.routes.length - 1] ?? route14SummaryFixture;
+
   return {
+    highestLossRoute,
+    lowestLossRoute,
+    fixtureRouteCount: rankingsFixture.routes.length,
     routes: routeMapFixture,
     rankings: rankingsFixture.routes,
     transitLaneOverlay,
@@ -170,6 +197,16 @@ export function getMapPageData() {
 
 export function getMethodologyPageData() {
   return {
+    caveats: [
+      "The published historical window is all_day only in the current contract.",
+      "Only route 14 currently has dedicated adjacent-stop segment and stop-wait hotspot fixtures.",
+      "Transit-only lanes remain a context overlay, not causal proof.",
+    ],
+    contractFacts: [
+      "Typical trip loss combines waiting loss and in-vehicle loss into one rider-facing headline.",
+      "Waiting loss stays conservative by relying on exact first-stop matched headways only.",
+      "Coverage counts remain visible so missing observations are not blended into the numerator.",
+    ],
     sections: methodologySections,
     sources: [
       {

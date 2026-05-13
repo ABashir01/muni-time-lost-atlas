@@ -35,7 +35,16 @@ describe("public pages", () => {
 
     expect(html).toContain("Route detail");
     expect(html).toContain("16th St Mission -&gt; 24th St Mission");
+    expect(html).toContain("Worst published stop wait");
     expect(html).toContain("Worst time window");
+  });
+
+  it("renders a fallback route detail page when dedicated segment fixtures do not exist", async () => {
+    const page = await RouteDetailPage({ params: Promise.resolve({ routeId: "49" }) });
+    const html = renderToStaticMarkup(page);
+
+    expect(html).toContain("Dedicated stop-wait hotspot data is currently published only for route 14 outbound.");
+    expect(html).toContain("A dedicated adjacent-stop segment payload has only been published for route 14");
   });
 
   it("renders compare, map, and methodology pages from fixture-backed data", async () => {
@@ -47,10 +56,13 @@ describe("public pages", () => {
     const methodologyHtml = renderToStaticMarkup(<MethodologyPage />);
 
     expect(compareHtml).toContain("Put the routes next to each other.");
-    expect(compareHtml).toContain("Typical trip:");
+    expect(compareHtml).toContain("The static compare view accepts up to four route slots");
+    expect(compareHtml).toContain("Worst selected route");
     expect(mapHtml).toContain("The citywide evidence surface.");
+    expect(mapHtml).toContain("Highest published loss");
     expect(mapHtml).toContain("Transit-only lane overlay");
     expect(methodologyHtml).toContain("Typical trip: +X.X min is the public promise.");
+    expect(methodologyHtml).toContain("Plain-English contract");
     expect(methodologyHtml).toContain("Waiting loss");
   });
 });

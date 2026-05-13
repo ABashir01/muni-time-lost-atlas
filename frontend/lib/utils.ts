@@ -4,6 +4,10 @@ export function formatMinutes(value: number) {
   return `+${value.toFixed(1)} min`;
 }
 
+export function formatSignedMinutes(value: number) {
+  return `${value >= 0 ? "+" : "-"}${Math.abs(value).toFixed(1)} min`;
+}
+
 export function median(values: number[]) {
   const sorted = [...values].sort((left, right) => left - right);
   const middle = Math.floor(sorted.length / 2);

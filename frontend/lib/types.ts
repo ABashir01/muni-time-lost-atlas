@@ -44,6 +44,26 @@ export type FeatureLine = {
     }>;
 };
 
+export type StopWaitFeature = {
+  type: "Feature";
+  geometry: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+  properties: RouteSummary &
+    Partial<{
+      direction_id: number;
+      direction_label: string;
+      matched_headway_interval_count: number;
+      observed_effective_wait_minutes: number;
+      scheduled_effective_wait_minutes: number;
+      stop_id: string;
+      stop_name: string;
+      stop_wait_label: string;
+      stop_wait_strategy: string;
+    }>;
+};
+
 export type RankingsFixture = {
   metric: string;
   mode: string;
@@ -73,6 +93,19 @@ export type RouteSegmentFixture = {
 export type RouteMapFixture = {
   features: FeatureLine[];
   metric: string;
+  type: "FeatureCollection";
+  window: string;
+};
+
+export type RouteStopWaitFixture = {
+  direction_id: number;
+  direction_label: string;
+  features: StopWaitFeature[];
+  metric_updated_at: string;
+  route_id: string;
+  route_long_name: string;
+  route_name: string;
+  route_short_name: string;
   type: "FeatureCollection";
   window: string;
 };

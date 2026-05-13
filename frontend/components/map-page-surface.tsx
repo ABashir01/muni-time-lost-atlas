@@ -12,6 +12,28 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
 
   return (
     <section className="map-surface-shell">
+      <div className="map-summary-grid">
+        <article className="metric-tile">
+          <span>Highest published loss</span>
+          <strong>{formatMinutes(data.highestLossRoute.typical_trip_loss_minutes)}</strong>
+          <small>
+            Route {data.highestLossRoute.route_short_name} {data.highestLossRoute.route_name}
+          </small>
+        </article>
+        <article className="metric-tile">
+          <span>Lower published loss</span>
+          <strong>{formatMinutes(data.lowestLossRoute.typical_trip_loss_minutes)}</strong>
+          <small>
+            Route {data.lowestLossRoute.route_short_name} {data.lowestLossRoute.route_name}
+          </small>
+        </article>
+        <article className="metric-tile">
+          <span>Fixture corridors</span>
+          <strong>{data.fixtureRouteCount}</strong>
+          <small>Current route geometries in the static map bundle</small>
+        </article>
+      </div>
+
       <div className="map-surface-header">
         <div className="section-heading">
           <p className="eyebrow">Citywide route choropleth</p>
@@ -79,6 +101,29 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
                   <b>{formatMinutes(route.typical_trip_loss_minutes)}</b>
                 </li>
               ))}
+            </ul>
+          </article>
+          <article className="panel-card map-card">
+            <p className="map-card-label">Static limitations</p>
+            <ul className="map-list map-note-list">
+              <li>
+                <div>
+                  <strong>Overlay scope</strong>
+                  <small>Transit-only lanes are optional spatial context only.</small>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <strong>No live fleet yet</strong>
+                  <small>The deferred live vehicle layer stays disabled in this bundle.</small>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <strong>Route coverage</strong>
+                  <small>The current published map fixture includes two route corridors.</small>
+                </div>
+              </li>
             </ul>
           </article>
         </aside>

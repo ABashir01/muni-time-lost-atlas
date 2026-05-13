@@ -16,3 +16,19 @@ test("homepage renders and a desktop review screenshot is captured", async ({ pa
   await page.goto("/");
   await expect(page.getByText(/Updates every 60 seconds/i)).toBeVisible();
 });
+
+test("remaining static public routes render from fixtures", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  await page.goto("/routes/14");
+  await expect(page.getByText("Worst published stop wait")).toBeVisible();
+
+  await page.goto("/compare?ids=14,49");
+  await expect(page.getByText(/Worst selected route/i)).toBeVisible();
+
+  await page.goto("/map");
+  await expect(page.getByText(/Highest published loss/i)).toBeVisible();
+
+  await page.goto("/methodology");
+  await expect(page.getByText(/Plain-English contract/i)).toBeVisible();
+});
