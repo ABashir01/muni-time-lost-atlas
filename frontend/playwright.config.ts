@@ -8,9 +8,10 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "npm run start -- --hostname 127.0.0.1 --port 3110",
+    command: "npx next start --hostname 127.0.0.1 --port 3110",
+    cwd: __dirname,
     port: 3110,
-    reuseExistingServer: false,
+    reuseExistingServer: true,
     timeout: 120_000,
   },
 });

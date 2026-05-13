@@ -17,8 +17,9 @@ vi.mock("next/navigation", async () => {
 });
 
 describe("public pages", () => {
-  it("renders the homepage editorial shell from fixtures", () => {
-    const html = renderToStaticMarkup(<HomePage />);
+  it("renders the homepage editorial shell from fixtures", async () => {
+    const page = await HomePage({});
+    const html = renderToStaticMarkup(page);
 
     expect(html).toContain("Where Muni");
     expect(html).toContain("Riders Lose");
