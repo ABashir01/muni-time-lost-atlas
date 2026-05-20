@@ -84,7 +84,7 @@ Use:
 Current implementation note:
 - the first public frontend used a controlled SVG/schematic map surface to stabilize the homepage composition and static review workflow
 - a later explicit bundle should replace that schematic surface with a real map engine
-- preferred map-engine direction: `MapLibre GL JS`
+- selected map-engine direction for the real cutover: `MapLibre GL JS`
 
 Frontend responsibilities:
 - homepage rankings and explainer hierarchy
@@ -111,6 +111,11 @@ Map-engine guidance:
   - transit-lane overlay context
   - GTFS-RT vehicle overlays later
 - the map engine should not force a generic full-screen mapping app layout if that breaks the editorial product structure
+- this choice should demonstrate practical web-GIS fluency:
+  - layered route and segment styling
+  - overlay handling
+  - viewport/bounds management
+  - clean GeoJSON-to-map rendering
 
 ## dbt Role
 dbt is a later, explicit bundle rather than an implicit promise.
