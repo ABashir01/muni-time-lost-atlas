@@ -1,95 +1,135 @@
 # Muni Lost Time Atlas
 
-This repository is organized to support small, testable implementation slices for the `Muni Lost Time Atlas` MVP.
+Muni Lost Time Atlas is a transit analytics project that measures where San Francisco bus riders lose time, using GTFS schedules and historical stop-observation archives from `511`. The system ingests raw transit data, models route-level and segment-level delay metrics in `Postgres` + `dbt`, serves those analytics through a thin `FastAPI` backend, and presents them in a public-facing `Next.js` application.
 
-## Top-level layout
+![Muni Lost Time Atlas homepage](artifacts/frontend/homepage-1512x982.png)
+
+## What it does
+
+- ingests active and historical `511` GTFS transit feeds plus historic `stop_observations` archives
+- normalizes raw schedule and observation data into `staging`, `canonical`, `marts`, and `serving` layers
+- computes rider-facing metrics such as waiting loss, in-vehicle delay, route rankings, and worst segments
+- materializes geospatial route, segment, and stop layers in `PostGIS`
+- exposes analytics through typed `FastAPI` endpoints for rankings, route summaries, comparisons, and map reads
+- renders the published data in a `Next.js` interface with rankings, compare, map, and methodology views
+
+## Why it matters
+
+Public transit reliability is often discussed in operational terms, but riders experience it as lost time. This project reframes raw schedule and observation data into rider-facing metrics that can support service analysis, communication, and planning.
+
+## Stack
+
+- data ingestion and archive handling: `Python`
+- transformation and modeling: `SQL` + `dbt`
+- database and spatial layers: `Postgres` + `PostGIS`
+- API: `FastAPI` + `Pydantic`
+- frontend: `Next.js` + `TypeScript`
+- testing: `unittest`, `Vitest`, and `Playwright`
+
+## Architecture
+
+`511 feeds -> Python acquisition/loaders -> Postgres raw tables -> dbt staging/canonical/marts -> FastAPI -> Next.js`
+
+## Analytical focus
+
+The project translates transit operations into rider-facing time loss:
+
+- extra waiting time caused by irregular headways
+- extra in-vehicle time caused by slower-than-baseline trips
+- route-level, time-window, and segment-level summaries for operational diagnosis
+
+For metric definitions and assumptions, see `planning_docs/02_methodology.md`.
+
+## Current status
+
+Implemented today:
+
+- active and historical `511` GTFS acquisition plus archive-backed stop-observation ingest
+- staged, canonical, mart, and serving models in the in-repo `dbt` project
+- rider time-loss metrics for route, direction, hour, segment, and stop-wait views
+- `FastAPI` endpoints for rankings, route summaries, segments, comparisons, stop waits, and map layers
+- a `Next.js` frontend with homepage, compare, map, route detail, and methodology pages
+- unit, integration, and frontend test coverage
+
+Current limitations:
+
+- the project is local-first and not yet deployed as a public live site
+- realtime vehicle ingestion remains deferred
+- the real-data cutover is intentionally bounded to validated historical slices rather than a continuously refreshed warehouse
+
+## Quick start
+
+Create a local virtual environment:
+
+```powershell
+python -m venv .venv
+```
+
+Install the Python project:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e . uvicorn
+```
+
+Start the local database:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d db
+```
+
+Build the historical metrics graph:
+
+```powershell
+.\.venv\Scripts\python.exe .\pipeline\src\muni_lta_pipeline\core_metrics.py
+```
+
+Run the API:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn muni_lta_api.app:create_app --factory --reload
+```
+
+Run the frontend:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+## Repository layout
 
 - `frontend/`
-  - home for the `Next.js + TypeScript` application
+  - `Next.js + TypeScript` application
 - `api/`
-  - home for the separate `FastAPI` service
+  - `FastAPI` service for the historical/static analytics surface
 - `pipeline/`
-  - home for ingestion, transformations, and shared data-platform code
+  - ingestion, transformations, and shared data-platform code
+- `dbt/`
+  - staged, canonical, mart, and serving models plus dbt-native tests
 - `tests/`
-  - home for repository-level automated tests
+  - repository-level unit and integration tests
 - `fixtures/`
-  - home for small GTFS, observations, API, and geospatial fixture data
+  - GTFS, observations, API, and geospatial fixture data
 - `planning_docs/`
-  - source-of-truth planning, methodology, and slice docs
+  - planning notes, methodology, and implementation slice docs
 
-## Slice-first workflow
+## Development workflow
 
-Start each implementation slice by reading:
+This repository was built in small, testable implementation slices. For internal planning context, start with:
 
 1. `planning_docs/00_project_brief.md`
 2. `planning_docs/01_product_experience.md`
 3. `planning_docs/02_methodology.md`
 4. the assigned slice doc in `planning_docs/slices/`
 
-Read additional contract docs as needed:
+Additional contract docs:
 
+- `planning_docs/04_architecture.md` for the system shape
 - `planning_docs/05_api_contract.md` for API work
 - `planning_docs/06_data_model.md` for data/platform work
 - `planning_docs/09_decisions.md` for prior decisions
-
-## Current status
-
-This repository currently contains:
-- the initial project structure from `S01_repo_structure`
-- local Postgres/PostGIS bootstrap for `S02_database_bootstrap`
-- Python package and test bootstrap for `S03_python_project_bootstrap`
-- raw GTFS fixture ingest for `S04_gtfs_static_fixture_ingest`
-- active `511` GTFS acquisition for `S04a_511_active_gtfs_fetch`
-- historic regional `511` GTFS acquisition for `S06a_511_historic_rg_feed_fetch`
-- canonical scheduled GTFS models for `S05_canonical_scheduled_models`
-- raw historic stop observations fixture ingest for `S06_historic_stop_observations_ingest`
-- real historic stop observations archive ingest for `S06b_real_historic_stop_observations_load`
-- scheduled/observed stop-event join for `S07_scheduled_observed_join`
-- first rider-time-loss marts for `B1_core_metrics_bundle`
-- an in-repo dbt transformation project for `B2_dbt_adoption_bundle`
-
-Not included yet:
-
-- framework initialization
-- transit business logic
-- product implementation
-
-Current transit data artifact:
-
-- a tiny deterministic GTFS static fixture under `fixtures/gtfs_static/minimal`
-- a raw ingest loader at `pipeline/src/muni_lta_pipeline/gtfs_static_fixture_ingest.py`
-- accepted raw GTFS table DDL at `db/sql/01-create-raw-gtfs-tables.sql`
-- an active-feed fetcher at `pipeline/src/muni_lta_pipeline/active_gtfs_fetch.py`
-- a historic regional fetcher at `pipeline/src/muni_lta_pipeline/historic_rg_feed_fetch.py`
-- scheduled model materialization at `pipeline/src/muni_lta_pipeline/canonical_scheduled_models.py`
-- a historic stop-observations fixture loader at `pipeline/src/muni_lta_pipeline/historic_stop_observations_fixture_ingest.py`
-- a real historic stop-observations archive loader at `pipeline/src/muni_lta_pipeline/historic_stop_observations_archive_ingest.py`
-- a canonical scheduled/observed join materializer at `pipeline/src/muni_lta_pipeline/canonical_observed_stop_events.py`
-- a dbt project under `dbt/` for staged, canonical, and mart transformations plus dbt-native tests
-- gitignored local acquisition artifacts under `artifacts/acquisitions/511/operator_active`
-
-## Python bootstrap
-
-The repository now includes:
-- a root `pyproject.toml` for Python dependency metadata
-- `api/src/muni_lta_api` for the future `FastAPI` service package
-- `pipeline/src/muni_lta_pipeline` for future ingest and transform code
-- repository-level unit tests under `tests/unit`
-- a local `.venv` bootstrap path for future Python-package work
-
-The API bootstrap uses a lazy `FastAPI` import so the package structure and tests can exist before all runtime dependencies are installed in every environment.
-
-To create a local virtual environment with a Python 3.12+ interpreter:
-
-```powershell
-python -m venv .venv
-```
-
-To run the unit test harness from the venv:
-
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-```
 
 ## Local database bootstrap
 
@@ -269,4 +309,27 @@ To run the full staged/canonical/mart graph against the local Postgres instance:
 
 ```powershell
 .\.venv\Scripts\python.exe .\pipeline\src\muni_lta_pipeline\core_metrics.py
+```
+
+## Real dataset cutover
+
+The project now has a bounded real historical cutover path for the app-facing marts, API, and frontend.
+
+- use `pipeline/src/muni_lta_pipeline/real_dataset_cutover.py`
+- the validated bounded cut in this bundle is:
+  - historic month `2023-02`
+  - regional archive scope `RG -so`
+  - in-archive agency filter `SF`
+- the cutover entrypoint:
+  - fetches active `SF` GTFS and the bounded historic `RG -so` archive
+  - loads fetched GTFS archives into `raw.gtfs_*`
+  - loads fetched historic observations into `raw.stop_observations`
+  - rebuilds dbt against the historic `SF` snapshot inside the regional archive
+  - writes a provenance manifest to `artifacts/cutovers/b6a_real_dataset_cutover_bundle/latest.json`
+
+Run it with:
+
+```powershell
+$env:PYTHONPATH='C:\Users\ahadb\Documents\New project 3\pipeline\src'
+.\.venv\Scripts\python.exe -m muni_lta_pipeline.real_dataset_cutover --historic-month 2023-02 --historic-agency-id SF
 ```
