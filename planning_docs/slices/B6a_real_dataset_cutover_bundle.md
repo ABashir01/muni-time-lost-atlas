@@ -78,3 +78,15 @@ The product now proves the plumbing, transformations, API, and frontend, but the
 
 ## Handoff to next bundle
 After `B6a`, proceed to `B6b_real_map_engine_bundle` if the schematic map should be replaced before realtime, or continue directly to `B7` only if the schematic is explicitly accepted as sufficient.
+
+## Continuation note
+Operational follow-up work remains for the local/dev rebuild path even though the core cutover is complete.
+
+See:
+- `planning_docs/slices/B6a_real_dataset_cutover_continued.md`
+
+That continuation note captures:
+- what was already completed in `B6a`
+- the measured rebuild timings before and after the `SF`-only archive reduction
+- the remaining dbt rebuild bottleneck
+- the recommended next optimization pass for another agent

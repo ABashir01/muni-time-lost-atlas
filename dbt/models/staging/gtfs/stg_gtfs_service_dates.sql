@@ -1,7 +1,33 @@
 {{ config(materialized='table', tags=['scheduled']) }}
 
 with latest_snapshot as (
-    {{ latest_active_snapshot_subquery() }}
+    {{ target_gtfs_snapshot_subquery() }}
+),
+filtered_routes as (
+    select route_id
+    from {{ source('raw', 'gtfs_routes') }} as routes
+    cross join latest_snapshot
+    where routes.feed_scope = '{{ target_gtfs_feed_scope() }}'
+      and routes.snapshot_label = latest_snapshot.snapshot_label
+      and (
+          '{{ target_gtfs_feed_scope() }}' != 'regional_historic'
+          or routes.agency_id = '{{ historic_agency_id() }}'
+      )
+),
+filtered_service_ids as (
+    select distinct service_id
+    from {{ source('raw', 'gtfs_trips') }} as trips
+    cross join latest_snapshot
+    where trips.feed_scope = '{{ target_gtfs_feed_scope() }}'
+      and trips.snapshot_label = latest_snapshot.snapshot_label
+      and (
+          '{{ target_gtfs_feed_scope() }}' != 'regional_historic'
+          or exists (
+              select 1
+              from filtered_routes
+              where filtered_routes.route_id = trips.route_id
+          )
+      )
 ),
 calendar_expanded as (
     select
@@ -18,8 +44,16 @@ calendar_expanded as (
         to_date(calendar.end_date, 'YYYYMMDD'),
         interval '1 day'
     ) as service_day
-    where calendar.feed_scope = 'operator_active'
+    where calendar.feed_scope = '{{ target_gtfs_feed_scope() }}'
       and calendar.snapshot_label = latest_snapshot.snapshot_label
+      and (
+          '{{ target_gtfs_feed_scope() }}' != 'regional_historic'
+          or exists (
+              select 1
+              from filtered_service_ids
+              where filtered_service_ids.service_id = calendar.service_id
+          )
+      )
       and case extract(isodow from service_day)::integer
           when 1 then calendar.monday = '1'
           when 2 then calendar.tuesday = '1'
@@ -41,8 +75,16 @@ calendar_date_additions as (
         calendar_dates.snapshot_label
     from {{ source('raw', 'gtfs_calendar_dates') }} as calendar_dates
     cross join latest_snapshot
-    where calendar_dates.feed_scope = 'operator_active'
+    where calendar_dates.feed_scope = '{{ target_gtfs_feed_scope() }}'
       and calendar_dates.snapshot_label = latest_snapshot.snapshot_label
+      and (
+          '{{ target_gtfs_feed_scope() }}' != 'regional_historic'
+          or exists (
+              select 1
+              from filtered_service_ids
+              where filtered_service_ids.service_id = calendar_dates.service_id
+          )
+      )
       and calendar_dates.exception_type = '1'
 ),
 calendar_date_removals as (
@@ -51,8 +93,16 @@ calendar_date_removals as (
         to_date(calendar_dates.date, 'YYYYMMDD') as service_date
     from {{ source('raw', 'gtfs_calendar_dates') }} as calendar_dates
     cross join latest_snapshot
-    where calendar_dates.feed_scope = 'operator_active'
+    where calendar_dates.feed_scope = '{{ target_gtfs_feed_scope() }}'
       and calendar_dates.snapshot_label = latest_snapshot.snapshot_label
+      and (
+          '{{ target_gtfs_feed_scope() }}' != 'regional_historic'
+          or exists (
+              select 1
+              from filtered_service_ids
+              where filtered_service_ids.service_id = calendar_dates.service_id
+          )
+      )
       and calendar_dates.exception_type = '2'
 ),
 combined_service_dates as (

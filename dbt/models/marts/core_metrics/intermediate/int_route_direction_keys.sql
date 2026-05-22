@@ -1,4 +1,4 @@
-{{ config(materialized='ephemeral', tags=['metrics']) }}
+{{ config(materialized=var('metrics_intermediate_materialization', 'ephemeral'), tags=['metrics']) }}
 
 select route_id, direction_id from {{ ref('int_matched_stop_event_coverage') }}
 union

@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
-from typing import Iterable
+from typing import Any, Iterable, Mapping
 
 from muni_lta_pipeline.gtfs_static_fixture_ingest import (
     REPO_ROOT,
@@ -38,7 +39,13 @@ def _dbt_command() -> list[str]:
     return [sys.executable, "-m", "dbt.cli.main"]
 
 
-def run_dbt_build(selectors: Iterable[str], *, excludes: Iterable[str] | None = None) -> None:
+def _run_dbt(
+    command_name: str,
+    selectors: Iterable[str],
+    *,
+    excludes: Iterable[str] | None = None,
+    vars: Mapping[str, Any] | None = None,
+) -> None:
     settings = get_postgres_settings()
     ensure_db_service()
     wait_for_database(settings)
@@ -48,7 +55,7 @@ def run_dbt_build(selectors: Iterable[str], *, excludes: Iterable[str] | None = 
 
     command = [
         *_dbt_command(),
-        "build",
+        command_name,
         "--project-dir",
         str(DBT_PROJECT_DIR),
         "--profiles-dir",
@@ -62,17 +69,48 @@ def run_dbt_build(selectors: Iterable[str], *, excludes: Iterable[str] | None = 
     ]
     if excludes:
         command.extend(["--exclude", *excludes])
+    if vars:
+        command.extend(["--vars", json.dumps(dict(vars), sort_keys=True)])
 
-    result = subprocess.run(
+    process = subprocess.Popen(
         command,
         cwd=REPO_ROOT,
         env=env,
         text=True,
-        capture_output=True,
-        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        bufsize=1,
     )
-    if result.returncode != 0:
+    assert process.stdout is not None
+    output_lines: list[str] = []
+    try:
+        for line in process.stdout:
+            print(line, end="", flush=True)
+            output_lines.append(line)
+    finally:
+        process.stdout.close()
+
+    returncode = process.wait()
+    combined_output = "".join(output_lines).strip()
+    if returncode != 0:
         raise RuntimeError(
-            f"dbt build failed ({result.returncode}).\nSTDOUT: {(result.stdout or '').strip()}\n"
-            f"STDERR: {(result.stderr or '').strip()}"
+            f"dbt {command_name} failed ({returncode}).\nSTDOUT: {combined_output}\nSTDERR: "
         )
+
+
+def run_dbt_build(
+    selectors: Iterable[str],
+    *,
+    excludes: Iterable[str] | None = None,
+    vars: Mapping[str, Any] | None = None,
+) -> None:
+    _run_dbt("build", selectors, excludes=excludes, vars=vars)
+
+
+def run_dbt_run(
+    selectors: Iterable[str],
+    *,
+    excludes: Iterable[str] | None = None,
+    vars: Mapping[str, Any] | None = None,
+) -> None:
+    _run_dbt("run", selectors, excludes=excludes, vars=vars)

@@ -1,4 +1,12 @@
-{{ config(materialized='ephemeral', tags=['metrics']) }}
+{{ config(
+    materialized=var('metrics_intermediate_materialization', 'ephemeral'),
+    tags=['metrics'],
+    post_hook=(
+        [
+            "create index if not exists int_scheduled_trip_terminals_first_stop_idx on {{ this }} (trip_id, service_date, first_stop_sequence, first_stop_id)"
+        ] if var('metrics_intermediate_materialization', 'ephemeral') == 'table' and var('performance_indexing', false) else []
+    )
+) }}
 
 with trip_bounds as (
     select

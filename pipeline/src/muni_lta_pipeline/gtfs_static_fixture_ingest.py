@@ -12,6 +12,7 @@ from pathlib import Path
 import subprocess
 import time
 from typing import Iterable, Mapping
+from urllib.parse import quote
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -156,6 +157,31 @@ def get_postgres_settings(environ: Mapping[str, str] | None = None) -> PostgresS
         database=env["POSTGRES_DB"],
         user=env["POSTGRES_USER"],
         password=env["POSTGRES_PASSWORD"],
+    )
+
+
+def build_postgres_connection_url(
+    environ: Mapping[str, str] | None = None,
+) -> str:
+    env = dict(load_env_file())
+    if environ:
+        env.update(environ)
+
+    database_name = env.get("POSTGRES_DB")
+    user = env.get("POSTGRES_USER")
+    password = env.get("POSTGRES_PASSWORD")
+    if not database_name or not user or password is None:
+        raise ValueError(
+            "Missing POSTGRES_DB, POSTGRES_USER, or POSTGRES_PASSWORD for a direct database connection."
+        )
+
+    host = env.get("POSTGRES_HOST", "127.0.0.1")
+    port = env.get("POSTGRES_PORT", "5432")
+    quoted_user = quote(user, safe="")
+    quoted_password = quote(password, safe="")
+    quoted_database = quote(database_name, safe="")
+    return (
+        f"postgresql://{quoted_user}:{quoted_password}@{host}:{port}/{quoted_database}"
     )
 
 

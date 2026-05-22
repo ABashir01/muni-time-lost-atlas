@@ -7,10 +7,16 @@ export const routeThemes: Record<
   "49": { color: "#e85c10", shortLabel: "49", label: "Van Ness/Mission" },
 };
 
+function normalizeRouteThemeKey(routeId: string) {
+  const suffix = routeId.split(":").at(-1) ?? routeId;
+  return routeThemes[suffix] ? suffix : routeId;
+}
+
 export function getRouteTheme(routeId: string) {
-  return routeThemes[routeId] ?? {
+  const themeKey = normalizeRouteThemeKey(routeId);
+  return routeThemes[themeKey] ?? {
     color: "#0868d0",
-    shortLabel: routeId,
-    label: routeId,
+    shortLabel: themeKey,
+    label: themeKey,
   };
 }

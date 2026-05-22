@@ -1,4 +1,12 @@
-{{ config(materialized='view', tags=['observed']) }}
+{{ config(
+    materialized=var('observed_canonical_materialization', 'view'),
+    tags=['observed'],
+    post_hook=(
+        [
+            "create index if not exists observed_stop_events_service_trip_stop_idx on {{ this }} (service_date, trip_id, stop_sequence, stop_id)"
+        ] if var('observed_canonical_materialization', 'view') == 'table' and var('performance_indexing', false) else []
+    )
+) }}
 
 select
     service_date,

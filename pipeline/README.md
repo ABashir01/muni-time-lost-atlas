@@ -44,6 +44,33 @@ Example command:
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\active_gtfs_fetch.py
 ```
 
+Current archive-backed GTFS raw-load artifact:
+
+- `src/muni_lta_pipeline/gtfs_archive_ingest.py`
+  - reads the JSON sidecar and adjacent GTFS zip written by either `active_gtfs_fetch.py` or `historic_rg_feed_fetch.py`
+  - loads the fetched archive into `raw.gtfs_*` using archive-backed `snapshot_label` metadata
+  - supports `--append` so active and bounded historic snapshots can coexist in raw storage
+
+Example commands:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\gtfs_archive_ingest.py --metadata-path .\artifacts\acquisitions\511\operator_active\511_operator_active_SF_20260520T184518Z.json
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\gtfs_archive_ingest.py --metadata-path .\artifacts\acquisitions\511\regional_historic\511_regional_historic_RG_202302_with_so_20260520T184533Z.json --append
+```
+
+Current historic archive reduction artifact:
+
+- `src/muni_lta_pipeline/historic_rg_sf_extract.py`
+  - derives an `SF`-only historic archive from a fetched `RG -so` source archive
+  - preserves loader-compatible metadata plus retained row-count provenance
+  - writes the reduced archive under `artifacts/acquisitions/511/regional_historic_sf/`
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\historic_rg_sf_extract.py --metadata-path .\artifacts\acquisitions\511\regional_historic\511_regional_historic_RG_202302_with_so_20260520T201335Z.json --agency-id SF
+```
+
 Current historic regional acquisition artifact:
 
 - `src/muni_lta_pipeline/historic_rg_feed_fetch.py`
@@ -126,4 +153,29 @@ Example command:
 
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\gis_segment_metrics.py
+```
+
+Current real-dataset cutover artifact:
+
+- `src/muni_lta_pipeline/real_dataset_cutover.py`
+  - fetches the active `SF` GTFS plus one bounded historic `RG -so` archive
+  - derives an `SF`-only historic archive snapshot from the fetched regional source archive
+  - loads the active GTFS archive plus the derived `SF`-only historic archive into raw storage
+  - loads the derived `SF`-only `stop_observations` archive into `raw.stop_observations`
+  - rebuilds the dbt graph against the reduced `regional_historic_sf` snapshot
+  - reuses matching raw snapshots by default on repeat runs so unchanged raw tables are not truncated and reloaded again
+  - skips dbt entirely on repeat runs when the raw snapshot labels, cutover dbt vars, and dbt project fingerprint still match the last successful cutover manifest
+  - accepts `--force-raw-reload` to bypass raw reuse and `--skip-dbt` for artifact/raw-only preparation
+  - writes a provenance manifest under `artifacts/cutovers/b6a_real_dataset_cutover_bundle/`
+
+Example command:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\real_dataset_cutover.py --historic-month 2023-02 --historic-agency-id SF
+```
+
+Exact rerun of the validated archived snapshot:
+
+```powershell
+& 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\real_dataset_cutover.py --historic-month 2023-02 --historic-agency-id SF --active-metadata-path .\artifacts\acquisitions\511\operator_active\511_operator_active_SF_20260520T201312Z.json --historic-metadata-path .\artifacts\acquisitions\511\regional_historic\511_regional_historic_RG_202302_with_so_20260520T201335Z.json
 ```

@@ -14,13 +14,15 @@ from typing import Any, Mapping
 import zipfile
 from zoneinfo import ZoneInfo
 
+import psycopg
+
 from muni_lta_pipeline.gtfs_static_fixture_ingest import (
+    build_postgres_connection_url,
     docker_compose_psql_args,
     ensure_db_service,
     execute_sql_file,
     get_postgres_settings,
     run_command,
-    sql_literal,
     wait_for_database,
 )
 from muni_lta_pipeline.historic_rg_feed_fetch import STOP_OBSERVATIONS_FILENAME
@@ -34,7 +36,7 @@ from muni_lta_pipeline.historic_stop_observations_fixture_ingest import (
 
 
 DEFAULT_LOCAL_TIMEZONE = "America/Los_Angeles"
-DEFAULT_INSERT_BATCH_SIZE = 1000
+DEFAULT_INSERT_BATCH_SIZE = 50000
 SERVICE_DATE_COMPACT_PATTERN = re.compile(r"^\d{8}$")
 SERVICE_DAY_TIME_PATTERN = re.compile(r"^(?P<hours>\d{1,2}):(?P<minutes>\d{2}):(?P<seconds>\d{2})$")
 REQUIRED_ARCHIVE_COLUMNS = (
@@ -43,6 +45,19 @@ REQUIRED_ARCHIVE_COLUMNS = (
     "stop_sequence",
     "to_stop_id",
     "observed_arrival_time",
+)
+ARCHIVE_STAGE_TABLE = "stop_observations_archive_stage"
+ARCHIVE_STAGE_COLUMNS = (
+    "service_date_text",
+    "trip_id",
+    "stop_id",
+    "stop_sequence_text",
+    "observed_arrival_time",
+    "source_system",
+    "feed_scope",
+    "operator_id",
+    "snapshot_label",
+    "ingested_at",
 )
 
 
@@ -71,6 +86,13 @@ def parse_compact_service_date(value: str) -> date:
         raise ValueError(
             f"service_date must be YYYYMMDD in the historic archive; received {value!r}."
         ) from exc
+
+
+def _validate_compact_service_date_text(value: str) -> None:
+    if not SERVICE_DATE_COMPACT_PATTERN.fullmatch(value):
+        raise ValueError(
+            f"service_date must be YYYYMMDD in the historic archive; received {value!r}."
+        )
 
 
 def parse_service_day_observed_arrival_timestamp(
@@ -173,7 +195,7 @@ def _transform_archive_row(
     metadata: Mapping[str, str | None],
     *,
     local_timezone: str,
-) -> dict[str, str] | None:
+) -> tuple[str, ...] | None:
     service_date_value = (raw_row.get("service_date") or "").strip()
     trip_id = (raw_row.get("trip_id") or "").strip()
     stop_id = (raw_row.get("to_stop_id") or "").strip()
@@ -188,50 +210,105 @@ def _transform_archive_row(
     if not observed_arrival_time:
         return None
 
-    parsed_service_date = parse_compact_service_date(service_date_value)
-    parsed_observed_arrival = parse_service_day_observed_arrival_timestamp(
+    _validate_compact_service_date_text(service_date_value)
+    match = SERVICE_DAY_TIME_PATTERN.fullmatch(observed_arrival_time)
+    if match is None:
+        raise ValueError(
+            "observed_arrival_time must be HH:MM:SS in the historic archive."
+        )
+
+    minutes = int(match.group("minutes"))
+    seconds = int(match.group("seconds"))
+    if minutes > 59 or seconds > 59:
+        raise ValueError(
+            "observed_arrival_time must be HH:MM:SS in the historic archive."
+        )
+
+    _ = local_timezone
+    return (
         service_date_value,
+        trip_id,
+        stop_id,
+        stop_sequence,
         observed_arrival_time,
-        local_timezone=local_timezone,
+        metadata["source_system"] or "",
+        metadata["feed_scope"] or "",
+        metadata["operator_id"] or "",
+        metadata["snapshot_label"] or "",
+        metadata["ingested_at"] or "",
     )
 
-    row = {
-        "service_date": parsed_service_date.isoformat(),
-        "trip_id": trip_id,
-        "stop_id": stop_id,
-        "stop_sequence": stop_sequence,
-        "observed_arrival_time": observed_arrival_time,
-        "observed_arrival_ts": parsed_observed_arrival.isoformat(),
-        "source_system": metadata["source_system"] or "",
-        "feed_scope": metadata["feed_scope"] or "",
-        "operator_id": metadata["operator_id"] or "",
-        "snapshot_label": metadata["snapshot_label"] or "",
-        "ingested_at": metadata["ingested_at"] or "",
-    }
-    return row
 
-
-def _insert_archive_rows(settings: object, rows: list[Mapping[str, str]]) -> int:
+def _copy_archive_rows(
+    connection: psycopg.Connection[Any],
+    rows: list[tuple[str, ...]],
+    *,
+    local_timezone: str,
+) -> int:
     if not rows:
         return 0
 
-    columns = [*TABLE_COLUMNS, *METADATA_COLUMNS]
-    values_sql: list[str] = []
+    copy_sql = (
+        f"COPY {ARCHIVE_STAGE_TABLE} ({', '.join(ARCHIVE_STAGE_COLUMNS)}) "
+        "FROM STDIN WITH (FORMAT CSV)"
+    )
+    csv_buffer = StringIO()
+    writer = csv.writer(csv_buffer, lineterminator="\n")
     for row in rows:
-        values_sql.append(
-            "(" + ", ".join(sql_literal(row[column]) for column in columns) + ")"
-        )
+        writer.writerow(row)
 
-    insert_sql = (
-        f"INSERT INTO {TABLE_NAME} ({', '.join(columns)}) VALUES\n"
-        + ",\n".join(values_sql)
-        + ";\n"
-    )
-    run_command(
-        [*docker_compose_psql_args(settings), "-t", "-A"],
-        input_text=insert_sql,
-    )
+    with connection.cursor() as cursor:
+        with cursor.copy(copy_sql) as copy:
+            copy.write(csv_buffer.getvalue())
+        cursor.execute(
+            f"""
+            INSERT INTO {TABLE_NAME} ({', '.join([*TABLE_COLUMNS, *METADATA_COLUMNS])})
+            SELECT
+                to_date(service_date_text, 'YYYYMMDD') as service_date,
+                trip_id,
+                stop_id,
+                stop_sequence_text::integer as stop_sequence,
+                observed_arrival_time,
+                (
+                    (to_date(service_date_text, 'YYYYMMDD')::timestamp AT TIME ZONE %s)
+                    + make_interval(
+                        hours => split_part(observed_arrival_time, ':', 1)::integer,
+                        mins => split_part(observed_arrival_time, ':', 2)::integer,
+                        secs => split_part(observed_arrival_time, ':', 3)::integer
+                    )
+                ) as observed_arrival_ts,
+                source_system,
+                feed_scope,
+                nullif(operator_id, '') as operator_id,
+                snapshot_label,
+                ingested_at
+            FROM {ARCHIVE_STAGE_TABLE};
+            """,
+            (local_timezone,),
+        )
+        cursor.execute(f"TRUNCATE TABLE {ARCHIVE_STAGE_TABLE};")
     return len(rows)
+
+
+def _ensure_archive_stage_table(connection: psycopg.Connection[Any]) -> None:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"""
+            CREATE TEMP TABLE IF NOT EXISTS {ARCHIVE_STAGE_TABLE} (
+                service_date_text TEXT NOT NULL,
+                trip_id TEXT NOT NULL,
+                stop_id TEXT NOT NULL,
+                stop_sequence_text TEXT NOT NULL,
+                observed_arrival_time TEXT NOT NULL,
+                source_system TEXT NOT NULL,
+                feed_scope TEXT NOT NULL,
+                operator_id TEXT,
+                snapshot_label TEXT NOT NULL,
+                ingested_at TIMESTAMPTZ NOT NULL
+            ) ON COMMIT DROP;
+            """
+        )
+        cursor.execute(f"TRUNCATE TABLE {ARCHIVE_STAGE_TABLE};")
 
 
 def load_historic_stop_observations_archive(
@@ -268,39 +345,50 @@ def load_historic_stop_observations_archive(
 
     inserted_row_count = 0
     skipped_missing_required_count = 0
-    batch: list[dict[str, str]] = []
+    batch: list[tuple[str, ...]] = []
+    connection_url = build_postgres_connection_url()
+    with psycopg.connect(connection_url) as connection:
+        _ensure_archive_stage_table(connection)
+        with zipfile.ZipFile(artifact_path, mode="r") as archive:
+            with archive.open(STOP_OBSERVATIONS_FILENAME, mode="r") as raw_handle:
+                text_handle = TextIOWrapper(raw_handle, encoding="utf-8", newline="")
+                reader = csv.DictReader(text_handle)
+                _validate_archive_headers(reader.fieldnames)
 
-    with zipfile.ZipFile(artifact_path, mode="r") as archive:
-        with archive.open(STOP_OBSERVATIONS_FILENAME, mode="r") as raw_handle:
-            text_handle = TextIOWrapper(raw_handle, encoding="utf-8", newline="")
-            reader = csv.DictReader(text_handle)
-            _validate_archive_headers(reader.fieldnames)
+                for raw_row in reader:
+                    transformed_row = _transform_archive_row(
+                        raw_row,
+                        load_metadata,
+                        local_timezone=local_timezone,
+                    )
+                    if transformed_row is None:
+                        skipped_missing_required_count += 1
+                        continue
 
-            for raw_row in reader:
-                transformed_row = _transform_archive_row(
-                    raw_row,
-                    load_metadata,
-                    local_timezone=local_timezone,
-                )
-                if transformed_row is None:
-                    skipped_missing_required_count += 1
-                    continue
+                    batch.append(transformed_row)
+                    if max_rows is not None and (inserted_row_count + len(batch)) >= max_rows:
+                        batch = batch[: max_rows - inserted_row_count]
 
-                batch.append(transformed_row)
-                if max_rows is not None and (inserted_row_count + len(batch)) >= max_rows:
-                    batch = batch[: max_rows - inserted_row_count]
+                    if len(batch) >= insert_batch_size or (
+                        max_rows is not None
+                        and (inserted_row_count + len(batch)) >= max_rows
+                    ):
+                        inserted_row_count += _copy_archive_rows(
+                            connection,
+                            batch,
+                            local_timezone=local_timezone,
+                        )
+                        batch = []
 
-                if len(batch) >= insert_batch_size or (
-                    max_rows is not None and (inserted_row_count + len(batch)) >= max_rows
-                ):
-                    inserted_row_count += _insert_archive_rows(settings, batch)
-                    batch = []
+                    if max_rows is not None and inserted_row_count >= max_rows:
+                        break
 
-                if max_rows is not None and inserted_row_count >= max_rows:
-                    break
-
-    if batch:
-        inserted_row_count += _insert_archive_rows(settings, batch)
+        if batch:
+            inserted_row_count += _copy_archive_rows(
+                connection,
+                batch,
+                local_timezone=local_timezone,
+            )
 
     return HistoricStopObservationsArchiveLoadResult(
         inserted_row_count=inserted_row_count,

@@ -61,6 +61,13 @@ Current integration artifacts:
   - performs a live monthly historic `511` regional fetch only if `TRANSIT_511_API_KEY` is configured locally
   - skips cleanly when no token is available or network access to `511` is blocked
   - verifies the plain historic regional archive and provenance metadata are usable by later historical ingest slices
+- `integration/test_real_dataset_cutover_bundle.py`
+  - performs the bounded `B6a` active + historic archive cutover only if `TRANSIT_511_API_KEY` is configured locally
+  - reuses `artifacts/cutovers/b6a_real_dataset_cutover_bundle/latest.json` when that manifest is present so validation can rerun against the same archived snapshot
+  - when the source archive is regional `RG -so`, the cutover first derives an `SF`-only historic archive and then loads/builds from that reduced snapshot
+  - verifies that a second unchanged cutover rerun skips dbt entirely through the manifest-aware no-op guard
+  - verifies the rebuilt marts and serving layers expose a broad real Muni route set
+  - verifies the live FastAPI contract reads from that rebuilt real dataset rather than the old two-route development cut
 
 Current unit artifacts:
 
@@ -84,6 +91,10 @@ Current unit artifacts:
   - verifies `-so` acquisition metadata validation and archive-backed snapshot labeling
 - `unit/test_api_contract_fixtures.py`
   - validates the committed API fixture JSON payloads against the same frozen Pydantic response models used by the live FastAPI handlers
+- `unit/test_real_dataset_cutover.py`
+  - verifies the cutover dbt fingerprint reacts to tracked dbt file or var changes only
+  - verifies dbt reuse ignores prior `--skip-dbt` manifests and reuses the last successful matching manifest instead
+  - verifies an unchanged cutover rerun skips `run_dbt_run()` entirely and records explicit manifest reuse metadata
 
 Unit test command:
 

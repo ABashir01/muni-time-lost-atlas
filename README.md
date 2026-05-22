@@ -316,20 +316,31 @@ To run the full staged/canonical/mart graph against the local Postgres instance:
 The project now has a bounded real historical cutover path for the app-facing marts, API, and frontend.
 
 - use `pipeline/src/muni_lta_pipeline/real_dataset_cutover.py`
+- the cutover now derives an `SF`-only historic archive from the fetched `RG -so` source archive before loading raw tables and rebuilding dbt
 - the validated bounded cut in this bundle is:
   - historic month `2023-02`
   - regional archive scope `RG -so`
   - in-archive agency filter `SF`
 - the cutover entrypoint:
   - fetches active `SF` GTFS and the bounded historic `RG -so` archive
-  - loads fetched GTFS archives into `raw.gtfs_*`
-  - loads fetched historic observations into `raw.stop_observations`
-  - rebuilds dbt against the historic `SF` snapshot inside the regional archive
+  - derives an `SF`-only historic archive snapshot under `artifacts/acquisitions/511/regional_historic_sf/`
+  - loads the derived `SF`-only GTFS archive into `raw.gtfs_*`
+  - loads the derived `SF`-only historic observations into `raw.stop_observations`
+  - rebuilds dbt against the `regional_historic_sf` snapshot
   - writes a provenance manifest to `artifacts/cutovers/b6a_real_dataset_cutover_bundle/latest.json`
+  - reuses the existing raw GTFS, raw observations, and overlay snapshots by default when the target snapshot labels are already present
+  - accepts `--force-raw-reload` to rebuild raw inputs intentionally and `--skip-dbt` to prepare artifacts/raw data without rerunning dbt
 
 Run it with:
 
 ```powershell
 $env:PYTHONPATH='C:\Users\ahadb\Documents\New project 3\pipeline\src'
 .\.venv\Scripts\python.exe -m muni_lta_pipeline.real_dataset_cutover --historic-month 2023-02 --historic-agency-id SF
+```
+
+To rebuild the validated archived snapshot exactly, reuse the recorded sidecars:
+
+```powershell
+$env:PYTHONPATH='C:\Users\ahadb\Documents\New project 3\pipeline\src'
+.\.venv\Scripts\python.exe -m muni_lta_pipeline.real_dataset_cutover --historic-month 2023-02 --historic-agency-id SF --active-metadata-path 'C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\operator_active\511_operator_active_SF_20260520T201312Z.json' --historic-metadata-path 'C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\regional_historic\511_regional_historic_RG_202302_with_so_20260520T201335Z.json'
 ```

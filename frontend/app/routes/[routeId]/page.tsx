@@ -13,13 +13,22 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function normalizeRouteIdParam(routeId: string) {
+  try {
+    return decodeURIComponent(routeId);
+  } catch {
+    return routeId;
+  }
+}
+
 export default async function RouteDetailPage({
   params,
 }: {
   params: Promise<{ routeId: string }> | { routeId: string };
 }) {
   const resolvedParams: { routeId: string } = "then" in params ? await params : params;
-  const data = await getRouteDetailPageData(resolvedParams.routeId);
+  const routeId = normalizeRouteIdParam(resolvedParams.routeId);
+  const data = await getRouteDetailPageData(routeId);
 
   if (!data) {
     notFound();

@@ -1,4 +1,12 @@
-{{ config(materialized='table', tags=['scheduled']) }}
+{{ config(
+    materialized='table',
+    tags=['scheduled'],
+    post_hook=(
+        [
+            "create index if not exists scheduled_stop_events_service_trip_stop_idx on {{ this }} (service_date, trip_id, stop_sequence, stop_id)"
+        ] if var('performance_indexing', false) else []
+    )
+) }}
 
 select
     trips.trip_id,

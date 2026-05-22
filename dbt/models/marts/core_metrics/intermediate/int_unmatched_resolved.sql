@@ -1,4 +1,4 @@
-{{ config(materialized='ephemeral', tags=['metrics']) }}
+{{ config(materialized=var('metrics_intermediate_materialization', 'ephemeral'), tags=['metrics']) }}
 
 select
     coalesce(audit.route_id, scheduled_trip.route_id) as route_id,
