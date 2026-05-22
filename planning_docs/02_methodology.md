@@ -139,6 +139,21 @@ For the first SQL bundle:
 - route summaries currently materialize one supported window: `all_day`
 - direction and hour summaries provide the first breakdowns beneath that route window
 
+### Current Public Ranking Limitation
+The current public homepage rankings and citywide map contract still use the
+route-level aggregate, not the direction-level one.
+
+That means:
+- the published headline for a route may pool two materially different directions
+- a route such as `SF:22` can show one public route-level value even when one
+  direction is much worse than the other
+- the current public ranking should be interpreted as a route-level screening
+  signal, not a fully direction-truthful rider-facing statement
+
+This is an explicit short-term MVP tradeoff, not the intended long-term product
+unit. The planned post-MVP shift is to rank and display public results at the
+`route_id + direction_id` level everywhere.
+
 ## First Segment Layer
 For the first spatial bundle, the segment layer is narrower than the route summary layer.
 

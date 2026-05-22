@@ -5,6 +5,7 @@
 - stronger mobile-first map behavior
 - saved comparisons or shareable compare links
 - homepage editorial callouts and notable findings
+- full direction-level public shift across homepage, rankings, map, compare, and route detail
 
 ## Post-MVP Analytical Ideas
 - best-typical-runtime alternate baseline
@@ -26,6 +27,7 @@
 - whether interpretive labels are computed in the API or the frontend
 - which historical month or bounded historical cut becomes the first real app-facing dataset snapshot
 - whether the transit-only lane overlay should eventually be API-served instead of fixture-served
+- what the final public route-direction identifier format should be for compare and future shared deep links
 
 ## Process Backlog
 - convert design direction into a light design system doc

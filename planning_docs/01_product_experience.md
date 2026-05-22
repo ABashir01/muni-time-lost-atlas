@@ -51,6 +51,15 @@ Each route card should show:
 - worst time window
 - worst segment label
 
+Current MVP limitation:
+- the homepage ranking cards and citywide map still use route-level public
+  aggregates
+- this can mask strong directional asymmetry on routes where inbound and
+  outbound rider experience differs materially
+- the long-term product direction is a direction-level public unit everywhere:
+  homepage, full rankings, map, compare, and route detail
+- that shift is intentionally deferred until after the current MVP path
+
 ## Route Detail
 The route detail page should answer:
 - how much extra time a typical full trip loses

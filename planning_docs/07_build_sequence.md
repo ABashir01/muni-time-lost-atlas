@@ -99,6 +99,19 @@ The current baseline now includes:
 - replaces: `S33` through `S35`
 - doc: [B8_product_hardening_bundle.md](./slices/B8_product_hardening_bundle.md)
 
+## Post-MVP Follow-Ups
+These do not belong on the current MVP critical path.
+
+### P1 Directional Public Shift
+- goal: move the public ranking and map unit from route-level to route-direction-level everywhere public
+- scope: homepage, rankings, map, and route-detail entry behavior
+- doc: [P1_directional_public_shift.md](./slices/P1_directional_public_shift.md)
+
+### P2 Directional Compare Shift
+- goal: make compare direction-aware after the public ranking/map shift is complete
+- scope: compare selector, compare API contract, compare cards
+- doc: [P2_directional_compare_shift.md](./slices/P2_directional_compare_shift.md)
+
 ## Legacy Future Slices
 The old fine-grained future slices `S08` through `S35` are now superseded by bundles `B1` through `B8`.
 
@@ -140,3 +153,8 @@ Use full `unittest discover` or broader regression sweeps only at major checkpoi
 - after `B4`
 - after `B6`
 - after `B8`
+
+After the MVP path:
+- treat `P1` and `P2` as explicit follow-up work, not as implicit cleanup
+- keep the current route-level public behavior only so long as the methodology
+  disclosure remains explicit

@@ -29,6 +29,15 @@ Current `B4` scope limits:
 - `/rankings` currently supports only `mode=routes`
 - stop-wait hotspot data remains limited to the conservative first-stop exact-match methodology
 
+Current public-unit limitation:
+- the public homepage rankings and current citywide map contract are route-level
+  rather than direction-level
+- `marts.route_direction_summary` already exists beneath this layer, but the
+  public ranking/map contract does not yet use it
+- a future deferred API evolution should add direction-level public ranking and
+  map support instead of continuing to pool materially different directions into
+  one published route entry
+
 ## Implemented Endpoints
 - `GET /health`
 - `GET /rankings?window=all_day&metric={typical_trip_loss_minutes|waiting_loss_minutes|in_vehicle_loss_minutes}&mode=routes`
@@ -66,6 +75,11 @@ Current `B1` summary tables also expose diagnostic coverage fields:
 ## Rankings Response
 Purpose:
 - power homepage route ranking cards
+
+Current implementation note:
+- rankings currently publish route-level entries only
+- the deferred future public contract should add a direction-aware mode where
+  the ranking unit becomes `route_id + direction_id`
 
 Shape:
 - top-level `window`
@@ -173,6 +187,14 @@ Current `B4a` implementation notes:
 Purpose:
 - power citywide route choropleth / thematic map
 
+Current implementation note:
+- the current map response publishes one route-level feature per route
+- the deferred future contract should move the public map unit to
+  route-direction-level so the citywide map stays consistent with future
+  direction-level homepage and rankings behavior
+- that future shift will require a deliberate cartographic strategy for
+  overlapping inbound/outbound features
+
 Shape:
 - top-level `window`
 - top-level `metric`
@@ -194,6 +216,11 @@ Current `B3` implementation notes:
 ## Compare Response
 Purpose:
 - power 2-4 route compare view
+
+Deferred evolution note:
+- compare is currently route-level
+- the future direction-aware public contract should allow compare items to
+  identify both route and direction rather than only `route_id`
 
 Shape:
 - top-level `window`
