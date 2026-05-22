@@ -35,19 +35,23 @@ The final value of the project depends on clarity and polish, not only on techni
 - write concise run/deploy instructions
 - no major new features in this bundle
 - prioritize clarity, polish, and trustworthiness over expansion
+- base styling off of the homepage - header, colors, etc.
 
 ## Tests required
 - one primary QA sweep across the finished product
 - one broader regression checkpoint after the full bundle is complete
+- confirm that the homepage wasn't touched
 
 ## Acceptance criteria
 - the product is coherent for public readers and technical reviewers
 - methodology and interface language align with actual implementation
 - mobile and edge-case behavior are good enough for portfolio/demo use
+- did NOT touch the homepage
 
 ## Non-goals
 - new analytical feature expansion
 - new API surfaces
+- changing the homepage
 
 ## Handoff to next bundle
 This is the final planned MVP bundle.

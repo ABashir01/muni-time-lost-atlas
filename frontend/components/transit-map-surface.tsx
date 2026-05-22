@@ -47,18 +47,18 @@ const mapStyle: StyleSpecification = {
     {
       id: "background",
       paint: {
-        "background-color": "#dde7ec",
+        "background-color": "#e6eef2",
       },
       type: "background",
     },
     {
       id: "basemap",
       paint: {
-        "raster-brightness-max": 0.95,
-        "raster-brightness-min": 0.68,
-        "raster-contrast": -0.08,
+        "raster-brightness-max": 1,
+        "raster-brightness-min": 0.9,
+        "raster-contrast": -0.22,
         "raster-fade-duration": 0,
-        "raster-opacity": 0.56,
+        "raster-opacity": 0.42,
         "raster-saturation": -1,
       },
       source: "basemap",
@@ -827,6 +827,18 @@ function placeNeighborhoodLabel(
     [-18, -18],
     [18, 18],
     [-18, 18],
+    [0, -36],
+    [30, 0],
+    [-30, 0],
+    [0, 36],
+    [28, -28],
+    [-28, -28],
+    [28, 28],
+    [-28, 28],
+    [0, -48],
+    [40, 0],
+    [-40, 0],
+    [0, 48],
   ] as const;
 
   for (const [offsetX, offsetY] of candidateOffsets) {
