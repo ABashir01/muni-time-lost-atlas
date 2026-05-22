@@ -11,6 +11,7 @@ import {
 } from "next/font/google";
 import { AppChrome } from "@/components/app-chrome";
 import "./globals.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 const oswald = Oswald({
   subsets: ["latin"],

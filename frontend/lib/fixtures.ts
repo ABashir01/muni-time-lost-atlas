@@ -13,6 +13,12 @@ export function loadTransitLaneOverlay() {
   const overlay = JSON.parse(readFileSync(overlayDir, "utf8")) as {
     features: Array<{
       geometry: { coordinates: [number, number][] };
+      properties?: {
+        overlay_id?: string;
+        route_hint?: string;
+        segment_name?: string;
+        street_name?: string;
+      };
     }>;
   };
 
@@ -28,18 +34,23 @@ export function loadTransitLaneOverlay() {
       matched_headway_interval_count: 0,
       matched_observed_stop_event_count: 0,
       metric_updated_at: "1970-01-01T00:00:00Z",
+      metric: "context_overlay",
+      metric_value: 0,
+      overlay_id: feature.properties?.overlay_id ?? `overlay-${featureIndex}`,
       resolved_unmatched_observation_count: 0,
       route_id: `overlay-${featureIndex}`,
+      route_hint: feature.properties?.route_hint ?? "",
       route_long_name: "Transit lane context",
       route_name: "Transit lane",
       route_short_name: "TL",
+      segment_name: feature.properties?.segment_name ?? "Transit lane context",
+      street_name: feature.properties?.street_name ?? "Transit lane",
       typical_trip_loss_minutes: 0,
       waiting_loss_minutes: 0,
       window: "all_day",
       worst_segment_label: "Context only",
       worst_stop_wait_label: "Context only",
       worst_time_band: "Not published",
-      metric_value: 0,
     },
   }));
 }

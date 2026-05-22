@@ -1,0 +1,42 @@
+{
+  "active_gtfs_metadata_path": "C:\\Users\\ahadb\\Documents\\New project 3\\artifacts\\acquisitions\\511\\operator_active\\511_operator_active_SF_20260520T201312Z.json",
+  "active_gtfs_snapshot_label": "archive_511_operator_active_SF_20260520T201312Z",
+  "cutover_built_at": "2026-05-21T16:25:56.314138+00:00",
+  "dbt_vars": {
+    "gtfs_feed_scope": "regional_historic_sf",
+    "gtfs_snapshot_label": "archive_511_regional_historic_RG_202302_with_so_20260520T201335Z_SF_only",
+    "historic_agency_id": "SF",
+    "metrics_intermediate_materialization": "table",
+    "observed_canonical_materialization": "table",
+    "observed_feed_scope": "regional_historic_sf",
+    "observed_snapshot_label": "archive_511_regional_historic_RG_202302_with_so_20260520T201335Z_SF_only",
+    "performance_indexing": true
+  },
+  "historic_agency_id": "SF",
+  "historic_gtfs_metadata_path": "C:\\Users\\ahadb\\Documents\\New project 3\\artifacts\\acquisitions\\511\\regional_historic_sf\\511_regional_historic_RG_202302_with_so_20260520T201335Z_SF_only.json",
+  "historic_gtfs_snapshot_label": "archive_511_regional_historic_RG_202302_with_so_20260520T201335Z_SF_only",
+  "historic_month": "2023-02",
+  "historic_observed_snapshot_label": "archive_511_regional_historic_RG_202302_with_so_20260520T201335Z_SF_only",
+  "historic_source_metadata_path": "C:\\Users\\ahadb\\Documents\\New project 3\\artifacts\\acquisitions\\511\\regional_historic\\511_regional_historic_RG_202302_with_so_20260520T201335Z.json",
+  "latest_log_path": "C:\\Users\\ahadb\\Documents\\New project 3\\artifacts\\cutovers\\b6a_real_dataset_cutover_bundle\\latest.log",
+  "log_path": "C:\\Users\\ahadb\\Documents\\New project 3\\artifacts\\cutovers\\b6a_real_dataset_cutover_bundle\\20260521T161427Z.log",
+  "map_route_count": 65,
+  "overlay_row_count": 2,
+  "reused_existing_gtfs_raw": true,
+  "reused_existing_observed_raw": true,
+  "reused_existing_overlay_raw": true,
+  "route_count_with_metrics": 65,
+  "skipped_dbt": false,
+  "top_route_ids": [
+    "SF:49",
+    "SF:F",
+    "SF:31",
+    "SF:43",
+    "SF:27",
+    "SF:8",
+    "SF:5R",
+    "SF:1",
+    "SF:8BX",
+    "SF:LOWL"
+  ]
+}

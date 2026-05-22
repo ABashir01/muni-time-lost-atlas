@@ -6,8 +6,8 @@ import {
   HomepageExplainerSymbol,
   HomepageTransitSymbol,
 } from "@/components/homepage-symbols";
-import { MapSchematic } from "@/components/map-schematic";
 import { RouteBadge } from "@/components/route-badge";
+import { TransitMapSurface } from "@/components/transit-map-surface";
 import { TimeWindowStrip } from "@/components/time-window-strip";
 import { getRouteTheme } from "@/lib/presentation";
 import { getHomepageData } from "@/lib/site-data";
@@ -94,15 +94,33 @@ export default async function HomePage({
         </div>
 
         <div className="homepage-map-panel">
-          <MapSchematic
+          <div className="homepage-map-explainer">
+            <p>Homepage map key</p>
+            <h3>Worst routes highlighted</h3>
+            <span>
+              Colored lines show the three homepage-ranked worst routes. Gray lines keep
+              the rest of the network in view. Open the full map for every corridor.
+            </span>
+          </div>
+          <TransitMapSurface
             ctaHref="/map"
             ctaLabel="Explore the map"
-            editorialContext
-            features={data.map.features}
-            showDistrictLabels
-            showLegend
-            subtitle="vs. ideal trip"
-            title="Extra time per trip"
+            ariaLabel="Published citywide route loss map"
+            backgroundRouteFeatures={data.heroMap.backgroundFeatures}
+            fitMaxZoom={13.4}
+            fitPadding={0}
+            gestureNavigation={false}
+            hoverRoutes
+            interactive
+            lineMode="default"
+            minHeight="100%"
+            neighborhoodLabels={data.heroMap.neighborhoodLabels}
+            routeBadges={data.heroMap.routeBadges}
+            routeFeatures={data.heroMap.featuredFeatures}
+            routeColorMode="metric"
+            showControls={false}
+            surfaceLabel="MapLibre GL JS route surface"
+            viewportBounds={data.heroMap.viewportBounds}
           />
         </div>
       </section>

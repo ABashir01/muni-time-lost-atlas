@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { DataStamp } from "@/components/data-stamp";
 import { DataStatePanel } from "@/components/data-state-panel";
-import { MapSchematic } from "@/components/map-schematic";
 import { RouteBadge } from "@/components/route-badge";
+import { TransitMapSurface } from "@/components/transit-map-surface";
 import type { MapPageData } from "@/lib/site-data";
 import { formatMinutes } from "@/lib/utils";
 
 export function MapPageSurface({ data }: { data: MapPageData }) {
-  const [lanesOn, setLanesOn] = useState(true);
+  const [lanesOn, setLanesOn] = useState(false);
   const hasRoutes = data.routes.features.length > 0;
 
   return (
@@ -65,15 +65,9 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
             </button>
           </label>
           <label className="fixture-toggle">
-            <span>Live vehicles</span>
+            <span>Route hover</span>
             <button disabled type="button">
-              Deferred in this bundle
-            </button>
-          </label>
-          <label className="fixture-toggle">
-            <span>Stop hotspots</span>
-            <button disabled type="button">
-              Route detail only
+              Name + time on hover
             </button>
           </label>
         </div>
@@ -86,13 +80,21 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
       <div className="map-layout">
         <div className="map-panel">
           {hasRoutes ? (
-            <MapSchematic
-              features={data.routes.features}
+            <TransitMapSurface
+              ariaLabel="Published citywide route loss map"
+              legend={{
+                subtitle: "Route corridors colored by published route loss",
+                title: "Typical extra time",
+              }}
+              fitMaxZoom={17}
+              fitPadding={2}
+              hoverRoutes
+              lineMode="compact"
+              minHeight="620px"
               overlayFeatures={lanesOn ? data.transitLaneOverlay : []}
-              showLegend
-              showDistrictLabels
-              title="Typical extra time"
-              subtitle="Route corridors colored by published route loss"
+              routeFeatures={data.routes.features}
+              routeColorMode="metric"
+              surfaceLabel="MapLibre GL JS citywide surface"
             />
           ) : (
             <DataStatePanel
@@ -143,8 +145,8 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
               </li>
               <li>
                 <div>
-                  <strong>No live fleet yet</strong>
-                  <small>The deferred live vehicle layer stays disabled in this bundle.</small>
+                  <strong>Hover for route context</strong>
+                  <small>Route name and published typical extra time appear directly on the map.</small>
                 </div>
               </li>
               <li>

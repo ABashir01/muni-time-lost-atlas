@@ -132,7 +132,9 @@ describe("public pages", () => {
     expect(html).toContain("Where Muni");
     expect(html).toContain("Riders Lose");
     expect(html).toContain("Most Time");
-    expect(html).toContain("Mission");
+    expect(html).toContain("Worst routes highlighted");
+    expect(html).toContain("three homepage-ranked worst routes");
+    expect(html).toContain("MapLibre GL JS route surface");
     expect(html).toContain("Historical/static API snapshot");
     expect(html).toContain("extra time per trip");
   });
@@ -145,6 +147,7 @@ describe("public pages", () => {
     expect(html).toContain("16th St Mission -&gt; 24th St Mission");
     expect(html).toContain("Worst published stop wait");
     expect(html).toContain("Worst time window");
+    expect(html).toContain("MapLibre");
   });
 
   it("renders empty directional notices when route detail layers are not published", async () => {
@@ -168,6 +171,7 @@ describe("public pages", () => {
     expect(compareHtml).toContain("Worst selected route");
     expect(mapHtml).toContain("The citywide evidence surface.");
     expect(mapHtml).toContain("Highest published loss");
+    expect(mapHtml).toContain("MapLibre GL JS citywide surface");
     expect(mapHtml).toContain("Transit-only lane overlay");
     expect(methodologyHtml).toContain("Typical trip: +X.X min is the public promise.");
     expect(methodologyHtml).toContain("Plain-English contract");

@@ -35,6 +35,21 @@ export type PointGeometry = {
   coordinates: [number, number];
 };
 
+export type MapCoordinate = [number, number];
+
+export type MapBounds = [MapCoordinate, MapCoordinate];
+
+export type MapRouteBadge = {
+  coordinate: MapCoordinate;
+  route_id: string;
+  route_short_name: string;
+};
+
+export type MapNeighborhoodLabel = {
+  coordinate: MapCoordinate;
+  text: string;
+};
+
 export type RouteIdentity = {
   metric_updated_at: string;
   route_id: string;
@@ -60,17 +75,21 @@ export type FeatureLine = {
       matched_observed_stop_event_count: number;
       metric: string;
       metric_value: number;
+      overlay_id: string;
       rank: number;
       resolved_unmatched_observation_count: number;
       scheduled_segment_minutes: number;
+      segment_name: string;
       segment_in_vehicle_loss_minutes: number;
       segment_label: string;
       segment_sequence: number;
       segment_strategy: string;
       shape_id: string;
+      street_name: string;
       to_stop_id: string;
       to_stop_name: string;
       typical_trip_loss_minutes: number;
+      route_hint: string;
       waiting_loss_minutes: number;
       worst_segment_label: string;
       worst_stop_wait_label: string;

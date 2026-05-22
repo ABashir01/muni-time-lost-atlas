@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { DataStamp } from "@/components/data-stamp";
 import { DataStatePanel } from "@/components/data-state-panel";
-import { MapSchematic } from "@/components/map-schematic";
 import { RouteBadge } from "@/components/route-badge";
+import { TransitMapSurface } from "@/components/transit-map-surface";
 import { getRouteDetailPageData } from "@/lib/site-data";
 import {
   formatMinutes,
@@ -117,15 +117,19 @@ export default async function RouteDetailPage({
             <p className="eyebrow">Where on the route?</p>
             <h2>Corridor evidence before any theory.</h2>
           </div>
-          <MapSchematic
-            features={data.mapFeatures}
+          <TransitMapSurface
+            ariaLabel={`Route ${data.summary.route_short_name} detail map`}
             focusRouteId={data.summary.route_id}
-            showDistrictLabels
-            title="Published corridor geometry"
-            subtitle={
+            minHeight="520px"
+            overlayFeatures={data.transitLaneOverlay}
+            routeColorMode="focus"
+            routeFeatures={data.mapFeatures}
+            segmentFeatures={data.segmentCollection?.features ?? []}
+            stopFeatures={data.stopWaitCollection?.features ?? []}
+            surfaceLabel={
               data.segmentCollection
-                ? `${data.segmentCollection.direction_label} adjacent-stop segments`
-                : "Route corridor from the citywide map layer"
+                ? `${data.segmentCollection.direction_label} MapLibre corridor`
+                : "MapLibre route corridor"
             }
           />
           {data.mapNotice ? <DataStatePanel eyebrow="Route map" notice={data.mapNotice} /> : null}

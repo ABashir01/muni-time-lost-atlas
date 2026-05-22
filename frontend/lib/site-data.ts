@@ -11,6 +11,10 @@ import { loadTransitLaneOverlay } from "@/lib/fixtures";
 import type {
   CompareResponse,
   DataNotice,
+  FeatureLine,
+  MapBounds,
+  MapNeighborhoodLabel,
+  MapRouteBadge,
   MethodologySection,
   RouteMapResponse,
   RouteSegmentsResponse,
@@ -21,6 +25,34 @@ import { median, routeLossShares } from "@/lib/utils";
 
 const transitLaneOverlay = loadTransitLaneOverlay();
 const preferredDirections = [1, 0] as const;
+const homepageHeroBounds: MapBounds = [
+  [-122.511, 37.708],
+  [-122.389, 37.811],
+];
+const homepageNeighborhoodLabels: MapNeighborhoodLabel[] = [
+  { coordinate: [-122.4795, 37.7825], text: "Richmond District" },
+  { coordinate: [-122.471, 37.7695], text: "Golden Gate Park" },
+  { coordinate: [-122.4475, 37.7705], text: "Haight Ashbury" },
+  { coordinate: [-122.4195, 37.7555], text: "Mission District" },
+  { coordinate: [-122.4045, 37.7805], text: "SOMA" },
+  { coordinate: [-122.3995, 37.7365], text: "Bayview" },
+  { coordinate: [-122.411, 37.8075], text: "Fisherman's Wharf" },
+];
+const homepageBadgeAnchorByShortName: Record<string, [number, number]> = {
+  "27": [-122.4115, 37.739],
+  "31": [-122.467, 37.7752],
+  "43": [-122.4485, 37.7655],
+  "49": [-122.4198, 37.7865],
+  F: [-122.4018, 37.794],
+};
+
+type HomepageHeroMap = {
+  backgroundFeatures: FeatureLine[];
+  featuredFeatures: FeatureLine[];
+  neighborhoodLabels: MapNeighborhoodLabel[];
+  routeBadges: MapRouteBadge[];
+  viewportBounds: MapBounds;
+};
 
 const methodologySections: MethodologySection[] = [
   {
@@ -86,6 +118,7 @@ type ReadyRouteDetailPageData = {
   stopWaitNotice?: DataNotice;
   summary: RouteSummary;
   systemMedianTypicalTripLoss: number;
+  transitLaneOverlay: FeatureLine[];
   waitingShare: number;
 };
 
@@ -146,7 +179,10 @@ export async function getHomepageData() {
     );
   }
 
+  const heroMap = buildHomepageHeroMap(rankings, map.features);
+
   return {
+    heroMap,
     map,
     notices,
     problemTypes: [
@@ -170,6 +206,7 @@ export async function getHomepageData() {
       },
     ],
     rankings,
+    transitLaneOverlay,
     windowLabel: "All day",
   };
 }
@@ -342,6 +379,9 @@ export async function getRouteDetailPageData(
         ? rankedRoutes.map((route) => route.typical_trip_loss_minutes)
         : [summary.typical_trip_loss_minutes],
     ),
+    transitLaneOverlay: transitLaneOverlay.filter(
+      (feature) => feature.properties.route_hint === routeId,
+    ),
     waitingShare: routeLossShares(summary).waiting,
   };
 }
@@ -495,6 +535,43 @@ function buildRouteCatalog(
   );
 }
 
+function buildHomepageHeroMap(
+  rankings: RouteSummary[],
+  features: FeatureLine[],
+): HomepageHeroMap {
+  const routeFeatureIds = new Set(features.map((feature) => feature.properties.route_id));
+  const featuredRankings = rankings
+    .filter((route) => routeFeatureIds.has(route.route_id))
+    .slice(0, 3);
+  const featuredRouteIds = new Set(featuredRankings.map((route) => route.route_id));
+  const featuredShortNameById = new Map(
+    featuredRankings.map((route) => [route.route_id, route.route_short_name] as const),
+  );
+  const featuredFeatures = features.filter((feature) =>
+    featuredRouteIds.has(feature.properties.route_id),
+  );
+  const routeBadges = featuredFeatures.map((feature) => {
+    const routeId = feature.properties.route_id;
+    const routeShortName =
+      featuredShortNameById.get(routeId) ?? feature.properties.route_short_name ?? routeId;
+
+    return {
+      coordinate:
+        homepageBadgeAnchorByShortName[routeShortName] ?? getFeatureAnchorCoordinate(feature),
+      route_id: routeId,
+      route_short_name: routeShortName,
+    };
+  });
+
+  return {
+    backgroundFeatures: features,
+    featuredFeatures,
+    neighborhoodLabels: homepageNeighborhoodLabels,
+    routeBadges,
+    viewportBounds: homepageHeroBounds,
+  };
+}
+
 function parseRequestedIds(ids?: string | string[]) {
   const rawIds =
     typeof ids === "string"
@@ -549,6 +626,20 @@ function routeSummaryFromFeature(feature: RouteMapResponse["features"][number]["
     worst_stop_wait_label: feature.worst_stop_wait_label ?? "Not published",
     worst_time_band: feature.worst_time_band ?? "Not published",
   };
+}
+
+function getFeatureAnchorCoordinate(feature: FeatureLine): [number, number] {
+  const segments =
+    feature.geometry.type === "MultiLineString"
+      ? feature.geometry.coordinates
+      : [feature.geometry.coordinates];
+  const flattened = segments.flat();
+
+  if (flattened.length === 0) {
+    return [-122.4376, 37.7638];
+  }
+
+  return flattened[Math.floor(flattened.length / 2)];
 }
 
 function formatApiError(error: unknown) {

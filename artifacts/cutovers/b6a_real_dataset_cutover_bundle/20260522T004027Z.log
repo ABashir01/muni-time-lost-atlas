@@ -1,0 +1,11 @@
+2026-05-22T00:40:27.393930+00:00 starting real dataset cutover for historic_month=2023-02 historic_agency_id=SF
+2026-05-22T00:40:27.395189+00:00 reusing active GTFS metadata C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\operator_active\511_operator_active_SF_20260520T201312Z.json
+2026-05-22T00:40:27.396365+00:00 reusing historic RG metadata C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\regional_historic_sf\511_regional_historic_RG_202302_with_so_20260520T201335Z_SF_only.json
+2026-05-22T00:40:27.398490+00:00 prepared SF-only historic archive metadata=C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\regional_historic_sf\511_regional_historic_RG_202302_with_so_20260520T201335Z_SF_only.json reused_existing=True retained_row_counts={'calendar_dates.txt': 1924712, 'routes.txt': 65, 'shapes.txt': 122044, 'stop_observations.txt': 4734308, 'stop_times.txt': 4364383, 'stops.txt': 3281, 'trips.txt': 115384}
+2026-05-22T00:40:27.484953+00:00 reusing existing raw GTFS snapshots archive_511_operator_active_SF_20260520T201312Z and archive_511_regional_historic_RG_202302_with_so_20260520T201335Z_SF_only
+2026-05-22T00:40:27.489778+00:00 reusing existing raw stop observations snapshot archive_511_regional_historic_RG_202302_with_so_20260520T201335Z_SF_only
+2026-05-22T00:40:27.494597+00:00 reusing existing transit lane overlay snapshot fixture_transit_lanes_v1 rows=2
+2026-05-22T00:40:27.529254+00:00 skipping dbt run because raw snapshot labels, dbt vars, and dbt fingerprint match successful manifest C:\Users\ahadb\Documents\New project 3\artifacts\cutovers\b6a_real_dataset_cutover_bundle\20260522T003123Z.json
+2026-05-22T00:40:27.530434+00:00 querying app-facing route coverage counts
+2026-05-22T00:40:27.550278+00:00 route_count_with_metrics=65 map_route_count=65 top_route_ids=['SF:49', 'SF:F', 'SF:31', 'SF:43', 'SF:27', 'SF:8', 'SF:5R', 'SF:1', 'SF:8BX', 'SF:LOWL']
+2026-05-22T00:40:27.553384+00:00 wrote manifests to C:\Users\ahadb\Documents\New project 3\artifacts\cutovers\b6a_real_dataset_cutover_bundle\20260522T004027Z.json and C:\Users\ahadb\Documents\New project 3\artifacts\cutovers\b6a_real_dataset_cutover_bundle\latest.json

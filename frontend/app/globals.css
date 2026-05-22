@@ -1483,19 +1483,49 @@ main {
   color: var(--red);
 }
 
-.schematic {
+.schematic,
+.map-surface {
   position: relative;
   min-height: 100%;
   background: linear-gradient(180deg, #dceafb 0%, #cfe0f7 100%);
 }
 
-.schematic svg {
+.schematic svg,
+.map-surface,
+.map-canvas {
   width: 100%;
+  min-height: var(--map-min-height, 520px);
+}
+
+.schematic svg,
+.map-surface,
+.map-canvas,
+.map-canvas .maplibregl-map,
+.map-canvas .maplibregl-canvas-container,
+.map-canvas .maplibregl-canvas {
   height: 100%;
-  min-height: 520px;
+}
+
+.map-canvas .maplibregl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.map-canvas .maplibregl-canvas-container.maplibregl-interactive,
+.map-canvas .maplibregl-canvas-container {
+  cursor: grab;
+}
+
+.map-canvas .maplibregl-canvas-container.maplibregl-interactive:active {
+  cursor: grabbing;
 }
 
 .home-hero .schematic svg {
+  min-height: 388px;
+}
+
+.home-hero .map-surface,
+.home-hero .map-canvas {
   min-height: 388px;
 }
 
@@ -1618,7 +1648,8 @@ main {
   gap: 6px;
 }
 
-.map-ui-controls span {
+.map-ui-controls span,
+.map-ui-controls button {
   display: grid;
   place-items: center;
   width: 42px;
@@ -1629,6 +1660,16 @@ main {
   font-size: 1.7rem;
   font-weight: 800;
   line-height: 1;
+}
+
+.map-ui-controls button {
+  padding: 0;
+  cursor: pointer;
+}
+
+.map-ui-controls button:disabled {
+  cursor: default;
+  opacity: 0.7;
 }
 
 .schematic-cta {
@@ -1649,6 +1690,108 @@ main {
   font-family: var(--font-display);
   font-size: 1.12rem;
   font-weight: 800;
+  text-transform: uppercase;
+}
+
+.map-attribution,
+.map-loading-state {
+  position: absolute;
+  left: 14px;
+  z-index: 2;
+  max-width: 17rem;
+  padding: 7px 10px;
+  border: 1.5px solid rgba(16, 16, 16, 0.4);
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f1f1f;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.map-attribution {
+  bottom: 14px;
+}
+
+.map-loading-state {
+  top: 14px;
+  right: 14px;
+  left: auto;
+  max-width: 16rem;
+}
+
+.map-loading-error {
+  background: rgba(255, 243, 243, 0.96);
+  color: #7f1010;
+}
+
+.map-route-tooltip {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  gap: 2px;
+  max-width: 220px;
+  padding: 8px 10px;
+  border: 2px solid rgba(16, 16, 16, 0.88);
+  background: rgba(255, 255, 255, 0.96);
+  pointer-events: none;
+  transform: translateY(-100%);
+}
+
+.map-route-tooltip strong,
+.map-route-tooltip span {
+  margin: 0;
+  line-height: 1.15;
+}
+
+.map-route-tooltip strong {
+  font-family: var(--font-display);
+  font-size: 0.96rem;
+  text-transform: uppercase;
+}
+
+.map-route-tooltip span {
+  color: #242424;
+  font-size: 0.78rem;
+}
+
+.map-neighborhood-label,
+.map-route-badge {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.map-neighborhood-label {
+  max-width: 8rem;
+  color: rgba(17, 24, 32, 0.72);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.05;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.map-route-badge {
+  display: grid;
+  place-items: center;
+  min-width: 2.2rem;
+  height: 2.2rem;
+  padding: 0 0.45rem;
+  border: 2px solid rgba(255, 255, 255, 0.98);
+  border-radius: 999px;
+  background: var(--map-route-badge-color, #0868d0);
+  box-shadow: 0 0 0 1.5px rgba(16, 16, 16, 0.22);
+}
+
+.map-route-badge span {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 900;
+  line-height: 1;
   text-transform: uppercase;
 }
 
@@ -2312,12 +2455,57 @@ body:has(.homepage-viewport) main {
 }
 
 .homepage-map-panel {
+  position: relative;
   min-width: 0;
   background: #dceafb;
 }
 
+.homepage-map-explainer {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 3;
+  width: 196px;
+  padding: 10px 12px 11px;
+  border: 1.5px solid rgba(16, 16, 16, 0.45);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.homepage-map-explainer p,
+.homepage-map-explainer h3,
+.homepage-map-explainer span {
+  margin: 0;
+}
+
+.homepage-map-explainer p {
+  color: #343434;
+  font-family: var(--font-display);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.homepage-map-explainer h3 {
+  margin-top: 3px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.homepage-map-explainer span {
+  display: block;
+  margin-top: 5px;
+  color: #232323;
+  font-size: 0.77rem;
+  line-height: 1.26;
+}
+
 .homepage-map-panel .schematic,
-.homepage-map-panel .schematic svg {
+.homepage-map-panel .schematic svg,
+.homepage-map-panel .map-surface,
+.homepage-map-panel .map-canvas {
   height: 100%;
   min-height: 0;
 }
@@ -2348,7 +2536,8 @@ body:has(.homepage-viewport) main {
   bottom: 84px;
 }
 
-.homepage-map-panel .map-ui-controls span {
+.homepage-map-panel .map-ui-controls span,
+.homepage-map-panel .map-ui-controls button {
   width: 42px;
   height: 42px;
 }
@@ -2365,6 +2554,30 @@ body:has(.homepage-viewport) main {
 
 .homepage-map-panel .district-label {
   font-size: 19px;
+}
+
+.homepage-map-panel .map-neighborhood-label {
+  color: rgba(17, 24, 32, 0.64);
+  font-size: 0.7rem;
+}
+
+.homepage-map-panel .map-route-badge {
+  min-width: 2rem;
+  height: 2rem;
+}
+
+.homepage-map-panel .map-route-badge span {
+  font-size: 0.96rem;
+}
+
+.homepage-map-panel .map-attribution {
+  left: 18px;
+  bottom: 18px;
+  max-width: 13.5rem;
+}
+
+.homepage-map-panel .map-engine-chip {
+  display: none;
 }
 
 .homepage-insights {
@@ -3141,14 +3354,18 @@ body:has(.homepage-viewport) main {
     border-radius: 0;
   }
 
-  .schematic svg {
+  .schematic svg,
+  .map-surface,
+  .map-canvas {
     min-height: 24rem;
   }
 
   .map-legend,
   .map-schematic-chip,
   .map-ui-controls,
-  .schematic-cta {
+  .schematic-cta,
+  .map-attribution,
+  .map-loading-state {
     position: static;
   }
 
@@ -3158,7 +3375,9 @@ body:has(.homepage-viewport) main {
 
   .map-schematic-chip,
   .map-ui-controls,
-  .schematic-cta {
+  .schematic-cta,
+  .map-attribution,
+  .map-loading-state {
     margin: 0 1rem 1rem;
   }
 
@@ -3265,7 +3484,9 @@ body:has(.homepage-viewport) main {
     flex-wrap: wrap;
   }
 
-  .homepage-map-panel .schematic svg {
+  .homepage-map-panel .schematic svg,
+  .homepage-map-panel .map-surface,
+  .homepage-map-panel .map-canvas {
     min-height: 420px;
   }
 

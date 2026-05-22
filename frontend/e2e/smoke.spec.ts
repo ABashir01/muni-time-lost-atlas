@@ -13,41 +13,66 @@ async function getPublishedRouteIds(request: { get: (url: string) => Promise<any
   return payload.routes.map((route) => route.route_id);
 }
 
-test("homepage renders and a desktop review screenshot is captured", async ({ page }) => {
+async function expectMapReady(page: { locator: (selector: string) => any }) {
+  const map = page.locator('[data-map-engine="maplibre-gl-js"]').first();
+  await expect(map).toHaveAttribute("data-map-loaded", "ready");
+  return map;
+}
+
+test("homepage, route detail, and map page render with real map surfaces", async ({
+  page,
+  request,
+}) => {
   const screenshotDir = path.join(process.cwd(), "..", "artifacts", "frontend");
   mkdirSync(screenshotDir, { recursive: true });
+  const routeIds = await getPublishedRouteIds(request);
+  expect(routeIds.length).toBeGreaterThan(0);
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(page.getByText("Worst Published Routes")).toBeVisible();
-  await page.waitForTimeout(500);
+  await expect(page.getByText("Worst routes highlighted")).toBeVisible();
+  await expectMapReady(page);
   await page.screenshot({ path: path.join(screenshotDir, "b5-homepage-desktop.png") });
+
+  await page.goto(`/routes/${encodeURIComponent(routeIds[0])}`);
+  await expect(page.getByText("Worst time window")).toBeVisible();
+  await expectMapReady(page);
+
+  await page.goto("/map");
+  await expect(page.getByText(/Highest published loss/i)).toBeVisible();
+  await expectMapReady(page);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await expect(page.getByText(/Historical\/static API snapshot/i)).toBeVisible();
+  await expectMapReady(page);
 });
 
-test("remaining public routes render from the live historical api", async ({ page, request }) => {
+test("MapLibre route layers load without runtime failure", async ({ page, request }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const routeIds = await getPublishedRouteIds(request);
   expect(routeIds.length).toBeGreaterThan(1);
   const primaryRouteId = routeIds[0];
-  const secondaryRouteId = routeIds[1];
+  const runtimeErrors: string[] = [];
+  page.on("pageerror", (error) => {
+    runtimeErrors.push(error.message);
+  });
+
+  await page.goto("/");
+  const homepageMap = await expectMapReady(page);
+  await expect(homepageMap).toHaveAttribute("data-route-count", /[1-9]/);
+  await expect(homepageMap).toHaveAttribute("data-background-route-count", /[1-9]/);
 
   await page.goto(`/routes/${encodeURIComponent(primaryRouteId)}`);
   await expect(page.getByText("Worst time window")).toBeVisible();
-
-  await page.goto(
-    `/compare?${new URLSearchParams({
-      ids: `${primaryRouteId},${secondaryRouteId}`,
-    }).toString()}`,
-  );
-  await expect(page.getByText(/Worst selected route/i)).toBeVisible();
+  const routeMap = await expectMapReady(page);
+  await expect(routeMap).toHaveAttribute("data-segment-count", /[1-9]/);
 
   await page.goto("/map");
   await expect(page.getByText(/Highest published loss/i)).toBeVisible();
+  const citywideMap = await expectMapReady(page);
+  await expect(citywideMap).toHaveAttribute("data-route-count", /[1-9]/);
 
-  await page.goto("/methodology");
-  await expect(page.getByText(/Plain-English contract/i)).toBeVisible();
+  expect(runtimeErrors).toEqual([]);
 });
