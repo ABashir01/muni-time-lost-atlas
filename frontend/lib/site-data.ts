@@ -30,24 +30,17 @@ const homepageHeroBounds: MapBounds = [
   [-122.389, 37.811],
 ];
 const homepageNeighborhoodLabels: MapNeighborhoodLabel[] = [
-  { coordinate: [-122.4795, 37.7825], text: "Richmond District" },
-  { coordinate: [-122.471, 37.7695], text: "Golden Gate Park" },
-  { coordinate: [-122.4475, 37.7705], text: "Haight Ashbury" },
-  { coordinate: [-122.4195, 37.7555], text: "Mission District" },
-  { coordinate: [-122.4045, 37.7805], text: "SOMA" },
-  { coordinate: [-122.3995, 37.7365], text: "Bayview" },
-  { coordinate: [-122.411, 37.8075], text: "Fisherman's Wharf" },
+  { coordinate: [-122.485, 37.779], text: "Richmond" },
+  { coordinate: [-122.482, 37.746], text: "Sunset" },
+  { coordinate: [-122.405, 37.794], text: "Chinatown / Downtown" },
+  { coordinate: [-122.421, 37.758], text: "Mission" },
+  { coordinate: [-122.394, 37.732], text: "Bayview" },
 ];
-const homepageBadgeAnchorByShortName: Record<string, [number, number]> = {
-  "27": [-122.4115, 37.739],
-  "31": [-122.467, 37.7752],
-  "43": [-122.4485, 37.7655],
-  "49": [-122.4198, 37.7865],
-  F: [-122.4018, 37.794],
-};
+const homepageFeaturedRouteColors = ["#d81420", "#e85c10", "#fcc000"] as const;
 
 type HomepageHeroMap = {
   backgroundFeatures: FeatureLine[];
+  featuredColorByRouteId: Record<string, string>;
   featuredFeatures: FeatureLine[];
   neighborhoodLabels: MapNeighborhoodLabel[];
   routeBadges: MapRouteBadge[];
@@ -544,6 +537,12 @@ function buildHomepageHeroMap(
     .filter((route) => routeFeatureIds.has(route.route_id))
     .slice(0, 3);
   const featuredRouteIds = new Set(featuredRankings.map((route) => route.route_id));
+  const featuredColorByRouteId = Object.fromEntries(
+    featuredRankings.map((route, index) => [
+      route.route_id,
+      homepageFeaturedRouteColors[index] ?? homepageFeaturedRouteColors.at(-1)!,
+    ]),
+  );
   const featuredShortNameById = new Map(
     featuredRankings.map((route) => [route.route_id, route.route_short_name] as const),
   );
@@ -556,15 +555,18 @@ function buildHomepageHeroMap(
       featuredShortNameById.get(routeId) ?? feature.properties.route_short_name ?? routeId;
 
     return {
-      coordinate:
-        homepageBadgeAnchorByShortName[routeShortName] ?? getFeatureAnchorCoordinate(feature),
+      candidate_coordinates: getFeatureAnchorCandidates(feature),
+      coordinate: getFeatureAnchorCoordinate(feature),
       route_id: routeId,
       route_short_name: routeShortName,
     };
   });
 
   return {
-    backgroundFeatures: features,
+    backgroundFeatures: features.filter(
+      (feature) => !featuredRouteIds.has(feature.properties.route_id),
+    ),
+    featuredColorByRouteId,
     featuredFeatures,
     neighborhoodLabels: homepageNeighborhoodLabels,
     routeBadges,
@@ -629,17 +631,65 @@ function routeSummaryFromFeature(feature: RouteMapResponse["features"][number]["
 }
 
 function getFeatureAnchorCoordinate(feature: FeatureLine): [number, number] {
-  const segments =
-    feature.geometry.type === "MultiLineString"
-      ? feature.geometry.coordinates
-      : [feature.geometry.coordinates];
-  const flattened = segments.flat();
+  return getFeatureAnchorCandidates(feature)[0] ?? [-122.4376, 37.7638];
+}
 
-  if (flattened.length === 0) {
-    return [-122.4376, 37.7638];
+function getFeatureAnchorCandidates(feature: FeatureLine): [number, number][] {
+  const coordinates =
+    feature.geometry.type === "MultiLineString"
+      ? feature.geometry.coordinates.flat()
+      : feature.geometry.coordinates;
+
+  if (coordinates.length === 0) {
+    return [[-122.4376, 37.7638]];
   }
 
-  return flattened[Math.floor(flattened.length / 2)];
+  return [0.5, 0.38, 0.62, 0.26, 0.74].map((ratio) =>
+    getCoordinateAtLineRatio(coordinates, ratio),
+  );
+}
+
+function getCoordinateAtLineRatio(
+  coordinates: [number, number][],
+  ratio: number,
+): [number, number] {
+  if (coordinates.length === 1) {
+    return coordinates[0];
+  }
+
+  const segments = coordinates.slice(1).map((coordinate, index) => {
+    const start = coordinates[index];
+    const dx = coordinate[0] - start[0];
+    const dy = coordinate[1] - start[1];
+
+    return {
+      end: coordinate,
+      length: Math.hypot(dx, dy),
+      start,
+    };
+  });
+  const totalLength = segments.reduce((sum, segment) => sum + segment.length, 0);
+
+  if (totalLength === 0) {
+    return coordinates[Math.floor((coordinates.length - 1) * ratio)];
+  }
+
+  const targetLength = totalLength * ratio;
+  let traversed = 0;
+
+  for (const segment of segments) {
+    if (traversed + segment.length >= targetLength) {
+      const progress = (targetLength - traversed) / segment.length;
+      return [
+        segment.start[0] + (segment.end[0] - segment.start[0]) * progress,
+        segment.start[1] + (segment.end[1] - segment.start[1]) * progress,
+      ];
+    }
+
+    traversed += segment.length;
+  }
+
+  return coordinates.at(-1) ?? coordinates[0];
 }
 
 function formatApiError(error: unknown) {

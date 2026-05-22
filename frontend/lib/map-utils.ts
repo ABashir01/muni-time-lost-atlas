@@ -33,11 +33,13 @@ export const routeLossLegendItems: MapLegendItem[] = [
 export function decorateRouteFeatures(
   features: FeatureLine[],
   options?: {
+    colorOverrides?: Record<string, string>;
     focusRouteId?: string;
     mode?: "focus" | "metric";
   },
 ): DecoratedLineFeature[] {
   const mode = options?.mode ?? "metric";
+  const colorOverrides = options?.colorOverrides ?? {};
   const focusRouteId = options?.focusRouteId;
 
   return features.map((feature) => {
@@ -46,11 +48,12 @@ export function decorateRouteFeatures(
       feature.properties.typical_trip_loss_minutes ?? feature.properties.metric_value ?? 0;
     const routeTheme = getRouteTheme(feature.properties.route_id);
     const color =
-      mode === "focus"
+      colorOverrides[feature.properties.route_id] ??
+      (mode === "focus"
         ? isFocused
           ? routeTheme.color
           : "#707070"
-        : getRouteLossColor(metricValue);
+        : getRouteLossColor(metricValue));
 
     return {
       ...feature,
@@ -69,9 +72,9 @@ export function decorateContextRouteFeatures(features: FeatureLine[]): Decorated
     ...feature,
     properties: {
       ...feature.properties,
-      map_color: "#728190",
-      map_opacity: 0.36,
-      map_width: 2.3,
+      map_color: "#c7cfd5",
+      map_opacity: 1,
+      map_width: 1.4,
     },
   }));
 }

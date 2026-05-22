@@ -47,18 +47,18 @@ const mapStyle: StyleSpecification = {
     {
       id: "background",
       paint: {
-        "background-color": "#eef3f7",
+        "background-color": "#dde7ec",
       },
       type: "background",
     },
     {
       id: "basemap",
       paint: {
-        "raster-brightness-max": 0.92,
-        "raster-brightness-min": 0.26,
-        "raster-contrast": -0.18,
+        "raster-brightness-max": 0.95,
+        "raster-brightness-min": 0.68,
+        "raster-contrast": -0.08,
         "raster-fade-duration": 0,
-        "raster-opacity": 0.58,
+        "raster-opacity": 0.56,
         "raster-saturation": -1,
       },
       source: "basemap",
@@ -109,6 +109,7 @@ type TransitMapSurfaceProps = {
   minHeight?: string;
   neighborhoodLabels?: MapNeighborhoodLabel[];
   overlayFeatures?: FeatureLine[];
+  routeColorOverrides?: Record<string, string>;
   routeColorMode?: "focus" | "metric";
   routeBadges?: MapRouteBadge[];
   routeFeatures: FeatureLine[];
@@ -135,6 +136,7 @@ export function TransitMapSurface({
   minHeight = "520px",
   neighborhoodLabels = [],
   overlayFeatures = [],
+  routeColorOverrides,
   routeColorMode = "metric",
   routeBadges = [],
   routeFeatures,
@@ -166,10 +168,11 @@ export function TransitMapSurface({
   const decoratedRoutes = useMemo(
     () =>
       decorateRouteFeatures(routeFeatures, {
+        colorOverrides: routeColorOverrides,
         focusRouteId,
         mode: routeColorMode,
       }),
-    [focusRouteId, routeColorMode, routeFeatures],
+    [focusRouteId, routeColorMode, routeColorOverrides, routeFeatures],
   );
   const decoratedBackgroundRoutes = useMemo(
     () => decorateContextRouteFeatures(backgroundRouteFeatures),
@@ -460,46 +463,31 @@ export function TransitMapSurface({
     const syncProjectedAnnotations = () => {
       const width = map.getCanvas().clientWidth;
       const height = map.getCanvas().clientHeight;
-
-      setProjectedRouteBadges(
-        routeBadges
-          .map((badge) => {
-            const point = map.project(badge.coordinate);
-
-            if (!isPointInsideMap(point.x, point.y, width, height, 18)) {
-              return null;
-            }
-
-            return {
-              ...badge,
-              color: routeColorById.get(badge.route_id) ?? "#0868d0",
-              x: point.x,
-              y: point.y,
-            };
-          })
-          .filter((badge): badge is MapRouteBadge & { color: string; x: number; y: number } =>
+      const occupiedRects: Rect[] = [];
+      const featuredRouteSegments = projectFeatureSegments(map, routeFeatures);
+      const placedBadges = routeBadges
+        .map((badge) => placeRouteBadge(map, badge, routeColorById, occupiedRects, width, height))
+        .filter(
+          (badge): badge is MapRouteBadge & { color: string; x: number; y: number } =>
             Boolean(badge),
+        );
+      const placedLabels = neighborhoodLabels
+        .map((label) =>
+          placeNeighborhoodLabel(
+            map,
+            label,
+            featuredRouteSegments,
+            occupiedRects,
+            width,
+            height,
           ),
-      );
-      setProjectedNeighborhoodLabels(
-        neighborhoodLabels
-          .map((label) => {
-            const point = map.project(label.coordinate);
+        )
+        .filter((label): label is MapNeighborhoodLabel & { x: number; y: number } =>
+          Boolean(label),
+        );
 
-            if (!isPointInsideMap(point.x, point.y, width, height, 12)) {
-              return null;
-            }
-
-            return {
-              ...label,
-              x: point.x,
-              y: point.y,
-            };
-          })
-          .filter((label): label is MapNeighborhoodLabel & { x: number; y: number } =>
-            Boolean(label),
-          ),
-      );
+      setProjectedRouteBadges(placedBadges);
+      setProjectedNeighborhoodLabels(placedLabels);
     };
 
     syncProjectedAnnotations();
@@ -680,22 +668,13 @@ function syncMapSources(
   upsertGeoJsonSource(map, sourceIds.segments, data.segmentCollection);
   upsertGeoJsonSource(map, sourceIds.stops, data.stopCollection);
 
-  ensureLineLayer(map, layerIds.backgroundRouteCasing, sourceIds.backgroundRoutes, {
-    "line-color": "rgba(255, 255, 255, 0.84)",
-    "line-opacity": 0.72,
-    "line-width": [
-      "+",
-      ["*", ["coalesce", ["get", "map_width"], 2.1], compact ? 0.74 : 1],
-      compact ? 0.55 : 0.9,
-    ],
-  });
   ensureLineLayer(map, layerIds.backgroundRouteLines, sourceIds.backgroundRoutes, {
-    "line-color": ["coalesce", ["get", "map_color"], "#7c8794"],
-    "line-opacity": ["coalesce", ["get", "map_opacity"], 0.28],
+    "line-color": ["coalesce", ["get", "map_color"], "#c7cfd5"],
+    "line-opacity": ["coalesce", ["get", "map_opacity"], 1],
     "line-width": [
       "*",
-      ["coalesce", ["get", "map_width"], 2.1],
-      compact ? 0.74 : 1,
+      ["coalesce", ["get", "map_width"], 1.4],
+      compact ? 0.82 : 1,
     ],
   });
   ensureLineLayer(map, layerIds.overlayCasing, sourceIds.overlays, {
@@ -776,6 +755,184 @@ function isPointInsideMap(
   margin: number,
 ) {
   return x >= margin && x <= width - margin && y >= margin && y <= height - margin;
+}
+
+type Rect = {
+  bottom: number;
+  left: number;
+  right: number;
+  top: number;
+};
+
+function placeRouteBadge(
+  map: MapLibreMap,
+  badge: MapRouteBadge,
+  routeColorById: Map<string, string>,
+  occupiedRects: Rect[],
+  width: number,
+  height: number,
+) {
+  const badgeWidth = Math.max(36, badge.route_short_name.length * 12 + 18);
+  const badgeHeight = 36;
+
+  for (const coordinate of badge.candidate_coordinates) {
+    const point = map.project(coordinate);
+
+    if (!isPointInsideMap(point.x, point.y, width, height, 20)) {
+      continue;
+    }
+
+    const rect = {
+      bottom: point.y + badgeHeight / 2,
+      left: point.x - badgeWidth / 2,
+      right: point.x + badgeWidth / 2,
+      top: point.y - badgeHeight / 2,
+    };
+
+    if (occupiedRects.some((occupiedRect) => rectsOverlap(rect, occupiedRect))) {
+      continue;
+    }
+
+    occupiedRects.push(rect);
+    return {
+      ...badge,
+      color: routeColorById.get(badge.route_id) ?? "#0868d0",
+      coordinate,
+      x: point.x,
+      y: point.y,
+    };
+  }
+
+  return null;
+}
+
+function placeNeighborhoodLabel(
+  map: MapLibreMap,
+  label: MapNeighborhoodLabel,
+  routeSegments: Array<[[number, number], [number, number]]>,
+  occupiedRects: Rect[],
+  width: number,
+  height: number,
+) {
+  const labelWidth = Math.min(164, label.text.length * 7.2 + 18);
+  const labelHeight = label.text.includes("/") ? 34 : 24;
+  const basePoint = map.project(label.coordinate);
+  const candidateOffsets = [
+    [0, 0],
+    [0, -22],
+    [20, 0],
+    [-20, 0],
+    [0, 22],
+    [18, -18],
+    [-18, -18],
+    [18, 18],
+    [-18, 18],
+  ] as const;
+
+  for (const [offsetX, offsetY] of candidateOffsets) {
+    const x = basePoint.x + offsetX;
+    const y = basePoint.y + offsetY;
+
+    if (!isPointInsideMap(x, y, width, height, 16)) {
+      continue;
+    }
+
+    const rect = {
+      bottom: y + labelHeight / 2,
+      left: x - labelWidth / 2,
+      right: x + labelWidth / 2,
+      top: y - labelHeight / 2,
+    };
+
+    if (
+      occupiedRects.some((occupiedRect) => rectsOverlap(rect, occupiedRect)) ||
+      routeSegments.some((segment) => rectIntersectsRoute(rect, segment, 16))
+    ) {
+      continue;
+    }
+
+    occupiedRects.push(rect);
+    return {
+      ...label,
+      x,
+      y,
+    };
+  }
+
+  return null;
+}
+
+function rectsOverlap(left: Rect, right: Rect) {
+  return !(
+    left.right < right.left ||
+    left.left > right.right ||
+    left.bottom < right.top ||
+    left.top > right.bottom
+  );
+}
+
+function projectFeatureSegments(
+  map: MapLibreMap,
+  features: FeatureLine[],
+): Array<[[number, number], [number, number]]> {
+  return features.flatMap((feature) => {
+    const lines =
+      feature.geometry.type === "MultiLineString"
+        ? feature.geometry.coordinates
+        : [feature.geometry.coordinates];
+
+    return lines.flatMap((line) =>
+      line.slice(1).map((coordinate, index) => {
+        const start = map.project(line[index]);
+        const end = map.project(coordinate);
+        return [
+          [start.x, start.y],
+          [end.x, end.y],
+        ] as [[number, number], [number, number]];
+      }),
+    );
+  });
+}
+
+function rectIntersectsRoute(
+  rect: Rect,
+  segment: [[number, number], [number, number]],
+  buffer: number,
+) {
+  const samplePoints: Array<[number, number]> = [
+    [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2],
+    [rect.left, rect.top],
+    [rect.right, rect.top],
+    [rect.left, rect.bottom],
+    [rect.right, rect.bottom],
+  ];
+
+  return samplePoints.some(
+    (point) => pointToSegmentDistance(point, segment[0], segment[1]) <= buffer,
+  );
+}
+
+function pointToSegmentDistance(
+  point: [number, number],
+  start: [number, number],
+  end: [number, number],
+) {
+  const [px, py] = point;
+  const [x1, y1] = start;
+  const [x2, y2] = end;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+
+  if (dx === 0 && dy === 0) {
+    return Math.hypot(px - x1, py - y1);
+  }
+
+  const projection = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy);
+  const clamped = Math.max(0, Math.min(1, projection));
+  const closestX = x1 + dx * clamped;
+  const closestY = y1 + dy * clamped;
+
+  return Math.hypot(px - closestX, py - closestY);
 }
 
 function upsertGeoJsonSource(

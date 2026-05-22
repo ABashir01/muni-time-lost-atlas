@@ -115,6 +115,7 @@ export default async function HomePage({
             lineMode="default"
             minHeight="100%"
             neighborhoodLabels={data.heroMap.neighborhoodLabels}
+            routeColorOverrides={data.heroMap.featuredColorByRouteId}
             routeBadges={data.heroMap.routeBadges}
             routeFeatures={data.heroMap.featuredFeatures}
             routeColorMode="metric"
@@ -140,13 +141,16 @@ export default async function HomePage({
                 key={route.route_id}
                 style={
                   {
-                    "--route-accent": getRouteTheme(route.route_id).color,
+                    "--route-accent":
+                      data.heroMap.featuredColorByRouteId[route.route_id] ??
+                      getRouteTheme(route.route_id).color,
                   } as CSSProperties
                 }
               >
                 <div className="homepage-ranking-header">
                   <span className="homepage-ranking-rank">{route.rank ?? index + 1}</span>
                   <RouteBadge
+                    colorOverride={data.heroMap.featuredColorByRouteId[route.route_id]}
                     label={route.route_short_name}
                     routeId={route.route_id}
                   />

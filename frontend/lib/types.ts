@@ -40,6 +40,7 @@ export type MapCoordinate = [number, number];
 export type MapBounds = [MapCoordinate, MapCoordinate];
 
 export type MapRouteBadge = {
+  candidate_coordinates: MapCoordinate[];
   coordinate: MapCoordinate;
   route_id: string;
   route_short_name: string;

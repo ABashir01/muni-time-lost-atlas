@@ -100,8 +100,8 @@ describe("map utils", () => {
 
     expect(decoratedRoute.properties.map_color).toBe("#d81420");
     expect(decoratedRoute.properties.map_width).toBeCloseTo(4.75, 2);
-    expect(decoratedContextRoute.properties.map_color).toBe("#728190");
-    expect(decoratedContextRoute.properties.map_opacity).toBeGreaterThan(0.3);
+    expect(decoratedContextRoute.properties.map_color).toBe("#c7cfd5");
+    expect(decoratedContextRoute.properties.map_opacity).toBe(1);
     expect(decoratedSegment.properties.map_color).toBe("#e85c10");
     expect(decoratedStop.properties.map_color).toBe("#e85c10");
     expect(decoratedStop.properties.map_radius).toBeGreaterThan(10);
