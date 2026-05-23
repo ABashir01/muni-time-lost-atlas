@@ -39,17 +39,3 @@ class Database:
         if not rows:
             return None
         return rows[0]
-
-    def table_exists(self, *, schema: str, table: str) -> bool:
-        row = self.fetch_one(
-            """
-            SELECT EXISTS (
-                SELECT 1
-                FROM information_schema.tables
-                WHERE table_schema = %s
-                  AND table_name = %s
-            ) AS table_exists
-            """,
-            [schema, table],
-        )
-        return bool(row and row["table_exists"])

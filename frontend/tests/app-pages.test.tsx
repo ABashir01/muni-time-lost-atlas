@@ -25,7 +25,6 @@ const route14SegmentsPayload = loadFixture("route_14_segments_direction_1_all_da
 const route14StopWaitPayload = loadFixture("route_14_stops_wait_direction_1_all_day.json");
 const comparePayload = loadFixture("routes_compare_14_49_all_day.json");
 const mapPayload = loadFixture("map_routes_all_day_typical_trip_loss_minutes.json");
-const liveVehiclesPayload = loadFixture("live_vehicles_sf.json");
 const route49SummaryPayload = {
   ...rankingsPayload.routes.find((route: { route_id: string }) => route.route_id === "49"),
 };
@@ -83,23 +82,6 @@ beforeEach(() => {
           ...comparePayload,
           route_ids: ids,
           routes,
-        });
-      }
-
-      if (url.pathname === "/live/vehicles") {
-        const routeId = url.searchParams.get("route_id");
-        const features = routeId
-          ? liveVehiclesPayload.features.filter(
-              (feature: { properties: { route_id?: string } }) =>
-                feature.properties.route_id === routeId,
-            )
-          : liveVehiclesPayload.features;
-
-        return jsonResponse({
-          ...liveVehiclesPayload,
-          features,
-          route_id: routeId,
-          vehicle_count: features.length,
         });
       }
 
@@ -166,7 +148,6 @@ describe("public pages", () => {
     expect(html).toContain("Worst published stop wait");
     expect(html).toContain("Worst time window");
     expect(html).toContain("MapLibre");
-    expect(html).toContain("data-live-vehicle-count=\"1\"");
   });
 
   it("renders empty directional notices when route detail layers are not published", async () => {
@@ -192,8 +173,6 @@ describe("public pages", () => {
     expect(mapHtml).toContain("Highest published loss");
     expect(mapHtml).toContain("MapLibre GL JS citywide surface");
     expect(mapHtml).toContain("Transit-only lane overlay");
-    expect(mapHtml).toContain("Live vehicles");
-    expect(mapHtml).toContain("data-live-vehicle-count=\"3\"");
     expect(methodologyHtml).toContain("Typical trip: +X.X min is the public promise.");
     expect(methodologyHtml).toContain("Plain-English contract");
     expect(methodologyHtml).toContain("Waiting loss");

@@ -10,7 +10,6 @@ import { formatMinutes } from "@/lib/utils";
 
 export function MapPageSurface({ data }: { data: MapPageData }) {
   const [lanesOn, setLanesOn] = useState(false);
-  const [vehiclesOn, setVehiclesOn] = useState(true);
   const hasRoutes = data.routes.features.length > 0;
 
   return (
@@ -71,21 +70,6 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
               Name + time on hover
             </button>
           </label>
-          <label className="fixture-toggle">
-            <span>Live vehicles</span>
-            <button
-              data-active={vehiclesOn}
-              disabled={data.liveVehicles.vehicle_count === 0}
-              onClick={() => setVehiclesOn((value) => !value)}
-              type="button"
-            >
-              {data.liveVehicles.vehicle_count === 0
-                ? "No live vehicles"
-                : vehiclesOn
-                  ? "Overlay on"
-                  : "Overlay off"}
-            </button>
-          </label>
         </div>
       </div>
 
@@ -111,7 +95,6 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
               routeFeatures={data.routes.features}
               routeColorMode="metric"
               surfaceLabel="MapLibre GL JS citywide surface"
-              vehicleFeatures={vehiclesOn ? data.liveVehicles.features : []}
             />
           ) : (
             <DataStatePanel
@@ -170,16 +153,6 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
                 <div>
                   <strong>Route coverage</strong>
                   <small>The live map shows whichever corridors the historical API publishes.</small>
-                </div>
-              </li>
-              <li>
-                <div>
-                  <strong>Live overlay</strong>
-                  <small>
-                    {data.liveVehicles.vehicle_count > 0
-                      ? `${data.liveVehicles.vehicle_count} live vehicle positions are available right now.`
-                      : "Live vehicle context is optional and may be temporarily unavailable."}
-                  </small>
                 </div>
               </li>
             </ul>

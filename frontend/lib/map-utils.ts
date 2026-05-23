@@ -1,4 +1,4 @@
-import type { FeatureLine, LiveVehicleFeature, StopWaitFeature } from "@/lib/types";
+import type { FeatureLine, StopWaitFeature } from "@/lib/types";
 import { getRouteTheme } from "@/lib/presentation";
 
 export type MapLegendItem = {
@@ -16,13 +16,6 @@ type DecoratedLineFeature = FeatureLine & {
 
 type DecoratedStopFeature = StopWaitFeature & {
   properties: StopWaitFeature["properties"] & {
-    map_color: string;
-    map_radius: number;
-  };
-};
-
-type DecoratedLiveVehicleFeature = LiveVehicleFeature & {
-  properties: LiveVehicleFeature["properties"] & {
     map_color: string;
     map_radius: number;
   };
@@ -124,24 +117,6 @@ export function decorateStopHotspots(features: StopWaitFeature[]): DecoratedStop
         ...feature.properties,
         map_color: getStopWaitColor(loss),
         map_radius: getStopWaitRadius(loss),
-      },
-    };
-  });
-}
-
-export function decorateLiveVehicleFeatures(
-  features: LiveVehicleFeature[],
-): DecoratedLiveVehicleFeature[] {
-  return features.map((feature) => {
-    const routeId = feature.properties.route_id;
-    const routeTheme = routeId ? getRouteTheme(routeId) : null;
-
-    return {
-      ...feature,
-      properties: {
-        ...feature.properties,
-        map_color: routeTheme?.color ?? "#111111",
-        map_radius: 6,
       },
     };
   });

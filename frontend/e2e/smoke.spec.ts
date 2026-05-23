@@ -62,7 +62,7 @@ test("MapLibre route layers load without runtime failure", async ({ page, reques
   await page.goto("/");
   const homepageMap = await expectMapReady(page);
   await expect(homepageMap).toHaveAttribute("data-route-count", /[1-9]/);
-  await expect(homepageMap).toHaveAttribute("data-background-route-count", /^[0-9]+$/);
+  await expect(homepageMap).toHaveAttribute("data-background-route-count", /[1-9]/);
 
   await page.goto(`/routes/${encodeURIComponent(primaryRouteId)}`);
   await expect(page.getByText("Worst time window")).toBeVisible();

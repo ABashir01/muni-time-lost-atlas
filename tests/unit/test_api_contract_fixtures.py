@@ -21,7 +21,6 @@ _configure_src_paths()
 from muni_lta_api.models import (  # noqa: E402
     CompareResponse,
     HealthResponse,
-    LiveVehiclesResponse,
     MapRoutesResponse,
     RankingsResponse,
     RouteStopWaitResponse,
@@ -44,7 +43,6 @@ class ApiContractFixtureTests(unittest.TestCase):
             "route_14_stops_wait_direction_1_all_day.json": RouteStopWaitResponse,
             "routes_compare_14_49_all_day.json": CompareResponse,
             "map_routes_all_day_typical_trip_loss_minutes.json": MapRoutesResponse,
-            "live_vehicles_sf.json": LiveVehiclesResponse,
         }
 
         for fixture_name, model in fixture_models.items():

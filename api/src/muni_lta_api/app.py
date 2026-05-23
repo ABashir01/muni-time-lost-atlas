@@ -9,7 +9,6 @@ from .db import Database
 from .models import (
     CompareResponse,
     HealthResponse,
-    LiveVehiclesResponse,
     MapRoutesResponse,
     RankingMetric,
     RankingMode,
@@ -184,16 +183,5 @@ def create_app(settings: ApiSettings | None = None):
         ),
     ) -> MapRoutesResponse:
         return repository().get_map_routes(window=window, metric=metric)
-
-    @app.get(
-        "/live/vehicles",
-        response_model=LiveVehiclesResponse,
-        response_model_exclude_none=True,
-    )
-    def get_live_vehicles(
-        agency: str = Query(default="SF", min_length=1),
-        route_id: str | None = Query(default=None),
-    ) -> LiveVehiclesResponse:
-        return repository().get_live_vehicles(agency_id=agency, route_id=route_id)
 
     return app

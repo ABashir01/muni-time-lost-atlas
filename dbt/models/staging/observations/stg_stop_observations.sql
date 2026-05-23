@@ -11,7 +11,6 @@ filtered_observations as (
       and observations.snapshot_label = selected_snapshot.snapshot_label
       and (
           '{{ target_observed_feed_scope() }}' != 'regional_historic'
-          or position(':' in observations.trip_id) = 0
           or observations.trip_id like '{{ historic_agency_id() }}:%'
       )
 )

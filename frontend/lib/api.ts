@@ -1,8 +1,6 @@
 import type {
   CompareResponse,
   FeatureLine,
-  LiveVehicleFeature,
-  LiveVehiclesResponse,
   PointGeometry,
   RankingsResponse,
   RouteIdentity,
@@ -84,16 +82,6 @@ export async function getMapRoutes() {
     "/map/routes",
     { metric: PRIMARY_METRIC, window: DEFAULT_WINDOW },
     parseRouteMapResponse,
-  );
-}
-
-export async function getLiveVehicles(routeId?: string) {
-  return fetchApi(
-    "/live/vehicles",
-    routeId
-      ? { agency: "SF", route_id: routeId }
-      : { agency: "SF" },
-    parseLiveVehiclesResponse,
   );
 }
 
@@ -225,20 +213,6 @@ function parseRouteStopWaitResponse(value: unknown, path: string): RouteStopWait
     ),
     type: expectLiteral(object.type, "FeatureCollection", `${path}.type`),
     window: expectString(object.window, `${path}.window`),
-  };
-}
-
-function parseLiveVehiclesResponse(value: unknown, path: string): LiveVehiclesResponse {
-  const object = expectObject(value, path);
-  return {
-    agency_id: expectString(object.agency_id, `${path}.agency_id`),
-    feed_timestamp: optionalNullableString(object.feed_timestamp, null),
-    features: expectArray(object.features, `${path}.features`).map((feature, index) =>
-      parseLiveVehicleFeature(feature, `${path}.features[${index}]`),
-    ),
-    route_id: optionalNullableString(object.route_id, null),
-    type: expectLiteral(object.type, "FeatureCollection", `${path}.type`),
-    vehicle_count: expectInteger(object.vehicle_count, `${path}.vehicle_count`),
   };
 }
 
@@ -395,37 +369,6 @@ function parseStopWaitFeature(value: unknown, path: string): StopWaitFeature {
   };
 }
 
-function parseLiveVehicleFeature(value: unknown, path: string): LiveVehicleFeature {
-  const object = expectObject(value, path);
-  const geometry = parsePointGeometry(object.geometry, `${path}.geometry`);
-  const properties = expectObject(object.properties, `${path}.properties`);
-
-  return {
-    type: expectLiteral(object.type, "Feature", `${path}.type`),
-    geometry,
-    properties: {
-      agency_id: expectString(properties.agency_id, `${path}.properties.agency_id`),
-      bearing: optionalNullableNumber(properties.bearing, null),
-      current_status: optionalNullableString(properties.current_status, null),
-      current_stop_sequence: optionalInteger(properties.current_stop_sequence, null),
-      entity_id: expectString(properties.entity_id, `${path}.properties.entity_id`),
-      feed_timestamp: optionalNullableString(properties.feed_timestamp, null),
-      occupancy_status: optionalNullableString(properties.occupancy_status, null),
-      route_id: optionalNullableString(properties.route_id, null),
-      route_short_name: optionalNullableString(properties.route_short_name, null),
-      speed_meters_per_second: optionalNullableNumber(
-        properties.speed_meters_per_second,
-        null,
-      ),
-      stop_id: optionalNullableString(properties.stop_id, null),
-      trip_id: optionalNullableString(properties.trip_id, null),
-      vehicle_id: optionalNullableString(properties.vehicle_id, null),
-      vehicle_label: optionalNullableString(properties.vehicle_label, null),
-      vehicle_timestamp: optionalNullableString(properties.vehicle_timestamp, null),
-    },
-  };
-}
-
 function parseRouteIdentity(value: Record<string, unknown>, path: string): RouteIdentity {
   const routeId = expectString(value.route_id, `${path}.route_id`);
 
@@ -546,14 +489,6 @@ function optionalNullableString<T extends string | null>(value: unknown, fallbac
 
 function optionalNumber(value: unknown, fallback: number) {
   return typeof value === "number" ? expectNumber(value, "value") : value == null ? fallback : expectNumber(value, "value");
-}
-
-function optionalNullableNumber<T extends number | null>(value: unknown, fallback: T) {
-  return typeof value === "number"
-    ? expectNumber(value, "value")
-    : value == null
-      ? fallback
-      : expectNumber(value, "value");
 }
 
 function optionalInteger<T extends number | null | undefined>(value: unknown, fallback: T) {
