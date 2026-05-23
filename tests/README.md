@@ -68,6 +68,10 @@ Current integration artifacts:
   - verifies that a second unchanged cutover rerun skips dbt entirely through the manifest-aware no-op guard
   - verifies the rebuilt marts and serving layers expose a broad real Muni route set
   - verifies the live FastAPI contract reads from that rebuilt real dataset rather than the old two-route development cut
+- `integration/test_realtime_bundle.py`
+  - loads a synthetic GTFS-RT vehicle-position feed into the current-state realtime table
+  - verifies the live FastAPI vehicle endpoint publishes GeoJSON point features plus route filtering
+  - includes an optional live `511` vehicle-position verification when `TRANSIT_511_API_KEY` is configured locally
 
 Current unit artifacts:
 
@@ -95,6 +99,9 @@ Current unit artifacts:
   - verifies the cutover dbt fingerprint reacts to tracked dbt file or var changes only
   - verifies dbt reuse ignores prior `--skip-dbt` manifests and reuses the last successful matching manifest instead
   - verifies an unchanged cutover rerun skips `run_dbt_run()` entirely and records explicit manifest reuse metadata
+- `unit/test_live_vehicle_positions_ingest.py`
+  - verifies the `511` vehicle-positions URL is built correctly
+  - verifies GTFS-RT parsing normalizes live route ids and current vehicle fields from a deterministic protobuf payload
 
 Unit test command:
 

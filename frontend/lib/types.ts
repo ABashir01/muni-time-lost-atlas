@@ -171,6 +171,37 @@ export type RouteStopWaitResponse = {
   window: string;
 };
 
+export type LiveVehicleFeature = {
+  type: "Feature";
+  geometry: PointGeometry;
+  properties: {
+    agency_id: string;
+    entity_id: string;
+    vehicle_id?: string | null;
+    vehicle_label?: string | null;
+    route_id?: string | null;
+    route_short_name?: string | null;
+    trip_id?: string | null;
+    stop_id?: string | null;
+    current_stop_sequence?: number | null;
+    current_status?: string | null;
+    occupancy_status?: string | null;
+    bearing?: number | null;
+    speed_meters_per_second?: number | null;
+    vehicle_timestamp?: string | null;
+    feed_timestamp?: string | null;
+  };
+};
+
+export type LiveVehiclesResponse = {
+  agency_id: string;
+  route_id?: string | null;
+  feed_timestamp?: string | null;
+  vehicle_count: number;
+  type: "FeatureCollection";
+  features: LiveVehicleFeature[];
+};
+
 export type MethodologySection = {
   kicker: string;
   title: string;

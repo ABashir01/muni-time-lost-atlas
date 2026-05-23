@@ -10,6 +10,7 @@ import maplibregl, {
 } from "maplibre-gl";
 import type {
   FeatureLine,
+  LiveVehicleFeature,
   MapBounds,
   MapNeighborhoodLabel,
   MapRouteBadge,
@@ -17,6 +18,7 @@ import type {
 } from "@/lib/types";
 import {
   decorateContextRouteFeatures,
+  decorateLiveVehicleFeatures,
   decorateOverlayFeatures,
   decorateRouteFeatures,
   decorateSegmentFeatures,
@@ -73,6 +75,7 @@ const sourceIds = {
   routes: "route-lines",
   segments: "segment-lines",
   stops: "stop-hotspots",
+  vehicles: "live-vehicles",
 } as const;
 
 const layerIds = {
@@ -87,6 +90,8 @@ const layerIds = {
   segmentLines: "segment-lines",
   stopCasing: "stop-casing",
   stopCircles: "stop-circles",
+  vehicleCasing: "vehicle-casing",
+  vehicleCircles: "vehicle-circles",
 } as const;
 
 type TransitMapSurfaceProps = {
@@ -117,6 +122,7 @@ type TransitMapSurfaceProps = {
   showControls?: boolean;
   stopFeatures?: StopWaitFeature[];
   surfaceLabel?: string;
+  vehicleFeatures?: LiveVehicleFeature[];
   viewportBounds?: MapBounds;
 };
 
@@ -144,6 +150,7 @@ export function TransitMapSurface({
   showControls = true,
   stopFeatures = [],
   surfaceLabel = "MapLibre GL JS route surface",
+  vehicleFeatures = [],
   viewportBounds,
 }: TransitMapSurfaceProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -190,6 +197,10 @@ export function TransitMapSurface({
     () => decorateStopHotspots(stopFeatures),
     [stopFeatures],
   );
+  const decoratedVehicles = useMemo(
+    () => decorateLiveVehicleFeatures(vehicleFeatures),
+    [vehicleFeatures],
+  );
   const routeCollection = useMemo(
     () => toFeatureCollection(decoratedRoutes),
     [decoratedRoutes],
@@ -209,6 +220,10 @@ export function TransitMapSurface({
   const stopCollection = useMemo(
     () => toFeatureCollection(decoratedStops),
     [decoratedStops],
+  );
+  const vehicleCollection = useMemo(
+    () => toFeatureCollection(decoratedVehicles),
+    [decoratedVehicles],
   );
   const fitBounds = useMemo(
     () =>
@@ -285,6 +300,7 @@ export function TransitMapSurface({
           routeCollection,
           segmentCollection,
           stopCollection,
+          vehicleCollection,
         });
         fitMapToBounds(
           map,
@@ -333,6 +349,7 @@ export function TransitMapSurface({
     routeCollection,
     segmentCollection,
     stopCollection,
+    vehicleCollection,
     targetBounds,
   ]);
 
@@ -351,6 +368,7 @@ export function TransitMapSurface({
           routeCollection,
           segmentCollection,
           stopCollection,
+          vehicleCollection,
         });
 
         if (lastFitKeyRef.current !== fitKey) {
@@ -389,6 +407,7 @@ export function TransitMapSurface({
     routeCollection,
     segmentCollection,
     stopCollection,
+    vehicleCollection,
     targetBounds,
   ]);
 
@@ -510,6 +529,7 @@ export function TransitMapSurface({
       data-route-count={routeFeatures.length}
       data-segment-count={segmentFeatures.length}
       data-stop-count={stopFeatures.length}
+      data-live-vehicle-count={vehicleFeatures.length}
       style={{ "--map-min-height": minHeight } as CSSProperties}
     >
       <div aria-label={ariaLabel} className="map-canvas" ref={mapContainerRef} role="img" />
@@ -659,6 +679,7 @@ function syncMapSources(
     routeCollection: ReturnType<typeof toFeatureCollection>;
     segmentCollection: ReturnType<typeof toFeatureCollection>;
     stopCollection: ReturnType<typeof toFeatureCollection>;
+    vehicleCollection: ReturnType<typeof toFeatureCollection>;
   },
 ) {
   const compact = data.lineMode === "compact";
@@ -667,6 +688,7 @@ function syncMapSources(
   upsertGeoJsonSource(map, sourceIds.routes, data.routeCollection);
   upsertGeoJsonSource(map, sourceIds.segments, data.segmentCollection);
   upsertGeoJsonSource(map, sourceIds.stops, data.stopCollection);
+  upsertGeoJsonSource(map, sourceIds.vehicles, data.vehicleCollection);
 
   ensureLineLayer(map, layerIds.backgroundRouteLines, sourceIds.backgroundRoutes, {
     "line-color": ["coalesce", ["get", "map_color"], "#c7cfd5"],
@@ -744,6 +766,17 @@ function syncMapSources(
     "circle-radius": ["coalesce", ["get", "map_radius"], 10],
     "circle-stroke-color": "#ffffff",
     "circle-stroke-width": 2,
+  });
+  ensureCircleLayer(map, layerIds.vehicleCasing, sourceIds.vehicles, {
+    "circle-color": "rgba(255, 255, 255, 0.96)",
+    "circle-radius": ["+", ["coalesce", ["get", "map_radius"], 6], 3],
+    "circle-stroke-width": 0,
+  });
+  ensureCircleLayer(map, layerIds.vehicleCircles, sourceIds.vehicles, {
+    "circle-color": ["coalesce", ["get", "map_color"], "#111111"],
+    "circle-radius": ["coalesce", ["get", "map_radius"], 6],
+    "circle-stroke-color": "#111111",
+    "circle-stroke-width": 1,
   });
 }
 

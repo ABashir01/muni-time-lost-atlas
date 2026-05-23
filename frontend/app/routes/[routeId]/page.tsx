@@ -131,8 +131,12 @@ export default async function RouteDetailPage({
                 ? `${data.segmentCollection.direction_label} MapLibre corridor`
                 : "MapLibre route corridor"
             }
+            vehicleFeatures={data.liveVehicleOverlay}
           />
           {data.mapNotice ? <DataStatePanel eyebrow="Route map" notice={data.mapNotice} /> : null}
+          {data.liveVehiclesNotice ? (
+            <DataStatePanel eyebrow="Live vehicle overlay" notice={data.liveVehiclesNotice} />
+          ) : null}
           {data.segmentCollection ? (
             <ol className="segment-list">
               {data.segmentCollection.features.map((feature) => (

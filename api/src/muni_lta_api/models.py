@@ -187,3 +187,36 @@ class MapRoutesResponse(ApiModel):
     metric: RankingMetric
     type: Literal["FeatureCollection"] = "FeatureCollection"
     features: list[RouteMapFeature]
+
+
+class LiveVehicleFeatureProperties(ApiModel):
+    agency_id: str
+    entity_id: str
+    vehicle_id: str | None = None
+    vehicle_label: str | None = None
+    route_id: str | None = None
+    route_short_name: str | None = None
+    trip_id: str | None = None
+    stop_id: str | None = None
+    current_stop_sequence: int | None = None
+    current_status: str | None = None
+    occupancy_status: str | None = None
+    bearing: float | None = None
+    speed_meters_per_second: float | None = None
+    vehicle_timestamp: datetime | None = None
+    feed_timestamp: datetime | None = None
+
+
+class LiveVehicleFeature(ApiModel):
+    type: Literal["Feature"] = "Feature"
+    geometry: PointGeometry
+    properties: LiveVehicleFeatureProperties
+
+
+class LiveVehiclesResponse(ApiModel):
+    agency_id: str
+    route_id: str | None = None
+    feed_timestamp: datetime | None = None
+    vehicle_count: int
+    type: Literal["FeatureCollection"] = "FeatureCollection"
+    features: list[LiveVehicleFeature]

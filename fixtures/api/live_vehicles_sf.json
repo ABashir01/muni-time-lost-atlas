@@ -1,0 +1,77 @@
+{
+  "agency_id": "SF",
+  "feed_timestamp": "2026-05-23T18:45:00Z",
+  "vehicle_count": 3,
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.4175, 37.7756]
+      },
+      "properties": {
+        "agency_id": "SF",
+        "entity_id": "5743",
+        "vehicle_id": "5743",
+        "vehicle_label": "5743",
+        "route_id": "14",
+        "route_short_name": "14",
+        "trip_id": "11996409_M11",
+        "stop_id": "15541",
+        "current_stop_sequence": 16,
+        "current_status": "IN_TRANSIT_TO",
+        "bearing": 45.0,
+        "speed_meters_per_second": 7.8,
+        "vehicle_timestamp": "2026-05-23T18:44:55Z",
+        "feed_timestamp": "2026-05-23T18:45:00Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.4273, 37.7841]
+      },
+      "properties": {
+        "agency_id": "SF",
+        "entity_id": "5798",
+        "vehicle_id": "5798",
+        "vehicle_label": "5798",
+        "route_id": "22",
+        "route_short_name": "22",
+        "trip_id": "11958329_M11",
+        "stop_id": "13293",
+        "current_stop_sequence": 8,
+        "current_status": "STOPPED_AT",
+        "bearing": 75.0,
+        "speed_meters_per_second": 0.0,
+        "vehicle_timestamp": "2026-05-23T18:44:58Z",
+        "feed_timestamp": "2026-05-23T18:45:00Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.4074, 37.7932]
+      },
+      "properties": {
+        "agency_id": "SF",
+        "entity_id": "5818",
+        "vehicle_id": "5818",
+        "vehicle_label": "5818",
+        "route_id": "49",
+        "route_short_name": "49",
+        "trip_id": "11999801_M11",
+        "stop_id": "14710",
+        "current_stop_sequence": 4,
+        "current_status": "INCOMING_AT",
+        "bearing": 180.0,
+        "speed_meters_per_second": 4.2,
+        "vehicle_timestamp": "2026-05-23T18:44:57Z",
+        "feed_timestamp": "2026-05-23T18:45:00Z"
+      }
+    }
+  ]
+}

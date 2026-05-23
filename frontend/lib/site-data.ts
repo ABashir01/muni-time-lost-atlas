@@ -1,6 +1,7 @@
 import {
   ApiRequestError,
   getCompare,
+  getLiveVehicles,
   getMapRoutes,
   getRankings,
   getRouteSegments,
@@ -12,6 +13,7 @@ import type {
   CompareResponse,
   DataNotice,
   FeatureLine,
+  LiveVehiclesResponse,
   MapBounds,
   MapNeighborhoodLabel,
   MapRouteBadge,
@@ -100,6 +102,8 @@ export type RouteDetailPageData = Awaited<ReturnType<typeof getRouteDetailPageDa
 
 type ReadyRouteDetailPageData = {
   kind: "ready";
+  liveVehicleOverlay: LiveVehiclesResponse["features"];
+  liveVehiclesNotice?: DataNotice;
   mapFeatures: RouteMapResponse["features"];
   mapNotice?: DataNotice;
   peers: RouteSummary[];
@@ -291,10 +295,11 @@ export async function getComparePageData(ids?: string | string[]) {
 export async function getRouteDetailPageData(
   routeId: string,
 ): Promise<ReadyRouteDetailPageData | FailedRouteDetailPageData | null> {
-  const [summaryResult, rankingsResult, mapResult] = await Promise.all([
+  const [summaryResult, rankingsResult, mapResult, liveVehiclesResult] = await Promise.all([
     safeLoad(() => getRouteSummary(routeId)),
     safeLoad(getRankings),
     safeLoad(getMapRoutes),
+    safeLoad(() => getLiveVehicles(routeId)),
   ]);
 
   if (!summaryResult.ok) {
@@ -335,6 +340,14 @@ export async function getRouteDetailPageData(
 
   return {
     kind: "ready",
+    liveVehicleOverlay: liveVehiclesResult.ok ? liveVehiclesResult.data.features : [],
+    liveVehiclesNotice: liveVehiclesResult.ok
+      ? undefined
+      : buildErrorNotice(
+          "Live vehicle context is unavailable right now.",
+          "The historical route detail view still works without the live overlay.",
+          liveVehiclesResult.error,
+        ),
     mapFeatures: routeMapFeatures,
     mapNotice: mapResult.ok
       ? routeMapFeatures.length === 0
@@ -380,9 +393,10 @@ export async function getRouteDetailPageData(
 }
 
 export async function getMapPageData() {
-  const [rankingsResult, mapResult] = await Promise.all([
+  const [rankingsResult, mapResult, liveVehiclesResult] = await Promise.all([
     safeLoad(getRankings),
     safeLoad(getMapRoutes),
+    safeLoad(() => getLiveVehicles()),
   ]);
   const notices: DataNotice[] = [];
   const map = mapResult.ok ? mapResult.data : emptyMapResponse();
@@ -417,8 +431,19 @@ export async function getMapPageData() {
     );
   }
 
+  if (!liveVehiclesResult.ok) {
+    notices.push(
+      buildErrorNotice(
+        "Live vehicle overlay is unavailable right now.",
+        "The citywide historical map still works without realtime context.",
+        liveVehiclesResult.error,
+      ),
+    );
+  }
+
   return {
     highestLossRoute: rankings[0] ?? null,
+    liveVehicles: liveVehiclesResult.ok ? liveVehiclesResult.data : emptyLiveVehiclesResponse(),
     lowestLossRoute: rankings[rankings.length - 1] ?? null,
     metricUpdatedAt:
       rankings[0]?.metric_updated_at ?? map.features[0]?.properties.metric_updated_at ?? null,
@@ -603,6 +628,15 @@ function emptyMapResponse(): RouteMapResponse {
     metric: "typical_trip_loss_minutes",
     type: "FeatureCollection",
     window: "all_day",
+  };
+}
+
+function emptyLiveVehiclesResponse(): LiveVehiclesResponse {
+  return {
+    agency_id: "SF",
+    features: [],
+    type: "FeatureCollection",
+    vehicle_count: 0,
   };
 }
 

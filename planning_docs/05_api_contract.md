@@ -46,9 +46,7 @@ Current public-unit limitation:
 - `GET /routes/{route_id}/stops/wait?window=all_day&direction={0|1 required}`
 - `GET /routes/compare?ids=14,49&window=all_day`
 - `GET /map/routes?window=all_day&metric={typical_trip_loss_minutes|waiting_loss_minutes|in_vehicle_loss_minutes}`
-
-Deferred endpoints:
-- `GET /live/vehicles`
+- `GET /live/vehicles?agency=SF&route_id={optional}`
 
 ## Core Shared Fields
 Most route-centric responses should use:
@@ -236,14 +234,36 @@ Rules:
 Purpose:
 - optional map overlay only
 
-Should include:
-- vehicle ID
-- route ID
-- route name or display token if needed
-- latitude / longitude
-- timestamp
+Shape:
+- top-level `agency_id`
+- top-level optional `route_id` echo when filtered
+- top-level `feed_timestamp`
+- top-level `vehicle_count`
+- top-level `type = FeatureCollection`
+- `features[]`, each with GeoJSON `Point` geometry plus typed `properties`
 
-This endpoint is deferred until static/historical data paths are correct.
+Live vehicle feature properties include:
+- `agency_id`
+- `entity_id`
+- `vehicle_id`
+- `vehicle_label`
+- `route_id`
+- `route_short_name`
+- `trip_id`
+- `stop_id`
+- `current_stop_sequence`
+- `current_status`
+- `occupancy_status`
+- `bearing`
+- `speed_meters_per_second`
+- `vehicle_timestamp`
+- `feed_timestamp`
+
+Current `B7` implementation notes:
+- the endpoint reads from a separate current-state table, not the historical marts
+- missing live data should degrade to an empty `FeatureCollection`, not break the historical product
+- route filtering is optional and is primarily intended for route-detail overlays
+- the public live overlay is context only; it does not recompute historical metrics
 
 ## Fixture Rules
 - every major endpoint should get fixture JSON before frontend live integration
@@ -258,6 +278,7 @@ Current `B4` fixture set:
 - `fixtures/api/route_14_stops_wait_direction_1_all_day.json`
 - `fixtures/api/routes_compare_14_49_all_day.json`
 - `fixtures/api/map_routes_all_day_typical_trip_loss_minutes.json`
+- `fixtures/api/live_vehicles_sf.json`
 
 Static frontend clarification after `B5`:
 - the accepted fixture set still publishes only one dedicated route-detail segment payload (`route_14_segments_direction_1_all_day.json`)

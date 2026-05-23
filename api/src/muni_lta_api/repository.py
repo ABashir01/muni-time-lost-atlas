@@ -8,6 +8,8 @@ from typing import Any
 from .db import Database
 from .models import (
     CompareResponse,
+    LiveVehicleFeature,
+    LiveVehiclesResponse,
     MapRoutesResponse,
     RankedRouteSummary,
     RankingMetric,
@@ -466,6 +468,69 @@ class HistoricalApiRepository:
             features=features,
         )
 
+    def get_live_vehicles(
+        self,
+        *,
+        agency_id: str,
+        route_id: str | None = None,
+    ) -> LiveVehiclesResponse:
+        if not self._database.table_exists(schema="realtime", table="vehicle_positions_current"):
+            return LiveVehiclesResponse(
+                agency_id=agency_id,
+                route_id=route_id,
+                vehicle_count=0,
+                features=[],
+            )
+        rows = self._database.fetch_all(
+            """
+            SELECT
+                live.agency_id,
+                live.entity_id,
+                live.vehicle_id,
+                live.vehicle_label,
+                live.route_id,
+                live.route_short_name,
+                live.trip_id,
+                live.stop_id,
+                live.current_stop_sequence,
+                live.current_status,
+                live.occupancy_status,
+                live.bearing,
+                live.speed_meters_per_second,
+                live.vehicle_timestamp,
+                live.feed_timestamp,
+                ST_AsGeoJSON(live.geom)::TEXT AS geometry_json
+            FROM realtime.vehicle_positions_current AS live
+            WHERE live.agency_id = %s
+              AND (%s::text IS NULL OR live.route_id = %s::text)
+            ORDER BY
+                live.vehicle_timestamp DESC NULLS LAST,
+                live.route_id NULLS LAST,
+                live.entity_id
+            """,
+            [agency_id, route_id, route_id],
+        )
+        feed_timestamp = next(
+            (row["feed_timestamp"] for row in rows if row["feed_timestamp"] is not None),
+            None,
+        )
+        features = [
+            LiveVehicleFeature.model_validate(
+                {
+                    "geometry": json.loads(row["geometry_json"]),
+                    "properties": self._normalize_live_vehicle_properties_row(row),
+                }
+            )
+            for row in rows
+        ]
+        return LiveVehiclesResponse(
+            agency_id=agency_id,
+            route_id=route_id,
+            feed_timestamp=feed_timestamp,
+            vehicle_count=len(features),
+            features=features,
+        )
+
     @staticmethod
     def _normalize_route_summary_row(row: dict[str, Any]) -> dict[str, Any]:
         normalized = dict(row)
@@ -491,4 +556,10 @@ class HistoricalApiRepository:
         normalized = HistoricalApiRepository._normalize_route_summary_row(row)
         normalized.pop("geometry_json", None)
         normalized.pop("metric_value", None)
+        return normalized
+
+    @staticmethod
+    def _normalize_live_vehicle_properties_row(row: dict[str, Any]) -> dict[str, Any]:
+        normalized = dict(row)
+        normalized.pop("geometry_json", None)
         return normalized
