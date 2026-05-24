@@ -164,6 +164,42 @@ Recommended first cron policy:
 - publish once the new completed month becomes available
 - do nothing when the month is still unavailable or already published
 
+## First Production Population
+The first production deployment should **bootstrap the full live rolling window immediately**.
+
+Do not:
+- deploy with only one month and wait for the window to fill naturally
+
+Do:
+- identify the newest completed month currently available from `511`
+- select that month plus the prior `5` completed months
+- build and publish the full 6-month live window before treating the deployment as complete
+
+Example:
+- if the newest available month is `2026-04`
+- the first production live window should be:
+  - `2025-11`
+  - `2025-12`
+  - `2026-01`
+  - `2026-02`
+  - `2026-03`
+  - `2026-04`
+
+### First-deploy workflow
+1. provision the VPS and deploy the application stack
+2. verify the app and database services are healthy
+3. determine the newest completed month available from `511`
+4. compute the 6-month bootstrap window ending at that month
+5. run the monthly cutover/build flow for each month in that bootstrap window
+6. publish the resulting 6-month retained dataset into the live serving DB
+7. verify homepage, rankings, compare, route detail, and map against the populated live window
+8. enable the normal monthly availability-check cron only after the initial bootstrap succeeds
+
+### Operational rule
+The bootstrap path and the steady-state monthly publication path are different:
+- bootstrap fills the initial 6-month live window
+- steady-state publication advances that window by one completed month at a time
+
 ## Operational Responsibilities On A VPS
 The VPS approach is the cheapest, but it requires basic ops ownership.
 
