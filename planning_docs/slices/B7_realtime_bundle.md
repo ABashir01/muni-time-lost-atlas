@@ -1,48 +1,70 @@
 # Title
-B7 Realtime Bundle
+B7 Rolling Historical Publication Bundle
 
 ## Goal
-Add live GTFS-RT vehicle context on top of the working historical/static MVP.
+Turn the real cutover pipeline into a production-like rolling historical publication flow.
 
 ## Why this bundle exists
-Realtime should be an enhancement layer added only after the historical/static product is already useful and trustworthy.
+The current product can build one accepted real monthly cutover, but the MVP still needs a repeatable publishing pattern for the live app database.
+
+This bundle exists to make the product:
+- operate on a rolling historical window
+- update on a monthly cadence
+- avoid pretending to be a realtime system
 
 ## Depends on
 - `B6_frontend_api_integration_bundle`
+- `B6a_real_dataset_cutover_bundle`
+- `B6b_real_map_engine_bundle`
+- `B6c_historic_shapes_api_fallback`
 
 ## Touches
-- GTFS-RT ingestion
-- live vehicle serving endpoint
-- frontend map overlay
+- monthly cutover orchestration
+- retention-window policy
+- app publication cadence
+- deployment/run scheduling inputs
 
 ## Inputs
-- live `511` GTFS-RT vehicle positions
-- existing historical/static map and route screens
+- active `511` operator GTFS
+- historic monthly `RG -so` archives
+- Shapes API fallback when recent monthly archives omit `shapes.txt`
+- existing historical/static API and frontend
 
 ## Outputs
-- live vehicles on map
-- optional live context without destabilizing the historical MVP
+- rolling historical publication in the live app DB
+- documented retention window
+- repeatable monthly refresh flow
+- date-range support across the retained window
 
 ## Implementation notes
-- ingest GTFS-RT vehicle positions from `511`
-- add the live vehicle serving endpoint
-- add a live map overlay in the frontend
-- keep live context clearly secondary to the historical choropleth/summary logic
-- do not recompute the full historical metrics layer on every realtime poll
-- live data should update current-state tables only
+- use a **rolling 6-month** live database window
+- update the published dataset on a **monthly** cadence when the next `RG -so` archive is available
+- keep the product historical/static in methodology and behavior
+- do not add GTFS-RT vehicle overlays in this bundle
+- do not add live endpoint semantics in this bundle
+- make date filtering/range selection operate over the retained historical window, not over fake presets that imply realtime freshness
+- keep older monthly archives outside the live serving window as retained artifacts or backups rather than in the app DB
+- use the existing real cutover path as the publication mechanism
+- use the accepted historic Shapes API fallback during the build when recent monthly archives omit `shapes.txt`
 
 ## Tests required
-- one primary integration suite for live ingest plus endpoint plus frontend overlay
-- live `511` verification only because this bundle directly depends on live behavior
+- one primary integration suite for rolling-window cutover and retention behavior
+- one regression suite for API/frontend compatibility against the refreshed monthly publication window
+- live `511` verification only for the monthly cutover inputs, not for realtime polling
 
 ## Acceptance criteria
-- vehicles appear on the map from the live endpoint
-- the historical/static product still behaves correctly without live data
-- realtime does not change the historical metric semantics
+- the live app DB can be rebuilt/published from the most recent supported monthly archive
+- the published window retains the last 6 months and drops older live-serving months from the primary app DB
+- homepage, rankings, compare, route detail, and map still work against the rolling historical window
+- methodology and copy remain consistent with a monthly-refreshed historical product
+- no part of the app implies second-by-second or same-day live metric freshness
 
 ## Non-goals
-- historical metric recomputation from live feeds
+- GTFS-RT vehicle positions
+- live map overlays
+- same-day metric recomputation
 - major API redesign
+- replacing Postgres/PostGIS with a warehouse or file-based serving store
 
 ## Handoff to next bundle
 `B8_product_hardening_bundle` should polish the full product and finalize public-facing behavior.

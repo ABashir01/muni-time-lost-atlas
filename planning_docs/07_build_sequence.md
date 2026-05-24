@@ -9,7 +9,7 @@ From this point forward:
 3. build the full historical/static API
 4. build the full frontend against fixtures
 5. integrate frontend + API
-6. add realtime only after the historical product works
+6. operationalize rolling historical publication after the historical product works
 
 ## Completed Work
 These slices are complete and remain part of the permanent project history:
@@ -96,8 +96,8 @@ The current baseline now includes:
   carrying schedule and observed-arrival data needed for the metrics
 - doc: [B6c_historic_shapes_api_fallback.md](./slices/B6c_historic_shapes_api_fallback.md)
 
-### B7 Realtime Bundle
-- goal: add GTFS-RT ingestion and live vehicle overlays
+### B7 Rolling Historical Publication Bundle
+- goal: publish a rolling 6-month historical window and refresh it monthly
 - replaces: `S30` through `S32`
 - doc: [B7_realtime_bundle.md](./slices/B7_realtime_bundle.md)
 
@@ -149,6 +149,10 @@ Keep the old slice docs only as planning history. Do not resume implementation f
   for rolling publication may omit `shapes.txt`
 - the historical/static product is complete and trustworthy without realtime
 - map and route detail screens already work from static/historical data
+- deployment strategy and live retention-window choice are explicit
+
+### Before B8
+- `B7` rolling publication exists and can refresh the app monthly without manual ad hoc rebuilds
 
 ## Validation Standard
 Use lean validation for all future bundles:

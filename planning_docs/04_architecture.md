@@ -147,14 +147,24 @@ Current implementation note:
 
 ## Deployment Shape
 Expected deployables:
+- one reverse proxy
 - one frontend app
 - one Python API service
 - one Postgres/PostGIS database
 
+Preferred MVP runtime:
+- one VPS
+- one Docker Compose stack
+- `Postgres/PostGIS`
+- `FastAPI`
+- `Next.js`
+- `Caddy` or `Nginx`
+
 Operational guidance:
 - keep historical analytics batch-driven
-- keep realtime ingestion separate from historical marts
-- do not recompute the full historical metrics layer on every realtime poll
+- keep the live serving database on a rolling historical window rather than a full historical archive
+- publish on a monthly cadence rather than pretending the metrics are realtime
+- older monthly archives should be retained outside the primary live serving DB
 
 ## Real Dataset Cutover
 Current implementation note:
@@ -169,7 +179,7 @@ The explicit cutover bundle should:
 
 Important boundary:
 - the real dataset cutover should happen before or alongside the real map-engine bundle
-- it should happen before realtime is treated as the next major user-facing priority
+- it should happen before rolling historical publication is treated as the next major user-facing priority
 - if recent monthly archives lack `shapes.txt`, recent metric builds may use
   monthly archive schedules and observations plus current Shapes API geometry
   fallback during the build
