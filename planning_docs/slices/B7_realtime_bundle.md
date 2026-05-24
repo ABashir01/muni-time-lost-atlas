@@ -67,6 +67,9 @@ Recommended production behavior:
 
 Recommended initial cron window:
 - start checking on the **2nd day of each month**
+- assume the production runtime is hosted on **Hetzner + Coolify**
+- run the daily availability check in an overnight low-traffic window, such as around `2:00 AM` Pacific
+- if the month is newly available, begin the publication maintenance window shortly after, such as around `2:30 AM` Pacific
 - continue daily until the newest completed month is available and published
 - after successful publication, remain idle until the next monthly cycle
 
@@ -87,6 +90,7 @@ This is preferable to a fixed once-per-month fire-and-forget job because:
 - methodology and copy remain consistent with a monthly-refreshed historical product
 - no part of the app implies second-by-second or same-day live metric freshness
 - the publication job can detect that the newest completed month is not yet available and exit cleanly without mutating the live DB
+- the cron/deploy assumptions are compatible with a `Hetzner + Coolify` production setup
 
 ## Non-goals
 - GTFS-RT vehicle positions

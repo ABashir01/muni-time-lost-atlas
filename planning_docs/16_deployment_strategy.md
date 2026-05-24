@@ -1,15 +1,18 @@
 # Deployment Strategy
 
 ## Decision
-Deploy the MVP as a single always-on application on one VPS using Docker Compose.
+Deploy the MVP as a single always-on application on one VPS, with **Hetzner + Coolify** as the default operating assumption.
 
 Use:
-- one VPS
-- one `docker compose` stack
+- one Hetzner VPS
+- Coolify as the default deployment/control layer
 - `Postgres/PostGIS`
 - `FastAPI`
 - `Next.js`
 - `Caddy` or `Nginx` as the reverse proxy and TLS terminator
+
+Fallback if Coolify becomes unnecessary:
+- plain `docker compose` on the same Hetzner VPS
 
 Do not use:
 - `BigQuery` as the serving store
@@ -23,7 +26,7 @@ This project is:
 - not highly concurrent at MVP scale
 - operationally simple enough to keep on one box
 
-A single VPS replaces:
+A single Hetzner VPS replaces:
 - managed database cost
 - separate frontend hosting cost
 - separate API hosting cost
@@ -97,6 +100,21 @@ Decision:
 - choose **6 months** as the default live retention window
 - keep the architecture compatible with reducing to 3 months later if deployment cost becomes a problem
 
+## Hosting Assumption
+Preferred MVP host:
+- Hetzner
+
+Preferred deployment control layer:
+- self-hosted Coolify on the same VPS
+
+Reason:
+- much cheaper than typical managed app + managed DB combinations
+- easier day-to-day deployment management than raw manual Docker alone
+- still fully compatible with a one-box Postgres/PostGIS + API + frontend architecture
+
+If a clearly cheaper and easier VPS/VM option appears later, this can be revisited, but the current default assumption should be:
+- `Hetzner + Coolify`
+
 ## Recommended Runtime Topology
 ### Services
 - `db`
@@ -116,6 +134,7 @@ Decision:
 - only the reverse proxy is publicly exposed
 - `Postgres` should not be public
 - API and frontend should sit behind the reverse proxy on the Docker network
+- Coolify should manage the deployed services, env vars, and restarts rather than requiring ad hoc manual container management
 
 ### Persistent state
 - Postgres data volume
@@ -126,7 +145,7 @@ Decision:
 The production app should update on a **monthly** historical-publication cadence.
 
 Use:
-- a daily cron or scheduled job on the VPS
+- a daily cron or scheduled job on the Hetzner VPS
 - a lightweight availability check for the newest completed historic month
 - the full rolling-window cutover only when a new month is actually available
 
@@ -140,6 +159,8 @@ Operational interpretation:
 
 Recommended first cron policy:
 - run the check daily starting on the **2nd** of each month
+- run the availability check during a low-traffic overnight window, such as around `2:00 AM` Pacific
+- if the new completed month becomes available, run the publication maintenance window immediately after, such as around `2:30 AM` Pacific
 - publish once the new completed month becomes available
 - do nothing when the month is still unavailable or already published
 
@@ -147,7 +168,9 @@ Recommended first cron policy:
 The VPS approach is the cheapest, but it requires basic ops ownership.
 
 Required:
-- Docker and Docker Compose install
+- Hetzner VPS provisioning
+- Coolify install and upkeep
+- Docker and Docker Compose install beneath Coolify
 - OS patching
 - firewall configuration
 - DNS setup
@@ -188,8 +211,8 @@ DuckDB can still be added later for:
 
 ## Deployment Recommendation
 Preferred MVP deploy target:
-- one VPS
-- Docker Compose
+- one Hetzner VPS
+- Coolify
 - `Postgres/PostGIS`
 - `FastAPI`
 - `Next.js`
