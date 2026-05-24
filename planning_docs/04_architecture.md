@@ -21,6 +21,8 @@ Data-platform responsibilities:
 - fetch historic `RG` archives from `511`
 - fetch GTFS-RT later
 - load raw GTFS and raw stop observations into Postgres
+- enrich recent historic cutovers with build-time Shapes API geometry fallback
+  when monthly archives omit `shapes.txt`
 - materialize scheduled canonical models
 - materialize observed canonical models
 - materialize route and segment marts
@@ -168,3 +170,6 @@ The explicit cutover bundle should:
 Important boundary:
 - the real dataset cutover should happen before or alongside the real map-engine bundle
 - it should happen before realtime is treated as the next major user-facing priority
+- if recent monthly archives lack `shapes.txt`, recent metric builds may use
+  monthly archive schedules and observations plus current Shapes API geometry
+  fallback during the build

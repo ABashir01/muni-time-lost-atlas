@@ -65,6 +65,8 @@ Current integration artifacts:
   - performs the bounded `B6a` active + historic archive cutover only if `TRANSIT_511_API_KEY` is configured locally
   - reuses `artifacts/cutovers/b6a_real_dataset_cutover_bundle/latest.json` when that manifest is present so validation can rerun against the same archived snapshot
   - when the source archive is regional `RG -so`, the cutover first derives an `SF`-only historic archive and then loads/builds from that reduced snapshot
+  - exercises the historic Shapes API fallback path indirectly when the derived archive needs
+    geometry backfill before raw GTFS ingest
   - verifies that a second unchanged cutover rerun skips dbt entirely through the manifest-aware no-op guard
   - verifies the rebuilt marts and serving layers expose a broad real Muni route set
   - verifies the live FastAPI contract reads from that rebuilt real dataset rather than the old two-route development cut
@@ -82,7 +84,15 @@ Current unit artifacts:
 - `unit/test_511_historic_rg_feed_fetch.py`
   - verifies the historic `RG` acquisition URL is built correctly for both plain and `-so` variants
   - validates historic zip structure checks, including `stop_observations.txt` expectations
+  - verifies recent monthly archives can omit `shapes.txt` without failing the acquisition step
   - verifies mocked historic fetches write both the zip artifact and JSON provenance metadata
+- `unit/test_historic_shapes_api.py`
+  - verifies the Shapes API URL and `LineString.pos[]` parser
+  - verifies successful shape backfills are cached and reused on repeat runs
+- `unit/test_historic_rg_sf_extract.py`
+  - verifies SF-only archive derivation preserves retained GTFS and `stop_observations` rows
+  - verifies missing historic `shapes.txt` can be backfilled into a synthesized derived archive
+  - verifies the build fails when a required `shape_id` cannot be backfilled
 - `unit/test_historic_stop_observations_fixture_ingest.py`
   - verifies service-date and observed-arrival timestamp parsing helpers
   - verifies the stop-observations fixture reader preserves required source-facing fields plus typed timestamps

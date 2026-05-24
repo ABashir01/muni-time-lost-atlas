@@ -154,6 +154,23 @@ This is an explicit short-term MVP tradeoff, not the intended long-term product
 unit. The planned post-MVP shift is to rank and display public results at the
 `route_id + direction_id` level everywhere.
 
+### Recent-Month Geometry Fallback Disclosure
+For recent historic months, the selected monthly archive may contain the
+schedule and observed-arrival inputs needed for the metrics while still omitting
+`shapes.txt`.
+
+When that happens, the planned pre-B7 fallback is:
+- keep the metric month/range historical
+- backfill missing shape geometry during the build from the current 511 Shapes
+  API
+
+That means:
+- route and segment maps for those recent months may use newer display geometry
+  than the metric month itself
+- this is acceptable for recent rolling-history publication
+- it should not be interpreted as proof that the displayed route line is the
+  exact historical geometry for that month
+
 ## First Segment Layer
 For the first spatial bundle, the segment layer is narrower than the route summary layer.
 

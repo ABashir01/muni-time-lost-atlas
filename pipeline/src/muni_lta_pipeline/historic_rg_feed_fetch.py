@@ -17,7 +17,6 @@ from muni_lta_pipeline.active_gtfs_fetch import (
     DEFAULT_511_GTFS_FEED_URL,
     DEFAULT_SOURCE_SYSTEM,
     get_511_api_key,
-    validate_gtfs_zip_bytes,
 )
 
 
@@ -27,6 +26,9 @@ DEFAULT_OPERATOR_ID = "RG"
 DEFAULT_FEED_SCOPE = "regional_historic"
 STOP_OBSERVATIONS_FILENAME = "stop_observations.txt"
 HISTORIC_MONTH_PATTERN = re.compile(r"^\d{4}-\d{2}$")
+HISTORIC_REQUIRED_CORE_FILES = tuple(
+    file_name for file_name in CORE_GTFS_FILES if file_name != "shapes.txt"
+)
 
 
 @dataclass(frozen=True)
@@ -48,6 +50,7 @@ class HistoricAcquisitionMetadata:
     required_core_files: tuple[str, ...]
     service_files_present: tuple[str, ...]
     stop_observations_present: bool
+    shapes_present: bool = True
 
 
 @dataclass(frozen=True)
@@ -99,10 +102,33 @@ def validate_historic_gtfs_zip_bytes(
     payload: bytes,
     *,
     require_stop_observations: bool = False,
-) -> tuple[tuple[str, ...], tuple[str, ...], bool]:
+) -> tuple[tuple[str, ...], tuple[str, ...], bool, bool]:
     """Validate a historic GTFS archive and its stop-observations variant behavior."""
+    from io import BytesIO
+    import zipfile
 
-    member_names, service_files_present = validate_gtfs_zip_bytes(payload)
+    with zipfile.ZipFile(BytesIO(payload), mode="r") as archive:
+        member_names = tuple(sorted(archive.namelist()))
+
+    missing_core = [
+        name for name in HISTORIC_REQUIRED_CORE_FILES if name not in member_names
+    ]
+    if missing_core:
+        raise ValueError(
+            "Historic GTFS archive is missing required core files: "
+            + ", ".join(sorted(missing_core))
+        )
+
+    service_files_present = tuple(
+        name for name in ("calendar.txt", "calendar_dates.txt") if name in member_names
+    )
+    if not service_files_present:
+        raise ValueError(
+            "Historic GTFS archive is missing both service-calendar files: "
+            "calendar.txt and calendar_dates.txt."
+        )
+
+    shapes_present = "shapes.txt" in member_names
     stop_observations_present = STOP_OBSERVATIONS_FILENAME in member_names
 
     if require_stop_observations and not stop_observations_present:
@@ -115,7 +141,7 @@ def validate_historic_gtfs_zip_bytes(
             "Historic GTFS archive unexpectedly contains stop_observations.txt for a plain historic request."
         )
 
-    return member_names, service_files_present, stop_observations_present
+    return member_names, service_files_present, shapes_present, stop_observations_present
 
 
 def fetch_historic_rg_gtfs_archive(
@@ -151,7 +177,7 @@ def fetch_historic_rg_gtfs_archive(
         payload = response.read()
 
     fetched_at = datetime.now(tz=UTC)
-    member_names, service_files_present, stop_observations_present = (
+    member_names, service_files_present, shapes_present, stop_observations_present = (
         validate_historic_gtfs_zip_bytes(
             payload,
             require_stop_observations=include_stop_observations,
@@ -183,8 +209,9 @@ def fetch_historic_rg_gtfs_archive(
         artifact_sha256=sha256,
         artifact_size_bytes=len(payload),
         zip_member_names=member_names,
-        required_core_files=CORE_GTFS_FILES,
+        required_core_files=HISTORIC_REQUIRED_CORE_FILES,
         service_files_present=service_files_present,
+        shapes_present=shapes_present,
         stop_observations_present=stop_observations_present,
     )
     metadata_path.write_text(

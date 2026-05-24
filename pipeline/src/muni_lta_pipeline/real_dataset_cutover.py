@@ -228,6 +228,40 @@ def _compute_dbt_fingerprint(
     }
 
 
+def _compute_raw_input_fingerprint(
+    *,
+    active_metadata_path: Path,
+    historic_metadata_path: Path,
+    overlay_fixture_path: Path = TRANSIT_LANE_OVERLAY_FIXTURE_PATH,
+) -> dict[str, Any]:
+    digest = hashlib.sha256()
+    tracked_inputs: list[str] = []
+
+    for label, metadata_path in (
+        ("active_metadata", active_metadata_path),
+        ("historic_metadata", historic_metadata_path),
+    ):
+        payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+        tracked_inputs.append(str(metadata_path))
+        digest.update(label.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(str(metadata_path).encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(_canonical_json(payload).encode("utf-8"))
+        digest.update(b"\0")
+
+    tracked_inputs.append(str(overlay_fixture_path))
+    digest.update(b"overlay_fixture\0")
+    digest.update(str(overlay_fixture_path).encode("utf-8"))
+    digest.update(b"\0")
+    digest.update(overlay_fixture_path.read_bytes())
+
+    return {
+        "sha256": digest.hexdigest(),
+        "tracked_inputs": tracked_inputs,
+    }
+
+
 def _raw_snapshot_labels(
     *,
     active_gtfs_snapshot_label: str,
@@ -276,6 +310,17 @@ def _manifest_dbt_fingerprint_sha(manifest: dict[str, Any]) -> str | None:
     return None
 
 
+def _manifest_raw_input_fingerprint_sha(manifest: dict[str, Any]) -> str | None:
+    fingerprint = manifest.get("raw_input_fingerprint")
+    if isinstance(fingerprint, dict):
+        sha256 = fingerprint.get("sha256")
+        if sha256:
+            return str(sha256)
+    if isinstance(fingerprint, str) and fingerprint:
+        return fingerprint
+    return None
+
+
 def _manifest_completed_dbt(manifest: dict[str, Any]) -> bool:
     dbt_action = manifest.get("dbt_action")
     if isinstance(dbt_action, str):
@@ -311,6 +356,7 @@ def _find_reusable_dbt_manifest(
     *,
     cutover_root: Path,
     raw_snapshot_labels: dict[str, str],
+    raw_input_fingerprint: dict[str, Any],
     dbt_vars: dict[str, Any],
     dbt_fingerprint: dict[str, Any],
 ) -> tuple[Path, dict[str, Any]] | None:
@@ -319,6 +365,8 @@ def _find_reusable_dbt_manifest(
         if not _manifest_completed_dbt(manifest):
             continue
         if _manifest_raw_snapshot_labels(manifest) != raw_snapshot_labels:
+            continue
+        if _manifest_raw_input_fingerprint_sha(manifest) != raw_input_fingerprint["sha256"]:
             continue
         if manifest.get("dbt_vars") != dbt_vars:
             continue
@@ -337,6 +385,22 @@ def _log(message: str, *, log_path: Path, latest_log_path: Path) -> None:
         with path.open("a", encoding="utf-8") as handle:
             handle.write(timestamped)
             handle.write("\n")
+
+
+def _find_reusable_raw_manifest(
+    *,
+    cutover_root: Path,
+    raw_snapshot_labels: dict[str, str],
+    raw_input_fingerprint: dict[str, Any],
+) -> tuple[Path, dict[str, Any]] | None:
+    for manifest_path in _iter_prior_manifest_paths(cutover_root):
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if _manifest_raw_snapshot_labels(manifest) != raw_snapshot_labels:
+            continue
+        if _manifest_raw_input_fingerprint_sha(manifest) != raw_input_fingerprint["sha256"]:
+            continue
+        return manifest_path, manifest
+    return None
 
 
 def materialize_real_dataset_cutover(
@@ -408,6 +472,8 @@ def materialize_real_dataset_cutover(
     historic_sf_result = extract_sf_historic_archive(
         metadata_path=historic_metadata_path,
         selected_agency_id=historic_agency_id,
+        api_key=api_key,
+        active_metadata_path=active_metadata_path,
     )
     historic_metadata_path = historic_sf_result.metadata_path
     _log(
@@ -428,6 +494,21 @@ def materialize_real_dataset_cutover(
         json.loads(historic_metadata_path.read_text(encoding="utf-8"))
     )
     overlay_snapshot_label = "fixture_transit_lanes_v1"
+    raw_snapshot_labels = _raw_snapshot_labels(
+        active_gtfs_snapshot_label=active_gtfs_snapshot_label,
+        historic_gtfs_snapshot_label=historic_gtfs_snapshot_label,
+        historic_observed_snapshot_label=historic_observed_snapshot_label,
+        overlay_snapshot_label=overlay_snapshot_label,
+    )
+    raw_input_fingerprint = _compute_raw_input_fingerprint(
+        active_metadata_path=active_metadata_path,
+        historic_metadata_path=historic_metadata_path,
+    )
+    reusable_raw_manifest = _find_reusable_raw_manifest(
+        cutover_root=cutover_root,
+        raw_snapshot_labels=raw_snapshot_labels,
+        raw_input_fingerprint=raw_input_fingerprint,
+    )
 
     reused_existing_gtfs_raw = False
     reused_existing_observed_raw = False
@@ -437,11 +518,16 @@ def materialize_real_dataset_cutover(
         if reuse_existing_raw and (
             _gtfs_snapshot_present(metadata_connection, active_gtfs_snapshot_label)
             and _gtfs_snapshot_present(metadata_connection, historic_gtfs_snapshot_label)
-        ):
+        ) and reusable_raw_manifest is not None:
             reused_existing_gtfs_raw = True
+            reused_raw_manifest_path = _manifest_self_path(
+                reusable_raw_manifest[0],
+                reusable_raw_manifest[1],
+            )
             _log(
                 "reusing existing raw GTFS snapshots "
-                f"{active_gtfs_snapshot_label} and {historic_gtfs_snapshot_label}",
+                f"{active_gtfs_snapshot_label} and {historic_gtfs_snapshot_label} "
+                f"because raw input fingerprint matches manifest {reused_raw_manifest_path}",
                 log_path=log_path,
                 latest_log_path=latest_log_path,
             )
@@ -479,10 +565,11 @@ def materialize_real_dataset_cutover(
         if reuse_existing_raw and _stop_observations_snapshot_present(
             metadata_connection,
             historic_observed_snapshot_label,
-        ):
+        ) and reusable_raw_manifest is not None:
             reused_existing_observed_raw = True
             _log(
-                f"reusing existing raw stop observations snapshot {historic_observed_snapshot_label}",
+                "reusing existing raw stop observations snapshot "
+                f"{historic_observed_snapshot_label} because raw input fingerprint matches",
                 log_path=log_path,
                 latest_log_path=latest_log_path,
             )
@@ -504,7 +591,11 @@ def materialize_real_dataset_cutover(
                 latest_log_path=latest_log_path,
             )
 
-        if reuse_existing_raw and _overlay_snapshot_present(metadata_connection, overlay_snapshot_label):
+        if (
+            reuse_existing_raw
+            and _overlay_snapshot_present(metadata_connection, overlay_snapshot_label)
+            and reusable_raw_manifest is not None
+        ):
             reused_existing_overlay_raw = True
             overlay_row_count = _snapshot_row_count(
                 metadata_connection,
@@ -542,16 +633,11 @@ def materialize_real_dataset_cutover(
         "observed_snapshot_label": historic_observed_snapshot_label,
         "performance_indexing": True,
     }
-    raw_snapshot_labels = _raw_snapshot_labels(
-        active_gtfs_snapshot_label=active_gtfs_snapshot_label,
-        historic_gtfs_snapshot_label=historic_gtfs_snapshot_label,
-        historic_observed_snapshot_label=historic_observed_snapshot_label,
-        overlay_snapshot_label=overlay_snapshot_label,
-    )
     dbt_fingerprint = _compute_dbt_fingerprint(dbt_vars)
     reusable_dbt_manifest = _find_reusable_dbt_manifest(
         cutover_root=cutover_root,
         raw_snapshot_labels=raw_snapshot_labels,
+        raw_input_fingerprint=raw_input_fingerprint,
         dbt_vars=dbt_vars,
         dbt_fingerprint=dbt_fingerprint,
     )
@@ -571,8 +657,8 @@ def materialize_real_dataset_cutover(
         reused_manifest_path, reused_manifest = reusable_dbt_manifest
         reused_manifest_path = _manifest_self_path(reused_manifest_path, reused_manifest)
         _log(
-            "skipping dbt run because raw snapshot labels, dbt vars, and dbt fingerprint "
-            f"match successful manifest {reused_manifest_path}",
+            "skipping dbt run because raw snapshot labels, raw input fingerprint, dbt vars, "
+            f"and dbt fingerprint match successful manifest {reused_manifest_path}",
             log_path=log_path,
             latest_log_path=latest_log_path,
         )
@@ -655,10 +741,32 @@ def materialize_real_dataset_cutover(
         "overlay_snapshot_label": overlay_snapshot_label,
         "overlay_row_count": overlay_row_count,
         "raw_snapshot_labels": raw_snapshot_labels,
+        "raw_input_fingerprint": raw_input_fingerprint,
         "reused_existing_dbt": reused_existing_dbt,
         "reused_existing_gtfs_raw": reused_existing_gtfs_raw,
         "reused_existing_observed_raw": reused_existing_observed_raw,
         "reused_existing_overlay_raw": reused_existing_overlay_raw,
+        "shape_backfill_cache_hits": getattr(
+            historic_sf_result.metadata, "shape_backfill_cache_hits", 0
+        ),
+        "shape_backfill_failure_count": getattr(
+            historic_sf_result.metadata, "shape_backfill_failure_count", 0
+        ),
+        "shape_backfill_manifest_path": getattr(
+            historic_sf_result.metadata, "shape_backfill_manifest_path", ""
+        ),
+        "shape_backfill_request_count": getattr(
+            historic_sf_result.metadata, "shape_backfill_request_count", 0
+        ),
+        "shape_backfill_shape_count": getattr(
+            historic_sf_result.metadata, "shape_backfill_shape_count", 0
+        ),
+        "shape_backfill_trip_selection_strategy": getattr(
+            historic_sf_result.metadata,
+            "shape_backfill_trip_selection_strategy",
+            "unique_active_shape_then_shapes_api",
+        ),
+        "shape_fallback_used": getattr(historic_sf_result.metadata, "shape_fallback_used", False),
         "skipped_dbt": skip_dbt or reused_existing_dbt,
         "route_count_with_metrics": route_count_with_metrics,
         "top_route_ids": top_route_ids,

@@ -62,8 +62,25 @@ Current historic archive reduction artifact:
 
 - `src/muni_lta_pipeline/historic_rg_sf_extract.py`
   - derives an `SF`-only historic archive from a fetched `RG -so` source archive
+  - preserves `shapes.txt` when present and can synthesize it during the build when the
+    historic archive omits the file
+  - synthesizes stable fallback geometry targets when the source trips leave `shape_id` blank:
+    exact current active trip-id matches are reused first, exact stop-pattern matches are grouped
+    together, and only the remaining unresolved patterns fall through to Shapes API candidates
+  - writes a loader-compatible `shapes.txt` before ingest
   - preserves loader-compatible metadata plus retained row-count provenance
   - writes the reduced archive under `artifacts/acquisitions/511/regional_historic_sf/`
+
+Supporting historic-shape fallback artifact:
+
+- `src/muni_lta_pipeline/historic_shapes_api.py`
+  - calls the 511 Shapes API only after exact current active-GTFS geometry reuse is exhausted
+  - normalizes historic trip ids into the Shapes API form expected by 511
+  - reuses cached geometry by `shape_id` and by prior `shapes_api_trip_id` when available
+  - tries a reduced candidate set for a missing geometry target when necessary
+  - backs off and retries on transient 511 rate-limit/server errors
+  - caches successful shape backfills under `artifacts/acquisitions/511/shapes_api/`
+  - synthesizes GTFS-compatible `shapes.txt` rows for the derived historic archive
 
 Example command:
 
@@ -77,6 +94,8 @@ Current historic regional acquisition artifact:
   - fetches monthly historic `511` regional GTFS zips for `operator_id=RG`
   - supports both plain historic requests and the `-so` variant that includes `stop_observations.txt`
   - validates the requested variant and writes timestamped zip + JSON provenance metadata
+  - allows recent monthly archives to omit `shapes.txt`; later build steps decide whether
+    the Shapes API fallback can backfill geometry
   - keeps historic acquisition separate from any raw-table load or Muni-only filtering
 
 Example commands:
@@ -160,11 +179,17 @@ Current real-dataset cutover artifact:
 - `src/muni_lta_pipeline/real_dataset_cutover.py`
   - fetches the active `SF` GTFS plus one bounded historic `RG -so` archive
   - derives an `SF`-only historic archive snapshot from the fetched regional source archive
+  - when the historic archive omits `shapes.txt`, resolves geometry in this order:
+    exact current active trip-id match, exact current stop-pattern match with one unique shape,
+    then Shapes API candidates with cache reuse
   - loads the active GTFS archive plus the derived `SF`-only historic archive into raw storage
   - loads the derived `SF`-only `stop_observations` archive into `raw.stop_observations`
   - rebuilds the dbt graph against the reduced `regional_historic_sf` snapshot
-  - reuses matching raw snapshots by default on repeat runs so unchanged raw tables are not truncated and reloaded again
-  - skips dbt entirely on repeat runs when the raw snapshot labels, cutover dbt vars, and dbt project fingerprint still match the last successful cutover manifest
+  - reuses matching raw snapshots by default only when both the snapshot labels and a
+    `raw_input_fingerprint` derived from the active metadata payload, derived historic metadata
+    payload, and overlay fixture content still match the last successful cutover manifest
+  - skips dbt entirely on repeat runs only when the raw snapshot labels, `raw_input_fingerprint`,
+    cutover dbt vars, and dbt project fingerprint still match the last successful cutover manifest
   - accepts `--force-raw-reload` to bypass raw reuse and `--skip-dbt` for artifact/raw-only preparation
   - writes a provenance manifest under `artifacts/cutovers/b6a_real_dataset_cutover_bundle/`
 
@@ -173,6 +198,24 @@ Example command:
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' .\pipeline\src\muni_lta_pipeline\real_dataset_cutover.py --historic-month 2023-02 --historic-agency-id SF
 ```
+
+Recent-month validation note:
+
+- `2026-04` now fetches successfully even though the source archive omits `shapes.txt`
+- the same source archive also carries blank `shape_id` values in retained `trips.txt`, so the
+  working fallback synthesizes stable geometry targets during derivation instead of depending on
+  source `shape_id` values
+- validated successful `2026-04` derivation outcome:
+  - `shape_fallback_used = true`
+  - `shape_backfill_shape_count = 279`
+  - `shape_backfill_cache_hits = 1`
+  - `shape_backfill_request_count = 0`
+- validated successful `2026-04` cutover result:
+  - `route_count_with_metrics = 68`
+  - `map_route_count = 68`
+- because the map geometry is current-display geometry while stop-distance values remain historical,
+  the segment builder now falls back to straight stop-to-stop lines when a clamped route substring
+  would otherwise collapse to a point
 
 Exact rerun of the validated archived snapshot:
 

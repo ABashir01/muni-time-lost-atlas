@@ -23,6 +23,7 @@ _configure_src_paths()
 
 from muni_lta_pipeline.real_dataset_cutover import (  # noqa: E402
     _compute_dbt_fingerprint,
+    _compute_raw_input_fingerprint,
     _find_reusable_dbt_manifest,
     materialize_real_dataset_cutover,
 )
@@ -103,6 +104,7 @@ class RealDatasetCutoverUnitTests(unittest.TestCase):
         }
         dbt_vars = {"historic_agency_id": "SF"}
         dbt_fingerprint = {"sha256": "fingerprint_a", "tracked_paths": ["dbt/models/a.sql"]}
+        raw_input_fingerprint = {"sha256": "raw_fingerprint_a", "tracked_inputs": ["active.json", "historic.json"]}
 
         try:
             successful_manifest_path = cutover_root / "20260521T120000Z.json"
@@ -113,6 +115,7 @@ class RealDatasetCutoverUnitTests(unittest.TestCase):
                         "dbt_fingerprint": dbt_fingerprint,
                         "dbt_vars": dbt_vars,
                         "manifest_path": str(successful_manifest_path),
+                        "raw_input_fingerprint": raw_input_fingerprint,
                         "raw_snapshot_labels": raw_snapshot_labels,
                         "skipped_dbt": False,
                     },
@@ -128,6 +131,7 @@ class RealDatasetCutoverUnitTests(unittest.TestCase):
                         "dbt_fingerprint": dbt_fingerprint,
                         "dbt_vars": dbt_vars,
                         "manifest_path": str(cutover_root / "latest.json"),
+                        "raw_input_fingerprint": raw_input_fingerprint,
                         "raw_snapshot_labels": raw_snapshot_labels,
                         "skipped_dbt": True,
                     },
@@ -140,6 +144,7 @@ class RealDatasetCutoverUnitTests(unittest.TestCase):
             reusable = _find_reusable_dbt_manifest(
                 cutover_root=cutover_root,
                 raw_snapshot_labels=raw_snapshot_labels,
+                raw_input_fingerprint=raw_input_fingerprint,
                 dbt_vars=dbt_vars,
                 dbt_fingerprint=dbt_fingerprint,
             )
@@ -166,6 +171,10 @@ class RealDatasetCutoverUnitTests(unittest.TestCase):
         historic_metadata_path.write_text("{}", encoding="utf-8")
 
         fingerprint = {"sha256": "fingerprint_a", "tracked_paths": ["dbt/models/a.sql"]}
+        raw_input_fingerprint = {
+            "sha256": "raw_fingerprint_a",
+            "tracked_inputs": [str(active_metadata_path), str(historic_metadata_path), "overlay"],
+        }
         prior_manifest_path = cutover_root / "20260521T120000Z.json"
         prior_manifest_path.write_text(
             json.dumps(
@@ -184,6 +193,7 @@ class RealDatasetCutoverUnitTests(unittest.TestCase):
                         "performance_indexing": True,
                     },
                     "manifest_path": str(prior_manifest_path),
+                    "raw_input_fingerprint": raw_input_fingerprint,
                     "raw_snapshot_labels": {
                         "active_gtfs_snapshot_label": "active_label",
                         "historic_gtfs_snapshot_label": "historic_label",
@@ -257,6 +267,10 @@ class RealDatasetCutoverUnitTests(unittest.TestCase):
                     return_value=fingerprint,
                 ),
                 patch(
+                    "muni_lta_pipeline.real_dataset_cutover._compute_raw_input_fingerprint",
+                    return_value=raw_input_fingerprint,
+                ),
+                patch(
                     "muni_lta_pipeline.real_dataset_cutover._query_int",
                     side_effect=_fake_query_int,
                 ),
@@ -284,6 +298,176 @@ class RealDatasetCutoverUnitTests(unittest.TestCase):
             self.assertTrue(latest_manifest["skipped_dbt"])
             self.assertEqual(latest_manifest["dbt_action"], "reused_existing")
             self.assertEqual(latest_manifest["dbt_reuse_manifest_path"], str(prior_manifest_path))
+            self.assertEqual(latest_manifest["raw_input_fingerprint"], raw_input_fingerprint)
+        finally:
+            shutil.rmtree(scenario_root, ignore_errors=True)
+
+    def test_materialize_real_dataset_cutover_does_not_reuse_raw_or_dbt_when_raw_input_fingerprint_changes(self) -> None:
+        workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
+        workspace_tmp_root.mkdir(parents=True, exist_ok=True)
+        scenario_root = workspace_tmp_root / "real_dataset_cutover_input_fingerprint_change"
+        shutil.rmtree(scenario_root, ignore_errors=True)
+        scenario_root.mkdir(parents=True, exist_ok=True)
+
+        active_metadata_path = scenario_root / "active.json"
+        historic_metadata_path = scenario_root / "historic.json"
+        cutover_root = scenario_root / "cutovers"
+        cutover_root.mkdir(parents=True, exist_ok=True)
+
+        active_metadata_path.write_text("{}", encoding="utf-8")
+        historic_metadata_path.write_text("{}", encoding="utf-8")
+
+        dbt_fingerprint = {"sha256": "fingerprint_a", "tracked_paths": ["dbt/models/a.sql"]}
+        prior_raw_input_fingerprint = {
+            "sha256": "raw_fingerprint_old",
+            "tracked_inputs": [str(active_metadata_path), str(historic_metadata_path), "overlay"],
+        }
+        current_raw_input_fingerprint = {
+            "sha256": "raw_fingerprint_new",
+            "tracked_inputs": [str(active_metadata_path), str(historic_metadata_path), "overlay"],
+        }
+        prior_manifest_path = cutover_root / "20260521T120000Z.json"
+        prior_manifest_path.write_text(
+            json.dumps(
+                {
+                    "dbt_action": "run",
+                    "dbt_fingerprint": dbt_fingerprint,
+                    "dbt_vars": {
+                        "gtfs_feed_scope": "regional_historic_sf",
+                        "gtfs_snapshot_label": "historic_label",
+                        "historic_agency_id": "SF",
+                        "metrics_intermediate_materialization": "table",
+                        "observed_canonical_materialization": "table",
+                        "observed_feed_scope": "regional_historic_sf",
+                        "observed_snapshot_label": "observed_label",
+                        "performance_indexing": True,
+                    },
+                    "manifest_path": str(prior_manifest_path),
+                    "raw_input_fingerprint": prior_raw_input_fingerprint,
+                    "raw_snapshot_labels": {
+                        "active_gtfs_snapshot_label": "active_label",
+                        "historic_gtfs_snapshot_label": "historic_label",
+                        "historic_observed_snapshot_label": "observed_label",
+                        "overlay_snapshot_label": "fixture_transit_lanes_v1",
+                    },
+                    "skipped_dbt": False,
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        (cutover_root / "latest.json").write_text(
+            prior_manifest_path.read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+
+        historic_extract_result = SimpleNamespace(
+            metadata_path=historic_metadata_path,
+            reused_existing=False,
+            metadata=SimpleNamespace(
+                feed_scope="regional_historic_sf",
+                retained_row_counts={"routes.txt": 65},
+                shape_backfill_cache_hits=0,
+                shape_backfill_failure_count=0,
+                shape_backfill_manifest_path="",
+                shape_backfill_request_count=0,
+                shape_backfill_shape_count=0,
+                shape_backfill_trip_selection_strategy="unique_active_shape_then_shapes_api",
+                shape_fallback_used=False,
+            ),
+        )
+
+        def _fake_query_int(_connection: object, sql: str) -> int:
+            if "route_window_summary" in sql:
+                return 65
+            if "route_map_layer" in sql:
+                return 65
+            return 0
+
+        try:
+            with (
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.extract_sf_historic_archive",
+                    return_value=historic_extract_result,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.build_gtfs_archive_snapshot_label",
+                    side_effect=["active_label", "historic_label"],
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.build_observed_archive_snapshot_label",
+                    return_value="observed_label",
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.build_postgres_connection_url",
+                    return_value="postgresql://example",
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._gtfs_snapshot_present",
+                    return_value=True,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._stop_observations_snapshot_present",
+                    return_value=True,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._overlay_snapshot_present",
+                    return_value=True,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._snapshot_row_count",
+                    return_value=2,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._compute_dbt_fingerprint",
+                    return_value=dbt_fingerprint,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._compute_raw_input_fingerprint",
+                    return_value=current_raw_input_fingerprint,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._query_int",
+                    side_effect=_fake_query_int,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.psycopg.connect",
+                    return_value=_FakeConnection(),
+                ),
+                patch("muni_lta_pipeline.real_dataset_cutover.load_gtfs_archive") as mock_load_gtfs,
+                patch("muni_lta_pipeline.real_dataset_cutover.load_historic_stop_observations_archive") as mock_load_observed,
+                patch("muni_lta_pipeline.real_dataset_cutover.load_transit_lane_overlay_fixture", return_value=2) as mock_load_overlay,
+                patch("muni_lta_pipeline.real_dataset_cutover.run_dbt_run") as mock_run_dbt,
+            ):
+                mock_load_gtfs.side_effect = [
+                    SimpleNamespace(snapshot_label="active_label", inserted_row_counts={}),
+                    SimpleNamespace(snapshot_label="historic_label", inserted_row_counts={}),
+                ]
+                mock_load_observed.return_value = SimpleNamespace(
+                    snapshot_label="observed_label",
+                    inserted_row_count=0,
+                    skipped_missing_required_count=0,
+                )
+
+                result = materialize_real_dataset_cutover(
+                    historic_month="2023-02",
+                    historic_agency_id="SF",
+                    active_metadata_path=active_metadata_path,
+                    historic_metadata_path=historic_metadata_path,
+                    cutover_root=cutover_root,
+                )
+
+            self.assertFalse(result.reused_existing_gtfs_raw)
+            self.assertFalse(result.reused_existing_observed_raw)
+            self.assertFalse(result.reused_existing_overlay_raw)
+            self.assertFalse(result.reused_existing_dbt)
+            self.assertFalse(result.skipped_dbt)
+            self.assertEqual(result.dbt_action, "run")
+            self.assertEqual(mock_load_gtfs.call_count, 2)
+            mock_load_observed.assert_called_once()
+            mock_load_overlay.assert_called_once()
+            mock_run_dbt.assert_called_once()
         finally:
             shutil.rmtree(scenario_root, ignore_errors=True)
 

@@ -69,12 +69,57 @@ Provenance manifest:
   - repeat SF-only cutover with raw snapshot reuse enabled: about `8.7` minutes
 
 Raw-reuse note:
-- repeated runs of `real_dataset_cutover.py` now reuse matching raw GTFS, raw observations, and overlay snapshots automatically when the requested snapshot labels are already present
-- repeated runs also skip dbt entirely when the raw snapshot labels, cutover dbt vars, and tracked dbt project files still match the last successful cutover manifest
-- the cutover manifest now records `dbt_action`, `reused_existing_dbt`, `dbt_reuse_manifest_path`, and a `dbt_fingerprint` covering `dbt/models/**`, `dbt/macros/**`, `dbt_project.yml`, and the cutover dbt vars
+- repeated runs of `real_dataset_cutover.py` now reuse matching raw GTFS, raw observations, and overlay snapshots only when both of these are true:
+  - the requested snapshot labels are already present
+  - the active metadata payload, derived historic metadata payload, and overlay fixture content still hash to the same `raw_input_fingerprint` recorded in a prior manifest
+- repeated runs also skip dbt only when the raw snapshot labels, `raw_input_fingerprint`, cutover dbt vars, and tracked dbt project files still match the last successful cutover manifest
+- the cutover manifest now records `raw_input_fingerprint` alongside `dbt_action`, `reused_existing_dbt`, `dbt_reuse_manifest_path`, and a `dbt_fingerprint` covering `dbt/models/**`, `dbt/macros/**`, `dbt_project.yml`, and the cutover dbt vars
 - use `--force-raw-reload` only when you intentionally want to replace the raw snapshot contents
 - use `--skip-dbt` when you only need to prepare artifacts/raw inputs without rebuilding the dbt graph yet
 
 Historic archive normalization note:
 - the `RG -so` observed rows for Muni carry trip/service ids dated one day ahead of the raw `service_date` field
 - the dbt staging model corrects that one-day offset only when the trip-id suffix proves it, so the scheduled/observed join stays explicit and reproducible
+
+Historic shapes fallback note:
+- `B6c` adds a build-step Shapes API fallback when a recent historic `RG -so` archive omits `shapes.txt`
+- the implemented fallback resolves missing geometry in this order:
+  - exact current active trip-id match when the normalized historic trip id still exists
+  - exact current stop-pattern match when those active trips converge on one unique active `shape_id`
+  - Shapes API candidates with cache reuse by both `shape_id` and prior `shapes_api_trip_id`
+- when retained historic trips omit `shape_id`, the derivation step first synthesizes stable
+  placeholder geometry targets and then normalizes them into exact current-shape or exact
+  stop-pattern groups before writing a complete `shapes.txt`
+- derived archive metadata and the shape-backfill manifest record that the resulting geometry
+  is current-geometry fallback, not confirmed month-perfect historical geometry
+
+Recent-month validation:
+- validated command:
+
+```powershell
+$env:PYTHONPATH='C:\Users\ahadb\Documents\New project 3\pipeline\src'
+.\.venv\Scripts\python.exe -m muni_lta_pipeline.real_dataset_cutover --historic-month 2026-04 --historic-agency-id SF --active-metadata-path 'C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\operator_active\511_operator_active_SF_20260523T200155Z.json' --historic-metadata-path 'C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\regional_historic\511_regional_historic_RG_202604_with_so_20260523T200214Z.json'
+```
+
+- observed `2026-04` source behavior:
+  - fetched `RG -so` archive omitted `shapes.txt`
+  - retained `trips.txt` rows also carried blank `shape_id` values (`34580 / 34580` blank)
+  - current active GTFS supplied exact stop-pattern matches for almost all retained historic
+    geometry targets, with one remaining target satisfied from a previously cached Shapes API trip
+- derived `2026-04` SF-only archive outcome:
+  - `shape_fallback_used = true`
+  - `shape_backfill_shape_count = 279`
+  - `shape_backfill_cache_hits = 1`
+  - `shape_backfill_request_count = 0`
+  - retained `shapes.txt` rows written into the derived archive: `43310`
+- cutover outcome:
+  - the recent-month cutover now completes successfully end to end
+  - validated latest manifest counts after the successful `2026-04` cutover:
+    - `route_count_with_metrics = 68`
+    - `map_route_count = 68`
+    - top routes begin with `SF:12`, `SF:LOWL`, `SF:14`, `SF:8BX`, `SF:PH`
+- current-geometry caveat:
+  - some recent-month segment builds require falling back to straight stop-to-stop lines when
+    historic stop-distance values extend past the current display geometry length
+  - this is expected under the current-geometry fallback model and is preferable to failing the
+    entire cutover or silently publishing empty map layers

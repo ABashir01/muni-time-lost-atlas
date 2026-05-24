@@ -66,6 +66,26 @@ Important implementation assumption:
 
 This means historical analysis should be modeled from the historic regional feed and then filtered to Muni/SFMTA in staging or canonical layers.
 
+## Shapes API
+Primary source:
+- [511 Transit Data](https://511.org/open-data/transit)
+
+Planned usage:
+- build-time route geometry fallback when recent historic monthly archives omit
+  `shapes.txt`
+
+Important source notes:
+- the Shapes API is keyed by `operator_id` and `trip_id`
+- no documented historical Shapes API has been confirmed
+- current evidence supports using the Shapes API as a current-geometry fallback,
+  not as proof of month-perfect historical geometry
+
+Expected implementation role:
+- fetch one representative shape per unique missing `shape_id` during the build
+- synthesize `shapes.txt` into the derived historic archive before raw GTFS
+  ingest
+- cache responses or synthesized outputs under `artifacts/` for reproducibility
+
 ## GTFS-RT
 Primary source:
 - [511 Transit Data](https://511.org/open-data/transit)

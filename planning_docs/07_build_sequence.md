@@ -89,6 +89,13 @@ The current baseline now includes:
 - replaces: the currently implicit map-library migration
 - doc: [B6b_real_map_engine_bundle.md](./slices/B6b_real_map_engine_bundle.md)
 
+### B6c Historic Shapes API Fallback
+- goal: backfill missing historic `shapes.txt` during recent monthly cutovers by
+  using the 511 Shapes API in the build step
+- exists because recent `RG -so` archives can omit `shapes.txt` while still
+  carrying schedule and observed-arrival data needed for the metrics
+- doc: [B6c_historic_shapes_api_fallback.md](./slices/B6c_historic_shapes_api_fallback.md)
+
 ### B7 Realtime Bundle
 - goal: add GTFS-RT ingestion and live vehicle overlays
 - replaces: `S30` through `S32`
@@ -138,6 +145,8 @@ Keep the old slice docs only as planning history. Do not resume implementation f
 ### Before B7
 - `B6a` real dataset cutover is complete so the app is no longer limited to the tiny development route set
 - `B6b` real map engine cutover is complete if realtime will be shown on an actual map rather than a schematic placeholder
+- `B6c` historic shapes fallback is complete if recent monthly archives needed
+  for rolling publication may omit `shapes.txt`
 - the historical/static product is complete and trustworthy without realtime
 - map and route detail screens already work from static/historical data
 

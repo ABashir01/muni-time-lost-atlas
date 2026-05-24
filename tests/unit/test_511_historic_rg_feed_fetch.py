@@ -23,7 +23,7 @@ def _configure_src_paths() -> None:
 _configure_src_paths()
 
 from muni_lta_pipeline.historic_rg_feed_fetch import (  # noqa: E402
-    CORE_GTFS_FILES,
+    HISTORIC_REQUIRED_CORE_FILES,
     DEFAULT_OPERATOR_ID,
     STOP_OBSERVATIONS_FILENAME,
     build_historic_rg_gtfs_url,
@@ -33,7 +33,11 @@ from muni_lta_pipeline.historic_rg_feed_fetch import (  # noqa: E402
 )
 
 
-def _make_gtfs_zip_bytes(*, include_stop_observations: bool = False) -> bytes:
+def _make_gtfs_zip_bytes(
+    *,
+    include_shapes: bool = True,
+    include_stop_observations: bool = False,
+) -> bytes:
     buffer = BytesIO()
     with zipfile.ZipFile(buffer, mode="w") as archive:
         archive.writestr("routes.txt", "route_id,route_short_name\n1,1\n")
@@ -43,10 +47,11 @@ def _make_gtfs_zip_bytes(*, include_stop_observations: bool = False) -> bytes:
             "stop_times.txt",
             "trip_id,arrival_time,departure_time,stop_id,stop_sequence\nTRIP1,08:00:00,08:00:00,STOP1,1\n",
         )
-        archive.writestr(
-            "shapes.txt",
-            "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence\nSHAPE1,37.0,-122.0,1\n",
-        )
+        if include_shapes:
+            archive.writestr(
+                "shapes.txt",
+                "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence\nSHAPE1,37.0,-122.0,1\n",
+            )
         archive.writestr(
             "calendar_dates.txt",
             "service_id,date,exception_type\nWKD,20260501,1\n",
@@ -97,15 +102,23 @@ class HistoricRgGtfsFetchTests(unittest.TestCase):
         self.assertTrue(plain_url.startswith("https://api.511.org/transit/datafeeds?"))
 
     def test_validate_historic_gtfs_zip_bytes_enforces_stop_observations_variant(self) -> None:
-        plain_member_names, service_files_present, stop_obs_present = (
+        plain_member_names, service_files_present, shapes_present, stop_obs_present = (
             validate_historic_gtfs_zip_bytes(
                 _make_gtfs_zip_bytes(include_stop_observations=False),
                 require_stop_observations=False,
             )
         )
-        self.assertTrue(set(CORE_GTFS_FILES).issubset(set(plain_member_names)))
+        self.assertTrue(set(HISTORIC_REQUIRED_CORE_FILES).issubset(set(plain_member_names)))
         self.assertEqual(service_files_present, ("calendar_dates.txt",))
+        self.assertTrue(shapes_present)
         self.assertFalse(stop_obs_present)
+
+        missing_shapes_member_names, _, missing_shapes_present, _ = validate_historic_gtfs_zip_bytes(
+            _make_gtfs_zip_bytes(include_shapes=False, include_stop_observations=False),
+            require_stop_observations=False,
+        )
+        self.assertTrue(set(HISTORIC_REQUIRED_CORE_FILES).issubset(set(missing_shapes_member_names)))
+        self.assertFalse(missing_shapes_present)
 
         with self.assertRaisesRegex(ValueError, "missing stop_observations.txt"):
             validate_historic_gtfs_zip_bytes(
@@ -146,10 +159,37 @@ class HistoricRgGtfsFetchTests(unittest.TestCase):
             self.assertEqual(metadata["requested_historic_month"], "2023-02")
             self.assertEqual(metadata["requested_historic_value"], "2023-02")
             self.assertFalse(metadata["requested_stop_observations"])
+            self.assertTrue(metadata["shapes_present"])
             self.assertFalse(metadata["stop_observations_present"])
             self.assertIn("historic=2023-02", metadata["requested_url"])
             self.assertNotIn("historic=2023-02-so", metadata["requested_url"])
             mock_urlopen.assert_called_once()
+        finally:
+            shutil.rmtree(acquisitions_root, ignore_errors=True)
+
+    def test_fetch_historic_rg_gtfs_archive_allows_missing_shapes_for_recent_build_fallback(self) -> None:
+        payload = _make_gtfs_zip_bytes(include_shapes=False, include_stop_observations=True)
+        workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
+        workspace_tmp_root.mkdir(parents=True, exist_ok=True)
+        acquisitions_root = workspace_tmp_root / "historic_rg_fetch_missing_shapes_test"
+        shutil.rmtree(acquisitions_root, ignore_errors=True)
+        acquisitions_root.mkdir(parents=True, exist_ok=True)
+        try:
+            with patch(
+                "muni_lta_pipeline.historic_rg_feed_fetch.urlopen",
+                return_value=_FakeHttpResponse(payload),
+            ):
+                result = fetch_historic_rg_gtfs_archive(
+                    api_key="test-token",
+                    historic_month="2026-04",
+                    include_stop_observations=True,
+                    acquisitions_root=acquisitions_root,
+                )
+
+            metadata = json.loads(result.metadata_path.read_text(encoding="utf-8"))
+            self.assertFalse(metadata["shapes_present"])
+            self.assertTrue(metadata["stop_observations_present"])
+            self.assertNotIn("shapes.txt", metadata["zip_member_names"])
         finally:
             shutil.rmtree(acquisitions_root, ignore_errors=True)
 
