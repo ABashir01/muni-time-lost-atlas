@@ -122,6 +122,27 @@ Decision:
 - optional retained cutover/archive volume
 - logs can remain local at MVP scale, but should be rotated
 
+## Publication Cadence
+The production app should update on a **monthly** historical-publication cadence.
+
+Use:
+- a daily cron or scheduled job on the VPS
+- a lightweight availability check for the newest completed historic month
+- the full rolling-window cutover only when a new month is actually available
+
+Current verified source behavior:
+- on `2026-05-24`, `511` returned `404` for `historic=2026-05-so`
+- on `2026-05-24`, `511` returned `200` for `historic=2026-04-so`
+
+Operational interpretation:
+- `511` is exposing the **last completed month**
+- the source should be treated as retrospective monthly publication, not as a continuously updated current-month archive
+
+Recommended first cron policy:
+- run the check daily starting on the **2nd** of each month
+- publish once the new completed month becomes available
+- do nothing when the month is still unavailable or already published
+
 ## Operational Responsibilities On A VPS
 The VPS approach is the cheapest, but it requires basic ops ownership.
 

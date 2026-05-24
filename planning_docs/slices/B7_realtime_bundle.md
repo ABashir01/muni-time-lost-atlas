@@ -47,6 +47,34 @@ This bundle exists to make the product:
 - use the existing real cutover path as the publication mechanism
 - use the accepted historic Shapes API fallback during the build when recent monthly archives omit `shapes.txt`
 
+### Source cadence assumption
+`511` historic `RG -so` publication should be treated as a **last-completed-month** source, not a current-month source.
+
+Current verification snapshot:
+- on `2026-05-24`, `historic=2026-05-so` returned `404`
+- on `2026-05-24`, `historic=2026-04-so` returned `200`
+
+Operational implication:
+- the app should publish the newest **completed** month once `511` exposes it
+- the app should not wait for same-month or same-day historical availability
+
+### Cron strategy
+Recommended production behavior:
+- run a lightweight availability check **daily**
+- target the newest completed month, not the current month
+- when the next month becomes available, run the full rolling-window publication cutover once
+- skip republishing when the month is still unavailable or unchanged
+
+Recommended initial cron window:
+- start checking on the **2nd day of each month**
+- continue daily until the newest completed month is available and published
+- after successful publication, remain idle until the next monthly cycle
+
+This is preferable to a fixed once-per-month fire-and-forget job because:
+- `511` documents the historic feed as monthly and retrospective
+- but does not promise a precise day-of-month publication timestamp in the public docs
+- the daily availability check keeps the app current without requiring manual intervention
+
 ## Tests required
 - one primary integration suite for rolling-window cutover and retention behavior
 - one regression suite for API/frontend compatibility against the refreshed monthly publication window
@@ -58,6 +86,7 @@ This bundle exists to make the product:
 - homepage, rankings, compare, route detail, and map still work against the rolling historical window
 - methodology and copy remain consistent with a monthly-refreshed historical product
 - no part of the app implies second-by-second or same-day live metric freshness
+- the publication job can detect that the newest completed month is not yet available and exit cleanly without mutating the live DB
 
 ## Non-goals
 - GTFS-RT vehicle positions
