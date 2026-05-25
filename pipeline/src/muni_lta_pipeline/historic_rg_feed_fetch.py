@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import re
 from typing import Any
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from muni_lta_pipeline.active_gtfs_fetch import (
@@ -60,6 +61,19 @@ class HistoricAcquisitionResult:
     artifact_path: Path
     metadata_path: Path
     metadata: HistoricAcquisitionMetadata
+
+
+@dataclass(frozen=True)
+class HistoricAvailabilityResult:
+    """Availability probe result for a historic 511 regional GTFS archive."""
+
+    historic_month: str
+    include_stop_observations: bool
+    requested_url: str
+    available: bool
+    checked_at: str
+    request_method: str
+    status_code: int
 
 
 def validate_historic_month(historic_month: str) -> str:
@@ -224,6 +238,67 @@ def fetch_historic_rg_gtfs_archive(
         metadata_path=metadata_path,
         metadata=metadata,
     )
+
+
+def check_historic_rg_gtfs_archive_availability(
+    *,
+    api_key: str,
+    historic_month: str,
+    include_stop_observations: bool = False,
+    operator_id: str = DEFAULT_OPERATOR_ID,
+    base_url: str = DEFAULT_511_GTFS_FEED_URL,
+    timeout_seconds: int = 30,
+) -> HistoricAvailabilityResult:
+    """Check whether a historic 511 regional GTFS archive is available without downloading it fully."""
+
+    normalized_month = validate_historic_month(historic_month)
+    requested_url = build_historic_rg_gtfs_url(
+        api_key,
+        historic_month=normalized_month,
+        include_stop_observations=include_stop_observations,
+        operator_id=operator_id,
+        base_url=base_url,
+    )
+    checked_at = datetime.now(tz=UTC).isoformat()
+    request_attempts = (
+        ("HEAD", {"User-Agent": "muni-lost-time-atlas/0.1"}),
+        ("GET", {"User-Agent": "muni-lost-time-atlas/0.1", "Range": "bytes=0-0"}),
+    )
+    fallback_status_codes = {400, 405, 501}
+    last_http_error: HTTPError | None = None
+
+    for method, headers in request_attempts:
+        request = Request(requested_url, headers=headers, method=method)
+        try:
+            with urlopen(request, timeout=timeout_seconds) as response:
+                status_code = int(getattr(response, "status", response.getcode()))
+                return HistoricAvailabilityResult(
+                    historic_month=normalized_month,
+                    include_stop_observations=include_stop_observations,
+                    requested_url=requested_url,
+                    available=200 <= status_code < 300,
+                    checked_at=checked_at,
+                    request_method=method,
+                    status_code=status_code,
+                )
+        except HTTPError as exc:
+            if exc.code == 404:
+                return HistoricAvailabilityResult(
+                    historic_month=normalized_month,
+                    include_stop_observations=include_stop_observations,
+                    requested_url=requested_url,
+                    available=False,
+                    checked_at=checked_at,
+                    request_method=method,
+                    status_code=exc.code,
+                )
+            if method == "HEAD" and exc.code in fallback_status_codes:
+                last_http_error = exc
+                continue
+            raise
+
+    assert last_http_error is not None
+    raise last_http_error
 
 
 def _serialize_result(result: HistoricAcquisitionResult) -> dict[str, Any]:

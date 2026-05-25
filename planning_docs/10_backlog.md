@@ -6,6 +6,8 @@
 - saved comparisons or shareable compare links
 - homepage editorial callouts and notable findings
 - full direction-level public shift across homepage, rankings, map, compare, and route detail
+- shared public historical date-range support across homepage, rankings, map,
+  route detail, and compare
 
 ## Post-MVP Analytical Ideas
 - best-typical-runtime alternate baseline
@@ -13,6 +15,7 @@
 - corridor segmentation refinement
 - improved short-turn handling
 - passenger-weighted route burden if defensible data becomes available
+- daily-grain summary marts for future range-aware aggregation
 
 ## Post-MVP GIS Ideas
 - equity neighborhood overlays

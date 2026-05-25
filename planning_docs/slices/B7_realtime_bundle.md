@@ -103,3 +103,5 @@ This is preferable to a fixed once-per-month fire-and-forget job because:
 `B8_product_hardening_bundle` should polish the full product and finalize public-facing behavior.
 
 ## Completion notes
+- Runtime commands and monthly ops flow should be documented in:
+  - `planning_docs/runbooks/B7_rolling_historical_publication.md`

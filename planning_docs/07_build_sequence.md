@@ -119,6 +119,19 @@ These do not belong on the current MVP critical path.
 - scope: compare selector, compare API contract, compare cards
 - doc: [P2_directional_compare_shift.md](./slices/P2_directional_compare_shift.md)
 
+### P3 Public Date-Range Support
+- goal: add shared public historical date-range support across the homepage,
+  rankings, map, route detail, and compare
+- scope: daily summary marts, range-aware API aggregation, and shared
+  navigation/state behavior
+- doc: [P3_public_date_range_support.md](./slices/P3_public_date_range_support.md)
+
+### P4 Compare Date-Range Support
+- goal: finish compare-specific date-range behavior if compare remains a
+  separately executed implementation follow-up
+- scope: compare request shape, range persistence, and compare presentation
+- doc: [P4_compare_date_range_support.md](./slices/P4_compare_date_range_support.md)
+
 ## Legacy Future Slices
 The old fine-grained future slices `S08` through `S35` are now superseded by bundles `B1` through `B8`.
 
@@ -169,5 +182,7 @@ Use full `unittest discover` or broader regression sweeps only at major checkpoi
 
 After the MVP path:
 - treat `P1` and `P2` as explicit follow-up work, not as implicit cleanup
+- treat `P3` and `P4` as explicit follow-up work rather than partially
+  shipping fake or inconsistent date-range controls
 - keep the current route-level public behavior only so long as the methodology
   disclosure remains explicit

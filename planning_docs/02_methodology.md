@@ -139,6 +139,21 @@ For the first SQL bundle:
 - route summaries currently materialize one supported window: `all_day`
 - direction and hour summaries provide the first breakdowns beneath that route window
 
+### Current Public Date-Range Limitation
+The current public product does not yet let users select arbitrary historical
+date ranges.
+
+That means:
+- the homepage, rankings, map, route detail, and compare pages all reflect the
+  currently published rolling historical window
+- the public UI should not imply that users can switch among true live or
+  alternate historical ranges yet
+- any future public date-range feature should aggregate retained daily summary
+  marts rather than recomputing directly from raw historical event tables per
+  request
+
+This is an explicit post-MVP follow-up, not an accidental omission.
+
 ### Current Public Ranking Limitation
 The current public homepage rankings and citywide map contract still use the
 route-level aggregate, not the direction-level one.

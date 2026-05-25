@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 import hashlib
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import psycopg
 
@@ -484,14 +484,75 @@ def materialize_real_dataset_cutover(
         latest_log_path=latest_log_path,
     )
 
+    return materialize_prepared_historic_publication(
+        active_metadata_path=active_metadata_path,
+        historic_source_metadata_path=historic_source_metadata_path,
+        historic_gtfs_metadata_path=historic_metadata_path,
+        historic_feed_scope=historic_sf_result.metadata.feed_scope,
+        historic_month=historic_month,
+        historic_agency_id=historic_agency_id,
+        cutover_root=cutover_root,
+        log_path=log_path,
+        latest_log_path=latest_log_path,
+        reuse_existing_raw=reuse_existing_raw,
+        skip_dbt=skip_dbt,
+        shape_fallback_metadata={
+            "shape_backfill_cache_hits": getattr(
+                historic_sf_result.metadata, "shape_backfill_cache_hits", 0
+            ),
+            "shape_backfill_failure_count": getattr(
+                historic_sf_result.metadata, "shape_backfill_failure_count", 0
+            ),
+            "shape_backfill_manifest_path": getattr(
+                historic_sf_result.metadata, "shape_backfill_manifest_path", ""
+            ),
+            "shape_backfill_request_count": getattr(
+                historic_sf_result.metadata, "shape_backfill_request_count", 0
+            ),
+            "shape_backfill_shape_count": getattr(
+                historic_sf_result.metadata, "shape_backfill_shape_count", 0
+            ),
+            "shape_backfill_trip_selection_strategy": getattr(
+                historic_sf_result.metadata,
+                "shape_backfill_trip_selection_strategy",
+                "unique_active_shape_then_shapes_api",
+            ),
+            "shape_fallback_used": getattr(
+                historic_sf_result.metadata,
+                "shape_fallback_used",
+                False,
+            ),
+        },
+    )
+
+
+def materialize_prepared_historic_publication(
+    *,
+    active_metadata_path: Path,
+    historic_source_metadata_path: Path,
+    historic_gtfs_metadata_path: Path,
+    historic_feed_scope: str,
+    historic_month: str,
+    historic_agency_id: str,
+    cutover_root: Path,
+    log_path: Path,
+    latest_log_path: Path,
+    reuse_existing_raw: bool = True,
+    skip_dbt: bool = False,
+    shape_fallback_metadata: Mapping[str, Any] | None = None,
+    manifest_extra: Mapping[str, Any] | None = None,
+) -> RealDatasetCutoverResult:
+    shape_fallback_metadata = dict(shape_fallback_metadata or {})
+    manifest_extra = dict(manifest_extra or {})
+
     active_gtfs_snapshot_label = build_gtfs_archive_snapshot_label(
         json.loads(active_metadata_path.read_text(encoding="utf-8"))
     )
     historic_gtfs_snapshot_label = build_gtfs_archive_snapshot_label(
-        json.loads(historic_metadata_path.read_text(encoding="utf-8"))
+        json.loads(historic_gtfs_metadata_path.read_text(encoding="utf-8"))
     )
     historic_observed_snapshot_label = build_observed_archive_snapshot_label(
-        json.loads(historic_metadata_path.read_text(encoding="utf-8"))
+        json.loads(historic_gtfs_metadata_path.read_text(encoding="utf-8"))
     )
     overlay_snapshot_label = "fixture_transit_lanes_v1"
     raw_snapshot_labels = _raw_snapshot_labels(
@@ -502,7 +563,7 @@ def materialize_real_dataset_cutover(
     )
     raw_input_fingerprint = _compute_raw_input_fingerprint(
         active_metadata_path=active_metadata_path,
-        historic_metadata_path=historic_metadata_path,
+        historic_metadata_path=historic_gtfs_metadata_path,
     )
     reusable_raw_manifest = _find_reusable_raw_manifest(
         cutover_root=cutover_root,
@@ -548,12 +609,12 @@ def materialize_real_dataset_cutover(
             )
 
             _log(
-                f"loading historic GTFS archive from {historic_metadata_path}",
+                f"loading historic GTFS archive from {historic_gtfs_metadata_path}",
                 log_path=log_path,
                 latest_log_path=latest_log_path,
             )
             historic_gtfs_load = load_gtfs_archive(
-                metadata_path=historic_metadata_path,
+                metadata_path=historic_gtfs_metadata_path,
                 truncate=False,
             )
             _log(
@@ -575,12 +636,12 @@ def materialize_real_dataset_cutover(
             )
         else:
             _log(
-                f"loading historic stop observations from {historic_metadata_path}",
+                f"loading historic stop observations from {historic_gtfs_metadata_path}",
                 log_path=log_path,
                 latest_log_path=latest_log_path,
             )
             historic_observed_load = load_historic_stop_observations_archive(
-                metadata_path=historic_metadata_path,
+                metadata_path=historic_gtfs_metadata_path,
                 truncate=True,
             )
             _log(
@@ -624,11 +685,11 @@ def materialize_real_dataset_cutover(
             )
 
     dbt_vars = {
-        "gtfs_feed_scope": historic_sf_result.metadata.feed_scope,
+        "gtfs_feed_scope": historic_feed_scope,
         "gtfs_snapshot_label": historic_gtfs_snapshot_label,
         "historic_agency_id": historic_agency_id,
         "metrics_intermediate_materialization": "table",
-        "observed_feed_scope": historic_sf_result.metadata.feed_scope,
+        "observed_feed_scope": historic_feed_scope,
         "observed_canonical_materialization": "table",
         "observed_snapshot_label": historic_observed_snapshot_label,
         "performance_indexing": True,
@@ -718,6 +779,7 @@ def materialize_real_dataset_cutover(
         latest_log_path=latest_log_path,
     )
 
+    run_timestamp = datetime.now(tz=UTC).strftime("%Y%m%dT%H%M%SZ")
     manifest_path = cutover_root / f"{run_timestamp}.json"
     latest_manifest_path = cutover_root / "latest.json"
     manifest_payload = {
@@ -729,7 +791,7 @@ def materialize_real_dataset_cutover(
         "dbt_fingerprint": dbt_fingerprint,
         "historic_agency_id": historic_agency_id,
         "historic_source_metadata_path": str(historic_source_metadata_path),
-        "historic_gtfs_metadata_path": str(historic_metadata_path),
+        "historic_gtfs_metadata_path": str(historic_gtfs_metadata_path),
         "historic_gtfs_snapshot_label": historic_gtfs_snapshot_label,
         "historic_month": historic_month,
         "historic_observed_snapshot_label": historic_observed_snapshot_label,
@@ -746,27 +808,16 @@ def materialize_real_dataset_cutover(
         "reused_existing_gtfs_raw": reused_existing_gtfs_raw,
         "reused_existing_observed_raw": reused_existing_observed_raw,
         "reused_existing_overlay_raw": reused_existing_overlay_raw,
-        "shape_backfill_cache_hits": getattr(
-            historic_sf_result.metadata, "shape_backfill_cache_hits", 0
-        ),
-        "shape_backfill_failure_count": getattr(
-            historic_sf_result.metadata, "shape_backfill_failure_count", 0
-        ),
-        "shape_backfill_manifest_path": getattr(
-            historic_sf_result.metadata, "shape_backfill_manifest_path", ""
-        ),
-        "shape_backfill_request_count": getattr(
-            historic_sf_result.metadata, "shape_backfill_request_count", 0
-        ),
-        "shape_backfill_shape_count": getattr(
-            historic_sf_result.metadata, "shape_backfill_shape_count", 0
-        ),
-        "shape_backfill_trip_selection_strategy": getattr(
-            historic_sf_result.metadata,
+        "shape_backfill_cache_hits": shape_fallback_metadata.get("shape_backfill_cache_hits", 0),
+        "shape_backfill_failure_count": shape_fallback_metadata.get("shape_backfill_failure_count", 0),
+        "shape_backfill_manifest_path": shape_fallback_metadata.get("shape_backfill_manifest_path", ""),
+        "shape_backfill_request_count": shape_fallback_metadata.get("shape_backfill_request_count", 0),
+        "shape_backfill_shape_count": shape_fallback_metadata.get("shape_backfill_shape_count", 0),
+        "shape_backfill_trip_selection_strategy": shape_fallback_metadata.get(
             "shape_backfill_trip_selection_strategy",
             "unique_active_shape_then_shapes_api",
         ),
-        "shape_fallback_used": getattr(historic_sf_result.metadata, "shape_fallback_used", False),
+        "shape_fallback_used": shape_fallback_metadata.get("shape_fallback_used", False),
         "skipped_dbt": skip_dbt or reused_existing_dbt,
         "route_count_with_metrics": route_count_with_metrics,
         "top_route_ids": top_route_ids,
@@ -777,6 +828,7 @@ def materialize_real_dataset_cutover(
         )
     else:
         manifest_payload["dbt_reuse_manifest_path"] = None
+    manifest_payload.update(manifest_extra)
     _write_manifest(manifest_path, manifest_payload)
     _write_manifest(latest_manifest_path, manifest_payload)
     _log(
@@ -789,7 +841,7 @@ def materialize_real_dataset_cutover(
         active_gtfs_metadata_path=active_metadata_path,
         active_gtfs_snapshot_label=active_gtfs_snapshot_label,
         historic_source_metadata_path=historic_source_metadata_path,
-        historic_gtfs_metadata_path=historic_metadata_path,
+        historic_gtfs_metadata_path=historic_gtfs_metadata_path,
         historic_gtfs_snapshot_label=historic_gtfs_snapshot_label,
         historic_observed_snapshot_label=historic_observed_snapshot_label,
         historic_month=historic_month,

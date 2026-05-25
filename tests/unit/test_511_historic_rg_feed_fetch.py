@@ -10,6 +10,7 @@ import sys
 import unittest
 from unittest.mock import patch
 import zipfile
+from urllib.error import HTTPError
 
 
 def _configure_src_paths() -> None:
@@ -27,6 +28,7 @@ from muni_lta_pipeline.historic_rg_feed_fetch import (  # noqa: E402
     DEFAULT_OPERATOR_ID,
     STOP_OBSERVATIONS_FILENAME,
     build_historic_rg_gtfs_url,
+    check_historic_rg_gtfs_archive_availability,
     fetch_historic_rg_gtfs_archive,
     validate_historic_gtfs_zip_bytes,
     validate_historic_month,
@@ -76,6 +78,9 @@ class _FakeHttpResponse:
 
     def read(self) -> bytes:
         return self._payload
+
+    def getcode(self) -> int:
+        return 200
 
 
 class HistoricRgGtfsFetchTests(unittest.TestCase):
@@ -220,3 +225,73 @@ class HistoricRgGtfsFetchTests(unittest.TestCase):
             self.assertIn("with_so", metadata["artifact_filename"])
         finally:
             shutil.rmtree(acquisitions_root, ignore_errors=True)
+
+    def test_check_historic_rg_gtfs_archive_availability_uses_head_when_supported(self) -> None:
+        with patch(
+            "muni_lta_pipeline.historic_rg_feed_fetch.urlopen",
+            return_value=_FakeHttpResponse(b""),
+        ) as mock_urlopen:
+            result = check_historic_rg_gtfs_archive_availability(
+                api_key="test-token",
+                historic_month="2026-04",
+                include_stop_observations=True,
+            )
+
+        self.assertTrue(result.available)
+        self.assertEqual(result.request_method, "HEAD")
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(mock_urlopen.call_count, 1)
+        self.assertEqual(mock_urlopen.call_args[0][0].get_method(), "HEAD")
+
+    def test_check_historic_rg_gtfs_archive_availability_falls_back_to_get_when_head_is_unsupported(self) -> None:
+        def _fake_urlopen(request: object, timeout: int = 30) -> _FakeHttpResponse:
+            method = request.get_method()
+            if method == "HEAD":
+                raise HTTPError(
+                    request.full_url,
+                    405,
+                    "Method Not Allowed",
+                    hdrs=None,
+                    fp=None,
+                )
+            return _FakeHttpResponse(b"")
+
+        with patch(
+            "muni_lta_pipeline.historic_rg_feed_fetch.urlopen",
+            side_effect=_fake_urlopen,
+        ) as mock_urlopen:
+            result = check_historic_rg_gtfs_archive_availability(
+                api_key="test-token",
+                historic_month="2026-04",
+                include_stop_observations=True,
+            )
+
+        self.assertTrue(result.available)
+        self.assertEqual(result.request_method, "GET")
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(mock_urlopen.call_count, 2)
+        self.assertEqual(mock_urlopen.call_args_list[0][0][0].get_method(), "HEAD")
+        self.assertEqual(mock_urlopen.call_args_list[1][0][0].get_method(), "GET")
+
+    def test_check_historic_rg_gtfs_archive_availability_returns_false_on_404(self) -> None:
+        def _raise_not_found(request: object, timeout: int = 30) -> _FakeHttpResponse:
+            raise HTTPError(
+                request.full_url,
+                404,
+                "Not Found",
+                hdrs=None,
+                fp=None,
+            )
+
+        with patch(
+            "muni_lta_pipeline.historic_rg_feed_fetch.urlopen",
+            side_effect=_raise_not_found,
+        ):
+            result = check_historic_rg_gtfs_archive_availability(
+                api_key="test-token",
+                historic_month="2026-05",
+                include_stop_observations=True,
+            )
+
+        self.assertFalse(result.available)
+        self.assertEqual(result.status_code, 404)

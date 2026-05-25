@@ -45,6 +45,10 @@ Keep:
 - the last 6 months in the serving `Postgres/PostGIS` database
 - older monthly source and derived archives in retained artifact storage outside the live serving window
 
+For the `B7` publication implementation specifically:
+- the live DB is rolling
+- and the publication-owned on-disk artifacts are pruned after each successful publish so they do not grow without bound on the VPS
+
 Reason:
 - 6 months preserves real date-range utility
 - 6 months stays operationally reasonable in a single Postgres instance
@@ -163,6 +167,9 @@ Recommended first cron policy:
 - if the new completed month becomes available, run the publication maintenance window immediately after, such as around `2:30 AM` Pacific
 - publish once the new completed month becomes available
 - do nothing when the month is still unavailable or already published
+
+Operational runbook:
+- `planning_docs/runbooks/B7_rolling_historical_publication.md`
 
 ## First Production Population
 The first production deployment should **bootstrap the full live rolling window immediately**.

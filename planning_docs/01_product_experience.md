@@ -38,11 +38,11 @@ Avoid as primary language:
 ## Overview Page
 The homepage should include:
 - a strong title and civic subhead
-- time window controls like `Now`, `Today`, `This week`, `This month`
 - route ranking cards
 - a route map colored by time lost
 - an explanatory strip for `Waiting`, `Slow travel`, and `Bunching`
 - a compare teaser
+- a plain publication-state label for the currently published historical window
 
 Each route card should show:
 - route name
@@ -59,6 +59,11 @@ Current MVP limitation:
 - the long-term product direction is a direction-level public unit everywhere:
   homepage, full rankings, map, compare, and route detail
 - that shift is intentionally deferred until after the current MVP path
+- the public historical experience also uses the currently published rolling
+  window rather than user-selected date ranges
+- a future post-MVP date-range feature should apply consistently across the
+  homepage, rankings, map, route detail, and compare rather than appearing as a
+  partial one-page control
 
 ## Route Detail
 The route detail page should answer:

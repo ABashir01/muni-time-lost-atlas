@@ -8,7 +8,6 @@ import {
 } from "@/components/homepage-symbols";
 import { RouteBadge } from "@/components/route-badge";
 import { TransitMapSurface } from "@/components/transit-map-surface";
-import { TimeWindowStrip } from "@/components/time-window-strip";
 import { getRouteTheme } from "@/lib/presentation";
 import { getHomepageData } from "@/lib/site-data";
 
@@ -83,7 +82,6 @@ export default async function HomePage({
           </div>
 
           <div className="homepage-story-controls">
-            <TimeWindowStrip currentWindow={data.windowLabel} />
             <p>Historical/static API snapshot</p>
           </div>
 

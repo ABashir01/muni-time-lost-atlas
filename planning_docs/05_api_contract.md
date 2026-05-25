@@ -28,6 +28,8 @@ Current `B4` scope limits:
 - `window=all_day` is the only supported historical/static API window
 - `/rankings` currently supports only `mode=routes`
 - stop-wait hotspot data remains limited to the conservative first-stop exact-match methodology
+- public endpoints do not yet support shared `date_from` / `date_to` style
+  historical range selection
 
 Current public-unit limitation:
 - the public homepage rankings and current citywide map contract are route-level
@@ -37,6 +39,13 @@ Current public-unit limitation:
 - a future deferred API evolution should add direction-level public ranking and
   map support instead of continuing to pool materially different directions into
   one published route entry
+
+Current public-window limitation:
+- the public historical contract is still driven by the currently published
+  rolling window rather than user-selected date ranges
+- a future deferred API evolution should add shared range-aware aggregation
+  using retained daily summary marts instead of raw-event recomputation per
+  request
 
 ## Implemented Endpoints
 - `GET /health`

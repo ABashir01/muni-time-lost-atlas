@@ -32,7 +32,7 @@ const homepageHeroBounds: MapBounds = [
 const homepageNeighborhoodLabels: MapNeighborhoodLabel[] = [
   { coordinate: [-122.485, 37.779], text: "Richmond" },
   { coordinate: [-122.482, 37.746], text: "Sunset" },
-  { coordinate: [-122.405, 37.794], text: "Chinatown / Downtown" },
+  { coordinate: [-122.405, 37.794], text: "Chinatown" },
   { coordinate: [-122.421, 37.758], text: "Mission" },
   { coordinate: [-122.394, 37.732], text: "Bayview" },
 ];

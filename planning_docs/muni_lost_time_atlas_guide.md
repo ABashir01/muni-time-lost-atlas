@@ -87,10 +87,10 @@ This number should then be split into:
 The homepage should immediately show:
 - a strong title like `Where Muni Riders Lose the Most Time`
 - a short civic subhead
-- time toggles like `Now`, `Today`, `This week`, `This month`
 - a ranked list of routes with the biggest time losses
 - a city map with routes colored by time lost
 - a simple explanation of whether the loss comes from waiting, slow travel, or both
+- a plain label describing the currently published historical window
 
 Example route card:
 - `14 Mission`
@@ -135,7 +135,7 @@ The recommended scope is a `6-8 week MVP` and a `working prototype + pitch`.
 ### MVP Includes
 - a polished public-facing site
 - one strong homepage
-- route rankings by time window
+- route rankings from the currently published historical window
 - a responsive map
 - a route detail view
 - a basic compare view
@@ -453,7 +453,7 @@ Every selected route should have a short conclusion such as:
 - settle route-level aggregation rules
 - define handling for short turns and missing observations
 - define route-direction grouping logic
-- define chosen time windows for rankings
+- define the long-term public date-range model after MVP
 
 ### Data TODOs
 - confirm exact realtime feed structure from 511

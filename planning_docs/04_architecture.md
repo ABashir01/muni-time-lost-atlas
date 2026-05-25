@@ -165,6 +165,9 @@ Operational guidance:
 - keep the live serving database on a rolling historical window rather than a full historical archive
 - publish on a monthly cadence rather than pretending the metrics are realtime
 - older monthly archives should be retained outside the primary live serving DB
+- if public date-range support is added later, it should be built from
+  daily-grain summary marts inside that rolling live window rather than from
+  raw-event recomputation at request time
 
 ## Real Dataset Cutover
 Current implementation note:
