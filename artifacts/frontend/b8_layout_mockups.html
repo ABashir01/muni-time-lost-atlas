@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>B8 Layout Mockups</title>
+    <style>
+      :root {
+        --bg: #f5f5f2;
+        --paper: #ffffff;
+        --ink: #111111;
+        --muted: #5c5c5c;
+        --rule: #181818;
+        --red: #e1161d;
+        --blue: #1d6ecf;
+        --yellow: #f7c20f;
+        --orange: #eb6a1f;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 28px;
+        background:
+          radial-gradient(circle at top left, rgba(225, 22, 29, 0.06), transparent 28%),
+          linear-gradient(180deg, #fafaf8 0%, #f3f1ec 100%);
+        color: var(--ink);
+        font-family: Arial, sans-serif;
+      }
+
+      .page {
+        max-width: 1600px;
+        margin: 0 auto 36px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .section-head h1 {
+        margin: 0;
+        font-size: 32px;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+      }
+
+      .section-head p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .panel {
+        border: 2px solid var(--rule);
+        background: var(--paper);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+      }
+
+      .panel-label {
+        padding: 10px 14px;
+        border-bottom: 2px solid var(--rule);
+        background: #fff;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .mock {
+        padding: 12px;
+        background:
+          linear-gradient(180deg, rgba(29, 110, 207, 0.04), transparent 20%),
+          #fff;
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: 92px 1fr auto;
+        align-items: stretch;
+        min-height: 52px;
+        border: 2px solid var(--rule);
+        background: #fff;
+      }
+
+      .mark {
+        display: grid;
+        place-items: center;
+        background: var(--red);
+        color: #fff;
+        font-size: 24px;
+        font-weight: 900;
+        border-right: 2px solid var(--rule);
+      }
+
+      .brand {
+        display: grid;
+        align-content: center;
+        padding: 0 16px;
+        font-weight: 900;
+        font-size: 28px;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+      }
+
+      .nav {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        padding: 0 16px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .hero,
+      .strip,
+      .route-grid,
+      .compare-grid,
+      .map-grid,
+      .rank-grid {
+        display: grid;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .hero {
+        grid-template-columns: 44fr 56fr;
+      }
+
+      .story, .surface, .card, .chip, .table-row, .mini-card {
+        border: 2px solid var(--rule);
+        background: #fff;
+      }
+
+      .story {
+        min-height: 238px;
+        padding: 14px;
+      }
+
+      .headline {
+        font-size: 56px;
+        line-height: 0.92;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        text-transform: uppercase;
+      }
+
+      .headline em {
+        color: var(--red);
+        font-style: normal;
+      }
+
+      .sub {
+        margin-top: 18px;
+        font-size: 18px;
+      }
+
+      .surface {
+        min-height: 238px;
+        position: relative;
+        background:
+          linear-gradient(180deg, rgba(29, 110, 207, 0.12), rgba(29, 110, 207, 0.02)),
+          linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(0,0,0,0.03) 1px, transparent 1px),
+          #e8f0f7;
+        background-size: auto, 44px 44px, 44px 44px, auto;
+      }
+
+      .surface .badge {
+        position: absolute;
+        display: inline-grid;
+        place-items: center;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+        color: #fff;
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .b1 { top: 28px; right: 112px; background: var(--orange); }
+      .b2 { top: 102px; right: 126px; background: var(--red); }
+      .b3 { top: 176px; right: 168px; background: var(--yellow); color: #fff; }
+
+      .legend {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        width: 180px;
+        padding: 14px;
+        background: rgba(255,255,255,0.94);
+        border: 1px solid rgba(0,0,0,0.35);
+        font-size: 14px;
+      }
+
+      .band {
+        min-height: 132px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr) 1.2fr;
+        gap: 0;
+      }
+
+      .mini-card {
+        min-height: 132px;
+        padding: 12px;
+      }
+
+      .mini-card .value {
+        margin-top: 12px;
+        color: var(--red);
+        font-size: 42px;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+      }
+
+      .mini-card .title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .rank-grid .table-row {
+        display: grid;
+        grid-template-columns: 56px 1.5fr 0.9fr 1fr;
+        align-items: center;
+        min-height: 88px;
+        padding: 0 14px;
+      }
+
+      .rank-grid.compact .table-row {
+        min-height: 64px;
+      }
+
+      .rank-top {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+      }
+
+      .route-grid {
+        grid-template-columns: 1.5fr 0.9fr;
+      }
+
+      .route-hero {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        min-height: 168px;
+      }
+
+      .route-left,
+      .route-right,
+      .route-map,
+      .route-side,
+      .route-bottom,
+      .compare-top,
+      .compare-card,
+      .map-main,
+      .map-side {
+        border: 2px solid var(--rule);
+        background: #fff;
+      }
+
+      .route-left { padding: 16px; }
+      .route-right {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .stat {
+        padding: 14px;
+        border-left: 1px solid rgba(0,0,0,0.12);
+      }
+
+      .stat:first-child { border-left: 0; }
+
+      .stat b {
+        display: block;
+        margin-top: 8px;
+        font-size: 30px;
+        line-height: 0.92;
+      }
+
+      .route-map {
+        min-height: 340px;
+        background:
+          linear-gradient(180deg, rgba(29, 110, 207, 0.12), rgba(29, 110, 207, 0.02)),
+          radial-gradient(circle at 60% 20%, rgba(255,255,255,0.9), rgba(255,255,255,0.15) 30%),
+          #e8f0f7;
+        position: relative;
+      }
+
+      .route-side {
+        display: grid;
+        gap: 12px;
+        align-content: start;
+        padding: 12px;
+      }
+
+      .route-bottom {
+        display: grid;
+        gap: 0;
+      }
+
+      .route-bottom-row {
+        display: grid;
+        grid-template-columns: 1fr 170px;
+        min-height: 70px;
+        border-top: 1px solid rgba(0,0,0,0.12);
+        padding: 12px 14px;
+      }
+
+      .route-bottom-row:first-child { border-top: 0; }
+
+      .compare-grid { grid-template-columns: 1.1fr; }
+
+      .compare-top {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        align-items: center;
+        min-height: 104px;
+        padding: 14px 18px;
+      }
+
+      .selector-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      .select,
+      .btn,
+      .vs {
+        border: 2px solid var(--rule);
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .select {
+        min-width: 170px;
+        padding: 0 14px;
+        background: #fff;
+      }
+
+      .select.small { min-width: 110px; }
+
+      .vs {
+        width: 48px;
+        border-radius: 999px;
+        background: #111;
+        color: #fff;
+        font-weight: 900;
+      }
+
+      .btn {
+        min-width: 100px;
+        padding: 0 18px;
+        background: var(--yellow);
+        font-weight: 900;
+      }
+
+      .compare-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .compare-card {
+        min-height: 292px;
+        padding: 14px;
+        background: linear-gradient(180deg, rgba(29, 110, 207, 0.08), #fff 28%);
+        border-top: 12px solid var(--blue);
+      }
+
+      .compare-card .metric {
+        margin-top: 18px;
+        color: var(--red);
+        font-size: 42px;
+        font-weight: 900;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .chip {
+        min-height: 72px;
+        padding: 10px 12px;
+      }
+
+      .map-grid {
+        grid-template-columns: 1.45fr 0.55fr;
+      }
+
+      .map-main {
+        min-height: 410px;
+        position: relative;
+        background:
+          linear-gradient(180deg, rgba(29, 110, 207, 0.12), rgba(29, 110, 207, 0.02)),
+          linear-gradient(90deg, rgba(255,255,255,0.28) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(255,255,255,0.28) 1px, transparent 1px),
+          #dde7ee;
+        background-size: auto, 36px 36px, 36px 36px, auto;
+      }
+
+      .map-side {
+        display: grid;
+        gap: 12px;
+        align-content: start;
+        padding: 12px;
+      }
+
+      .rail-box {
+        min-height: 130px;
+        border: 2px solid var(--rule);
+        background: #fff;
+        padding: 12px;
+      }
+
+      .rail-box.tall { min-height: 212px; }
+
+      .caption {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+
+      .tight {
+        min-height: 280px;
+      }
+
+      .home-tight {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .home-tight .story { min-height: 186px; }
+      .home-tight .surface { min-height: 186px; }
+
+      .compare-dense {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 12px;
+      }
+
+      .control-rail {
+        border: 2px solid var(--rule);
+        background: #fff;
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .scoreboard {
+        border: 2px solid var(--rule);
+        background: #fff;
+        padding: 12px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="page">
+      <div class="section-head">
+        <h1>Pre-Scroll Mockups</h1>
+        <p>First-screen concepts only. No product code implied.</p>
+      </div>
+      <div class="grid">
+        <div class="panel">
+          <div class="panel-label">Homepage</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="hero">
+              <div class="story"><div class="headline">Where Muni Riders Lose <em>The Most Time</em></div><div class="sub">Keep the current composition, but tighten the lower strip.</div></div>
+              <div class="surface"><div class="legend"><b>Map key</b><div class="caption">Three worst routes plus clearer city context.</div></div><div class="badge b1">LOWL</div><div class="badge b2">12</div><div class="badge b3">14</div></div>
+            </div>
+            <div class="band">
+              <div class="mini-card"><div class="title">1 12 Folsom-Pacific</div><div class="value">+10.9</div></div>
+              <div class="mini-card"><div class="title">2 LOWL Owl Taraval</div><div class="value">+8.6</div></div>
+              <div class="mini-card"><div class="title">3 14 Mission</div><div class="value">+8.2</div></div>
+              <div class="mini-card"><div class="title">Compare</div><div class="caption">Shorter compare band, still in first screen.</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-label">Compare</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="compare-top">
+              <div><div class="headline" style="font-size:34px;color:var(--blue)">Compare Routes</div><div class="sub" style="margin-top:8px">Two selectors first. Optional routes become secondary.</div></div>
+              <div class="selector-row">
+                <div class="select">Route A</div><div class="vs">VS</div><div class="select">Route B</div><div class="btn">Compare</div>
+              </div>
+            </div>
+            <div class="compare-cards">
+              <div class="compare-card"><b>Folsom-Pacific</b><div class="metric">+10.9</div><div class="metric-grid"><div class="chip">Waiting</div><div class="chip">Travel</div><div class="chip">Worst time</div><div class="chip">Worst segment</div></div></div>
+              <div class="compare-card"><b>Owl Taraval</b><div class="metric">+8.6</div><div class="metric-grid"><div class="chip">Waiting</div><div class="chip">Travel</div><div class="chip">Worst time</div><div class="chip">Worst segment</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-label">Rankings</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="rank-grid">
+              <div class="table-row"><div style="font-size:44px;font-weight:900">1</div><div><b style="font-size:26px">12 Folsom-Pacific</b></div><div style="color:var(--red);font-size:36px;font-weight:900">+10.9</div><div>Worst on / open route</div></div>
+              <div class="table-row"><div style="font-size:44px;font-weight:900">2</div><div><b style="font-size:26px">LOWL Owl Taraval</b></div><div style="color:var(--red);font-size:36px;font-weight:900">+8.6</div><div>Worst on / open route</div></div>
+              <div class="table-row"><div style="font-size:44px;font-weight:900">3</div><div><b style="font-size:26px">14 Mission</b></div><div style="color:var(--red);font-size:36px;font-weight:900">+8.2</div><div>Worst on / open route</div></div>
+              <div class="table-row"><div style="font-size:34px;font-weight:900">4</div><div>8BX Bayshore B Express</div><div style="color:var(--red);font-size:26px;font-weight:900">+8.2</div><div>Route detail</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-label">Map</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="map-grid">
+              <div class="map-main"><div class="legend"><b>Typical extra time</b><div class="caption">Map dominates. City labels and basemap stay visible.</div></div></div>
+              <div class="map-side">
+                <div class="rail-box tall"><b>Highest delay routes</b><div class="caption">Top five list.</div></div>
+                <div class="rail-box"><b>System spread</b></div>
+                <div class="rail-box"><b>Transit-only lanes</b><div class="caption">Context overlay, not the metric.</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="grid-column: 1 / -1;">
+          <div class="panel-label">Route Detail</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="route-hero">
+              <div class="route-left"><div class="headline" style="font-size:54px">14 Mission</div><div class="sub">One-screen story: route identity, score, worst stop, worst segment.</div></div>
+              <div class="route-right">
+                <div class="stat">Typical trip<b>+8.2</b></div>
+                <div class="stat">Waiting<b>+2.6</b></div>
+                <div class="stat">Travel<b>+5.7</b></div>
+                <div class="stat">Vs median<b>+4.5</b></div>
+              </div>
+            </div>
+            <div class="route-grid">
+              <div class="route-map"></div>
+              <div class="route-side">
+                <div class="rail-box"><b>Worst stop hotspot</b><div class="caption">Observed wait, scheduled wait, matched intervals.</div></div>
+                <div class="rail-box"><b>Latest update</b></div>
+              </div>
+            </div>
+            <div class="route-bottom">
+              <div class="route-bottom-row"><div><b>Worst segment</b><div class="caption">With AM/PM time band.</div></div><div style="color:var(--red);font-size:34px;font-weight:900">+5.7</div></div>
+              <div class="route-bottom-row"><div><b>Highest-loss segments</b></div><div>top 4</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="section-head">
+        <h1>No-Scroll Mockups</h1>
+        <p>Compressed first-screen alternatives for evaluation only.</p>
+      </div>
+      <div class="grid">
+        <div class="panel">
+          <div class="panel-label">Homepage</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="home-tight">
+              <div class="story"><div class="headline" style="font-size:46px">Where Riders Lose <em>Most Time</em></div><div class="caption">Compressed hero.</div></div>
+              <div class="surface tight"><div class="legend"><b>City map</b></div></div>
+            </div>
+            <div class="rank-top">
+              <div class="mini-card"><div class="title">12</div><div class="value">+10.9</div></div>
+              <div class="mini-card"><div class="title">LOWL</div><div class="value">+8.6</div></div>
+              <div class="mini-card"><div class="title">14</div><div class="value">+8.2</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-label">Compare</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="compare-dense">
+              <div class="control-rail">
+                <div class="select">Route A</div>
+                <div class="select">Route B</div>
+                <div class="select small">Add route</div>
+                <div class="btn">Compare</div>
+              </div>
+              <div class="scoreboard">
+                <div class="chip"><b>Typical trip</b><div class="value" style="font-size:30px">+10.9</div></div>
+                <div class="chip"><b>Typical trip</b><div class="value" style="font-size:30px">+8.6</div></div>
+                <div class="chip"><b>Waiting / Travel</b></div>
+                <div class="chip"><b>Worst time / segment</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-label">Rankings</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="rank-grid compact">
+              <div class="table-row"><div>1</div><div>12 Folsom-Pacific</div><div style="color:var(--red);font-weight:900">+10.9</div><div>detail</div></div>
+              <div class="table-row"><div>2</div><div>LOWL Owl Taraval</div><div style="color:var(--red);font-weight:900">+8.6</div><div>detail</div></div>
+              <div class="table-row"><div>3</div><div>14 Mission</div><div style="color:var(--red);font-weight:900">+8.2</div><div>detail</div></div>
+              <div class="table-row"><div>4</div><div>8BX Bayshore B Express</div><div style="color:var(--red);font-weight:900">+8.2</div><div>detail</div></div>
+              <div class="table-row"><div>5</div><div>PH Powell-Hyde</div><div style="color:var(--red);font-weight:900">+8.1</div><div>detail</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-label">Map</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="map-main tight"><div class="legend"><b>Map full width</b><div class="caption">Top-corridor chips live above or float over map.</div></div></div>
+            <div class="metric-grid" style="margin-top:10px">
+              <div class="chip">Top corridors</div><div class="chip">System spread</div><div class="chip">Overlay</div><div class="chip">Updated</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="grid-column: 1 / -1;">
+          <div class="panel-label">Route Detail</div>
+          <div class="mock">
+            <div class="header"><div class="mark">MUNI</div><div class="brand">Muni Lost Time Atlas</div><div class="nav">Map Rankings Compare Methods</div></div>
+            <div class="compare-dense">
+              <div class="route-map tight"></div>
+              <div class="control-rail">
+                <div class="chip"><b>Typical trip</b><div class="value" style="font-size:30px">+8.2</div></div>
+                <div class="chip"><b>Worst stop</b></div>
+                <div class="chip"><b>Worst segment</b></div>
+                <div class="chip"><b>4:00-4:59 PM</b></div>
+                <div class="chip"><b>Nearby ranks</b></div>
+                <div class="chip"><b>Sample size</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

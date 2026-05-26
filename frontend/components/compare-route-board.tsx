@@ -1,10 +1,16 @@
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import { RouteBadge } from "@/components/route-badge";
 import { DataStatePanel } from "@/components/data-state-panel";
 import { MetricBreakout } from "@/components/metric-breakout";
 import { getRouteTheme } from "@/lib/presentation";
 import type { DataNotice, RouteSummary } from "@/lib/types";
-import { formatMinutes, formatSignedMinutes, routeDominantProblem } from "@/lib/utils";
+import {
+  formatMinutes,
+  formatSignedMinutes,
+  formatTimeBandLabel,
+  routeDominantProblem,
+} from "@/lib/utils";
 
 export function CompareRouteBoard({
   compareLimitations,
@@ -36,8 +42,10 @@ export function CompareRouteBoard({
 
       <div className="compare-grid">
         {routes.map((route) => (
-          <article
+          <Link
+            aria-label={`Open route detail for ${route.route_name}`}
             className="compare-card"
+            href={`/routes/${encodeURIComponent(route.route_id)}`}
             key={route.route_id}
             style={
               {
@@ -80,9 +88,9 @@ export function CompareRouteBoard({
               <li>
                 <div>
                   <strong>Worst time</strong>
-                  <small>{route.worst_time_band}</small>
+                  <small>{formatTimeBandLabel(route.worst_time_band)}</small>
                 </div>
-                <b>{route.worst_time_band}</b>
+                <b>{formatTimeBandLabel(route.worst_time_band)}</b>
               </li>
               <li>
                 <div>
@@ -106,7 +114,7 @@ export function CompareRouteBoard({
                 <b>{route.matched_observed_stop_event_count} stop events</b>
               </li>
             </ul>
-          </article>
+          </Link>
         ))}
       </div>
 

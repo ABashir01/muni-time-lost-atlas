@@ -7,9 +7,11 @@ import {
   HomepageTransitSymbol,
 } from "@/components/homepage-symbols";
 import { RouteBadge } from "@/components/route-badge";
+import { SiteHeader } from "@/components/site-header";
 import { TransitMapSurface } from "@/components/transit-map-surface";
 import { getRouteTheme } from "@/lib/presentation";
 import { getHomepageData } from "@/lib/site-data";
+import { formatTimeBandLabel } from "@/lib/utils";
 
 const homepageFontVariants = {
   "anton-oswald": "homepage-font-anton-oswald",
@@ -43,20 +45,7 @@ export default async function HomePage({
 
   return (
     <div className={`homepage-viewport ${homepageFontClass === "homepage-font-oswald" ? "homepage-font-oswald-roboto" : homepageFontClass}`}>
-      <header className="homepage-masthead">
-        <Link className="homepage-brand" href="/">
-          <span aria-hidden="true" className="homepage-brand-mark">
-            Muni
-          </span>
-          <span className="homepage-brand-copy">Muni Lost Time Atlas</span>
-        </Link>
-        <nav aria-label="Homepage" className="homepage-nav">
-          <Link href="/map">Explore the Map</Link>
-          <Link href="/rankings">Rankings</Link>
-          <Link href="/compare">Compare</Link>
-          <Link href="/methodology">Data &amp; Methods</Link>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <section className="homepage-hero">
         <div className="homepage-story-panel">
@@ -133,8 +122,10 @@ export default async function HomePage({
         <div className="homepage-rankings">
           {Array.from({ length: 3 }, (_, index) => rankingSlots[index]).map((route, index) =>
             route ? (
-              <article
+              <Link
+                aria-label={`Open route detail for ${route.route_name}`}
                 className="homepage-ranking-card"
+                href={`/routes/${encodeURIComponent(route.route_id)}`}
                 key={route.route_id}
                 style={
                   {
@@ -169,14 +160,14 @@ export default async function HomePage({
                 <div className="homepage-ranking-notes">
                   <p>
                     <span>Worst on</span>
-                    <strong>{route.worst_time_band}</strong>
+                    <strong>{formatTimeBandLabel(route.worst_time_band)}</strong>
                   </p>
                   <p>
                     <span>Most loss</span>
                     <strong>{route.worst_segment_label}</strong>
                   </p>
                 </div>
-              </article>
+              </Link>
             ) : (
               <article className="homepage-ranking-card" key={`empty-ranking-${index}`}>
                 <div className="homepage-ranking-header">
@@ -242,7 +233,7 @@ export default async function HomePage({
 
       <section className="homepage-compare" id="compare">
         <div className="homepage-compare-copy">
-          <h2>Compare Routes Or Corridors</h2>
+          <h2>Compare routes or corridors.</h2>
           <p>See how routes stack up or compare parts of the same route.</p>
         </div>
 

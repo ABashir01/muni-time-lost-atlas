@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataStamp } from "@/components/data-stamp";
 import { DataStatePanel } from "@/components/data-state-panel";
@@ -155,8 +156,10 @@ export default async function RouteDetailPage({
                 <span>The four segment links with the highest published in-vehicle loss.</span>
               </div>
               <ol className="route-dossier-segment-list">
-                {topSegments.map((feature) => (
-                  <li key={feature.properties.segment_sequence}>
+                {topSegments.map((feature, index) => (
+                  <li
+                    key={`${feature.properties.segment_sequence ?? "segment"}-${feature.properties.segment_label ?? "unknown"}-${index}`}
+                  >
                     <div>
                       <strong>{feature.properties.segment_label}</strong>
                       <small>
@@ -262,14 +265,20 @@ export default async function RouteDetailPage({
             <ul className="route-dossier-peer-list">
               {data.peers.slice(0, 4).map((peer) => (
                 <li key={peer.route_id}>
-                  <div className="route-dossier-peer-route">
-                    <RouteBadge routeId={peer.route_id} label={peer.route_short_name} />
-                    <div>
-                      <strong>{peer.route_name}</strong>
-                      <small>{peer.rank ? `Rank #${peer.rank}` : "Published route"}</small>
+                  <Link
+                    aria-label={`Open route detail for ${peer.route_name}`}
+                    className="route-dossier-peer-link"
+                    href={`/routes/${encodeURIComponent(peer.route_id)}`}
+                  >
+                    <div className="route-dossier-peer-route">
+                      <RouteBadge routeId={peer.route_id} label={peer.route_short_name} />
+                      <div>
+                        <strong>{peer.route_name}</strong>
+                        <small>{peer.rank ? `Rank #${peer.rank}` : "Published route"}</small>
+                      </div>
                     </div>
-                  </div>
-                  <b>{formatMinutes(peer.typical_trip_loss_minutes)}</b>
+                    <b>{formatMinutes(peer.typical_trip_loss_minutes)}</b>
+                  </Link>
                 </li>
               ))}
             </ul>

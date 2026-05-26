@@ -15,6 +15,7 @@ export default async function RankingsPage() {
             <strong>Published route rankings.</strong> Routes are ordered by typical extra
             time per trip in the current published snapshot.
           </p>
+          <p>Click any route row to open its route detail.</p>
         </div>
       </section>
 

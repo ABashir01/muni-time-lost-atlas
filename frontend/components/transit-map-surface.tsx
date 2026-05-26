@@ -258,8 +258,18 @@ export function TransitMapSurface({
       return;
     }
 
+    const cleanupState: {
+      handleContextLost: () => void;
+      handleContextRestored: () => void;
+      map: MapLibreMap | null;
+    } = {
+      handleContextLost: () => undefined,
+      handleContextRestored: () => undefined,
+      map: null,
+    };
+
     try {
-      const map = new maplibregl.Map({
+      const liveMap = new maplibregl.Map({
         attributionControl: false,
         center: [-122.4376, 37.7638],
         container: mapContainerRef.current,
@@ -269,49 +279,87 @@ export function TransitMapSurface({
         style: mapStyle,
         zoom: 11.2,
       });
+      cleanupState.map = liveMap;
 
       if (!allowGestures) {
-        map.boxZoom.disable();
-        map.doubleClickZoom.disable();
-        map.dragPan.disable();
-        map.keyboard.disable();
-        map.scrollZoom.disable();
-        map.touchZoomRotate.disable();
+        liveMap.boxZoom.disable();
+        liveMap.doubleClickZoom.disable();
+        liveMap.dragPan.disable();
+        liveMap.keyboard.disable();
+        liveMap.scrollZoom.disable();
+        liveMap.touchZoomRotate.disable();
       }
 
-      mapRef.current = map;
+      mapRef.current = liveMap;
       setMapStatus("loading");
 
       const sync = () => {
-        syncMapSources(map, {
+        refreshMapPresentation(liveMap, {
           backgroundRouteCollection,
+          fitBounds: targetBounds,
+          fitKey,
+          fitMaxZoom,
+          fitPadding,
+          interactive,
+          lastFitKeyRef,
           lineMode,
           overlayCollection,
           routeCollection,
           segmentCollection,
           stopCollection,
         });
-        fitMapToBounds(
-          map,
-          targetBounds,
-          interactive,
-          false,
-          fitMaxZoom,
-          fitPadding,
-        );
         lastFitKeyRef.current = fitKey;
         setMapStatus("ready");
       };
 
-      if (isStyleReady(map)) {
+      cleanupState.handleContextLost = () => {
+        setHoveredRoute(null);
+        setMapStatus("loading");
+      };
+
+      cleanupState.handleContextRestored = () => {
+        const restore = () => {
+          try {
+            refreshMapPresentation(liveMap, {
+              backgroundRouteCollection,
+              fitBounds: targetBounds,
+              fitKey,
+              fitMaxZoom,
+              fitPadding,
+              interactive,
+              lastFitKeyRef,
+              lineMode,
+              overlayCollection,
+              routeCollection,
+              segmentCollection,
+              stopCollection,
+            });
+            lastFitKeyRef.current = fitKey;
+            setMapStatus("ready");
+          } catch {
+            setMapStatus("error");
+          }
+        };
+
+        if (isStyleReady(liveMap)) {
+          restore();
+        } else {
+          liveMap.once("styledata", restore);
+        }
+      };
+
+      liveMap.on("webglcontextlost", cleanupState.handleContextLost);
+      liveMap.on("webglcontextrestored", cleanupState.handleContextRestored);
+
+      if (isStyleReady(liveMap)) {
         sync();
       } else {
-        map.once("styledata", sync);
+        liveMap.once("styledata", sync);
       }
 
       if (typeof ResizeObserver !== "undefined" && mapContainerRef.current) {
         resizeObserverRef.current = new ResizeObserver(() => {
-          map.resize();
+          liveMap.resize();
         });
         resizeObserverRef.current.observe(mapContainerRef.current);
       }
@@ -322,8 +370,14 @@ export function TransitMapSurface({
     return () => {
       resizeObserverRef.current?.disconnect();
       resizeObserverRef.current = null;
-      mapRef.current?.remove();
-      mapRef.current = null;
+      if (cleanupState.map) {
+        cleanupState.map.off("webglcontextlost", cleanupState.handleContextLost);
+        cleanupState.map.off("webglcontextrestored", cleanupState.handleContextRestored);
+        cleanupState.map.remove();
+      }
+      if (mapRef.current === cleanupState.map) {
+        mapRef.current = null;
+      }
     };
   }, [
     fitBounds,
@@ -349,27 +403,20 @@ export function TransitMapSurface({
 
     const sync = () => {
       try {
-        syncMapSources(map, {
+        refreshMapPresentation(map, {
           backgroundRouteCollection,
+          fitBounds: targetBounds,
+          fitKey,
+          fitMaxZoom,
+          fitPadding,
+          interactive,
+          lastFitKeyRef,
           lineMode,
           overlayCollection,
           routeCollection,
           segmentCollection,
           stopCollection,
         });
-
-        if (lastFitKeyRef.current !== fitKey) {
-          fitMapToBounds(
-            map,
-            targetBounds,
-            interactive,
-            true,
-            fitMaxZoom,
-            fitPadding,
-          );
-          lastFitKeyRef.current = fitKey;
-        }
-
         setMapStatus("ready");
       } catch {
         setMapStatus("error");
@@ -505,6 +552,65 @@ export function TransitMapSurface({
     };
   }, [mapStatus, neighborhoodLabels, routeBadges, routeColorById]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) {
+      return;
+    }
+
+    const refreshMap = () => {
+      if (!mapRef.current || !isStyleReady(mapRef.current)) {
+        return;
+      }
+
+      try {
+        refreshMapPresentation(mapRef.current, {
+          backgroundRouteCollection,
+          fitBounds: targetBounds,
+          fitKey,
+          fitMaxZoom,
+          fitPadding,
+          interactive,
+          lastFitKeyRef,
+          lineMode,
+          overlayCollection,
+          routeCollection,
+          segmentCollection,
+          stopCollection,
+        });
+        setMapStatus("ready");
+      } catch {
+        setMapStatus("error");
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshMap();
+      }
+    };
+
+    window.addEventListener("focus", refreshMap);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", refreshMap);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    backgroundRouteCollection,
+    fitKey,
+    fitMaxZoom,
+    fitPadding,
+    interactive,
+    lineMode,
+    overlayCollection,
+    routeCollection,
+    segmentCollection,
+    stopCollection,
+    targetBounds,
+  ]);
+
   return (
     <div
       className="map-surface"
@@ -580,7 +686,7 @@ export function TransitMapSurface({
               if (mapRef.current) {
                 fitMapToBounds(
                   mapRef.current,
-                  fitBounds,
+                  targetBounds,
                   interactive,
                   true,
                   fitMaxZoom,
@@ -633,6 +739,40 @@ export function TransitMapSurface({
       ) : null}
     </div>
   );
+}
+
+function refreshMapPresentation(
+  map: MapLibreMap,
+  data: {
+    backgroundRouteCollection: ReturnType<typeof toFeatureCollection>;
+    fitBounds: [[number, number], [number, number]] | null;
+    fitKey: string;
+    fitMaxZoom: number;
+    fitPadding: number;
+    interactive: boolean;
+    lastFitKeyRef: { current: string | null };
+    lineMode: "compact" | "default";
+    overlayCollection: ReturnType<typeof toFeatureCollection>;
+    routeCollection: ReturnType<typeof toFeatureCollection>;
+    segmentCollection: ReturnType<typeof toFeatureCollection>;
+    stopCollection: ReturnType<typeof toFeatureCollection>;
+  },
+) {
+  syncMapSources(map, data);
+  map.resize();
+  map.triggerRepaint();
+
+  if (data.lastFitKeyRef.current !== data.fitKey) {
+    fitMapToBounds(
+      map,
+      data.fitBounds,
+      data.interactive,
+      false,
+      data.fitMaxZoom,
+      data.fitPadding,
+    );
+    data.lastFitKeyRef.current = data.fitKey;
+  }
 }
 
 function fitMapToBounds(

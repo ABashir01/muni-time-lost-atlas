@@ -1,8 +1,102 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
+import Select, { type FilterOptionOption, type StylesConfig } from "react-select";
 import { useRouter } from "next/navigation";
 import type { RouteSummary } from "@/lib/types";
+
+type RouteOption = {
+  aliases: string[];
+  label: string;
+  value: string;
+};
+
+const selectStyles: StylesConfig<RouteOption, false> = {
+  container: (base) => ({
+    ...base,
+    width: "100%",
+  }),
+  control: (base, state) => ({
+    ...base,
+    minHeight: "var(--compare-field-height, 42px)",
+    border: `2px solid ${state.isFocused ? "#111" : "var(--rule)"}`,
+    borderRadius: 0,
+    boxShadow: "none",
+    backgroundColor: "#fff",
+    cursor: "text",
+  }),
+  valueContainer: (base) => ({
+    ...base,
+    padding: "0 8px 0 10px",
+  }),
+  input: (base) => ({
+    ...base,
+    margin: 0,
+    padding: 0,
+    color: "#111",
+    font: "inherit",
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: "#111",
+    font: "inherit",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "#6a6a6a",
+    font: "inherit",
+  }),
+  indicatorsContainer: (base) => ({
+    ...base,
+    paddingRight: 4,
+  }),
+  dropdownIndicator: (base, state) => ({
+    ...base,
+    color: "#111",
+    padding: "0 6px",
+    transition: "transform 120ms ease",
+    transform: state.selectProps.menuIsOpen ? "rotate(180deg)" : "none",
+    ":hover": {
+      color: "#111",
+    },
+  }),
+  clearIndicator: (base) => ({
+    ...base,
+    padding: "0 6px",
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 3000,
+  }),
+  menu: (base) => ({
+    ...base,
+    marginTop: 4,
+    border: "2px solid var(--rule)",
+    borderRadius: 0,
+    boxShadow: "0 12px 28px rgba(0, 0, 0, 0.16)",
+    backgroundColor: "#fff",
+    overflow: "hidden",
+  }),
+  menuList: (base) => ({
+    ...base,
+    maxHeight: 280,
+    padding: 0,
+  }),
+  option: (base, state) => ({
+    ...base,
+    padding: "10px 12px",
+    backgroundColor: state.isFocused ? "#f3f3f3" : "#fff",
+    color: state.isSelected ? "var(--blue)" : "#111",
+    cursor: "pointer",
+    font: "inherit",
+  }),
+  noOptionsMessage: (base) => ({
+    ...base,
+    padding: "10px 12px",
+    color: "#6a6a6a",
+    font: "inherit",
+  }),
+};
 
 export function CompareSelector({
   routes,
@@ -20,59 +114,124 @@ export function CompareSelector({
   className?: string;
 }) {
   const router = useRouter();
-  const routeOptions = useMemo(
+  const normalizedSlotCount = Math.max(2, Math.min(slotCount, 4));
+  const routeOptions = useMemo<RouteOption[]>(
     () =>
       routes.map((route) => ({
+        aliases: [route.route_id, route.route_short_name, route.route_name].filter(Boolean),
         label: `${route.route_short_name || route.route_id} ${route.route_name}`,
         value: route.route_id,
       })),
     [routes],
   );
-  const normalizedSlotCount = Math.max(2, Math.min(slotCount, 4));
-  const initialSelections = Array.from({ length: normalizedSlotCount }, (_, index) => selectedIds[index] ?? "");
-  const [selections, setSelections] = useState(initialSelections);
+  const initialSelections = Array.from(
+    { length: normalizedSlotCount },
+    (_, index) => selectedIds[index] ?? "",
+  );
+  const [menuPortalTarget, setMenuPortalTarget] = useState<HTMLElement | null>(null);
+  const [selections, setSelections] = useState<string[]>(() => initialSelections);
+
   const activeIds = selections.filter(Boolean);
   const uniqueIds = Array.from(new Set(activeIds));
   const canSubmit = uniqueIds.length >= 2;
-  const isOptionTaken = (routeId: string, currentIndex: number) =>
-    selections.some((selectedId, index) => index !== currentIndex && selectedId === routeId);
+
+  const slotOptions = useMemo(
+    () =>
+      selections.map((selection, index) => {
+        const takenByOtherSlots = new Set(
+          selections.filter((selectedId, selectedIndex) => selectedIndex !== index && selectedId),
+        );
+
+        return routeOptions.filter(
+          (route) => route.value === selection || !takenByOtherSlots.has(route.value),
+        );
+      }),
+    [routeOptions, selections],
+  );
+
+  const selectedOptions = useMemo(
+    () =>
+      selections.map(
+        (selection, index) =>
+          slotOptions[index]?.find((route) => route.value === selection) ?? null,
+      ),
+    [selections, slotOptions],
+  );
+
+  const placeholderForSlot = (index: number) =>
+    index < 2 ? placeholderLabel ?? "Route" : optionalPlaceholderLabel ?? "Optional route";
+
+  const filterRouteOption = (
+    candidate: FilterOptionOption<RouteOption>,
+    rawInput: string,
+  ) => {
+    const normalizedInput = rawInput.trim().toLowerCase();
+
+    if (!normalizedInput) {
+      return true;
+    }
+
+    const terms = normalizedInput.split(/\s+/).filter(Boolean);
+    const searchable = [candidate.label, candidate.data.value, ...candidate.data.aliases]
+      .join(" ")
+      .toLowerCase();
+
+    return terms.every((term) => searchable.includes(term));
+  };
+
+  useEffect(() => {
+    setMenuPortalTarget(document.body);
+  }, []);
+
+  useEffect(() => {
+    setSelections(initialSelections);
+  }, [normalizedSlotCount, routeOptions, selectedIds]);
 
   return (
     <div className={className ? `compare-controls ${className}` : "compare-controls"}>
       {selections.map((selection, index) => (
         <div className="compare-slot" key={`compare-slot-${index}`}>
-          <select
-            aria-label={`Select route ${index + 1}`}
-            onChange={(event) =>
-              setSelections((currentSelections) =>
-                currentSelections.map((currentSelection, currentIndex) =>
-                  currentIndex === index ? event.target.value : currentSelection,
-                ),
-              )
-            }
-            value={selection}
-          >
-            {placeholderLabel ? (
-              <option value="">
-                {index < 2 ? placeholderLabel : optionalPlaceholderLabel ?? "Optional route"}
-              </option>
-            ) : null}
-            {routeOptions.map((route) => (
-              <option
-                disabled={isOptionTaken(route.value, index)}
-                key={route.value}
-                value={route.value}
-              >
-                {route.label}
-              </option>
-            ))}
-          </select>
+          <div className="compare-field">
+            <Select<RouteOption, false>
+              classNamePrefix="compare-react-select"
+              components={{ IndicatorSeparator: () => null }}
+              controlShouldRenderValue
+              filterOption={filterRouteOption}
+              inputId={`compare-route-${index + 1}`}
+              instanceId={`compare-route-${index + 1}`}
+              isClearable={index >= 2}
+              menuPlacement="auto"
+              menuPortalTarget={menuPortalTarget ?? undefined}
+              menuPosition={menuPortalTarget ? "fixed" : "absolute"}
+              menuShouldBlockScroll={false}
+              menuShouldScrollIntoView={false}
+              noOptionsMessage={() => "No matching routes"}
+              onChange={(nextOption) => {
+                setSelections((currentSelections) =>
+                  currentSelections.map((currentSelection, currentIndex) =>
+                    currentIndex === index ? nextOption?.value ?? "" : currentSelection,
+                  ),
+                );
+              }}
+              openMenuOnFocus
+              options={slotOptions[index] ?? []}
+              placeholder={placeholderForSlot(index)}
+              styles={selectStyles}
+              tabSelectsValue={false}
+              unstyled
+              value={selectedOptions[index]}
+            />
+          </div>
           {index < selections.length - 1 ? <span className="compare-vs">VS</span> : null}
         </div>
       ))}
       <button
         disabled={!canSubmit}
-        onClick={() => router.push(`/compare?ids=${uniqueIds.join(",")}`)}
+        onClick={() =>
+          startTransition(() => {
+            router.push(`/compare?ids=${uniqueIds.join(",")}`);
+          })
+        }
         type="button"
       >
         Compare

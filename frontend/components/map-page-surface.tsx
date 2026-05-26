@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { DataStamp } from "@/components/data-stamp";
 import { DataStatePanel } from "@/components/data-state-panel";
@@ -78,14 +79,20 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
             <ul className="map-rail-route-list">
               {leadingRoutes.map((route) => (
                 <li key={route.route_id}>
-                  <div className="map-rail-route">
-                    <RouteBadge routeId={route.route_id} label={route.route_short_name} />
-                    <div>
-                      <strong>{route.route_name}</strong>
-                      <small>{route.worst_segment_label}</small>
+                  <Link
+                    aria-label={`Open route detail for ${route.route_name}`}
+                    className="map-rail-route-link"
+                    href={`/routes/${encodeURIComponent(route.route_id)}`}
+                  >
+                    <div className="map-rail-route">
+                      <RouteBadge routeId={route.route_id} label={route.route_short_name} />
+                      <div>
+                        <strong>{route.route_name}</strong>
+                        <small>{route.worst_segment_label}</small>
+                      </div>
                     </div>
-                  </div>
-                  <b>{formatMinutes(route.typical_trip_loss_minutes)}</b>
+                    <b>{formatMinutes(route.typical_trip_loss_minutes)}</b>
+                  </Link>
                 </li>
               ))}
             </ul>

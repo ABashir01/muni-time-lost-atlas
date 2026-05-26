@@ -207,14 +207,19 @@ export async function getHomepageData() {
 }
 
 export async function getComparePageData(ids?: string | string[]) {
-  const rankingsResult = await safeLoad(getRankings);
   const requestedIds = parseRequestedIds(ids);
+  const requestedSelectionIds =
+    requestedIds.length >= 2 ? requestedIds.slice(0, 4) : [];
+  const [rankingsResult, compareResult] = await Promise.all([
+    safeLoad(getRankings),
+    requestedSelectionIds.length >= 2
+      ? safeLoad(() => getCompare(requestedSelectionIds))
+      : Promise.resolve(null),
+  ]);
   const rankedRoutes = rankingsResult.ok ? rankingsResult.data.routes : [];
   const defaultIds = rankedRoutes.slice(0, 2).map((route) => route.route_id);
   const selectedIds =
-    requestedIds.length >= 2 ? requestedIds.slice(0, 4) : defaultIds.slice(0, 4);
-  const compareResult =
-    selectedIds.length >= 2 ? await safeLoad(() => getCompare(selectedIds)) : null;
+    requestedSelectionIds.length >= 2 ? requestedSelectionIds : defaultIds.slice(0, 4);
   const availableRoutes = buildRouteCatalog(
     rankedRoutes,
     compareResult?.ok ? compareResult.data : undefined,

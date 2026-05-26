@@ -4,6 +4,7 @@ import { DataStamp } from "@/components/data-stamp";
 import { DataStatePanel } from "@/components/data-state-panel";
 import { RouteBadge } from "@/components/route-badge";
 import type { RankingsPageData } from "@/lib/site-data";
+import { formatTimeBandLabel } from "@/lib/utils";
 
 export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
   const denseRoutes = data.rankings.slice(3);
@@ -26,8 +27,10 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
         ))}
 
         {data.featuredRoutes.map((route, index) => (
-          <article
+          <Link
+            aria-label={`Open route detail for ${route.route_name}`}
             className={`rankings-feature-card rankings-feature-card-${index + 1}`}
+            href={`/routes/${encodeURIComponent(route.route_id)}`}
             key={route.route_id}
             style={{ "--route-accent": "var(--red)" } as CSSProperties}
           >
@@ -36,9 +39,7 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
               <div className="rankings-feature-route">
                 <RouteBadge label={route.route_short_name} routeId={route.route_id} />
                 <div>
-                  <h2>
-                    <Link href={`/routes/${encodeURIComponent(route.route_id)}`}>{route.route_name}</Link>
-                  </h2>
+                  <h2>{route.route_name}</h2>
                 </div>
               </div>
 
@@ -50,7 +51,7 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
               <dl className="rankings-feature-notes">
                 <div>
                   <dt>Worst on</dt>
-                  <dd>{route.worst_time_band}</dd>
+                  <dd>{formatTimeBandLabel(route.worst_time_band)}</dd>
                 </div>
                 <div>
                   <dt>Most loss</dt>
@@ -58,19 +59,22 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
                 </div>
                 <div>
                   <dt>Open</dt>
-                  <dd>
-                    <Link href={`/routes/${encodeURIComponent(route.route_id)}`}>Route detail</Link>
-                  </dd>
+                  <dd>Route detail</dd>
                 </div>
               </dl>
             </div>
-          </article>
+          </Link>
         ))}
 
         <div className="rankings-dense-list">
           {denseRoutes.length > 0 ? (
             denseRoutes.map((route, index) => (
-              <article className="rankings-dense-row" key={route.route_id}>
+              <Link
+                aria-label={`Open route detail for ${route.route_name}`}
+                className="rankings-dense-row"
+                href={`/routes/${encodeURIComponent(route.route_id)}`}
+                key={route.route_id}
+              >
                 <span className="rankings-dense-rank">
                   {route.rank ?? index + data.featuredRoutes.length + 1}
                 </span>
@@ -83,12 +87,10 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
                 </div>
                 <div className="rankings-dense-metric">
                   <b>{`+${route.typical_trip_loss_minutes.toFixed(1)} min`}</b>
-                  <span>{route.worst_time_band}</span>
+                  <span>{formatTimeBandLabel(route.worst_time_band)}</span>
                 </div>
-                <Link href={`/routes/${encodeURIComponent(route.route_id)}`}>
-                  Route detail
-                </Link>
-              </article>
+                <span>Route detail</span>
+              </Link>
             ))
           ) : (
             <article className="rankings-dense-row rankings-dense-row-empty">

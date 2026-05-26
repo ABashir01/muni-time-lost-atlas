@@ -28,6 +28,8 @@
   --font-archivo-narrow: "Archivo Narrow", sans-serif;
   --font-fjalla-one: "Fjalla One", sans-serif;
   --font-body: "Public Sans", sans-serif;
+  --home-font-headline: var(--font-oswald);
+  --home-font-ui: var(--font-roboto-condensed);
 }
 
 * {
@@ -1081,14 +1083,46 @@ main {
 .compare-controls {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: stretch;
   gap: 0.85rem;
 }
 
 .compare-slot {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.85rem;
+}
+
+.compare-field {
+  position: relative;
+  min-width: 0;
+  flex: 1 1 auto;
+  z-index: 12;
+}
+
+.compare-field.is-open input {
+  border-color: #111;
+}
+
+.compare-field-toggle {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  width: 32px;
+  border: 0;
+  background: transparent;
+  color: #111;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.compare-field-toggle span {
+  display: inline-block;
+  font-size: 0.82rem;
+  line-height: 1;
 }
 
 .compare-controls select,
@@ -1098,6 +1132,73 @@ main {
   border: 2px solid var(--rule);
   background: white;
   padding: 0 0.55rem;
+}
+
+.compare-field input {
+  width: 100%;
+  min-height: 30px;
+  border: 2px solid var(--rule);
+  background: #fff;
+  padding: 0 2rem 0 0.55rem;
+  color: #111;
+  font: inherit;
+}
+
+.compare-field input:-webkit-autofill,
+.compare-field input:-webkit-autofill:hover,
+.compare-field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111;
+  box-shadow: 0 0 0 1000px #fff inset;
+  transition: background-color 9999s ease-out 0s;
+}
+
+.compare-field-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 60;
+  overflow-y: auto;
+  max-height: 16rem;
+  overscroll-behavior: contain;
+  border: 2px solid var(--rule);
+  background: #fff;
+  color: #111;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+}
+
+.compare-field-menu--up {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+.compare-field-option,
+.compare-field-empty {
+  width: 100%;
+  padding: 0.72rem 0.82rem;
+  color: inherit;
+  font: inherit;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.compare-field-option {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.compare-field-option.is-active,
+.compare-field-option:hover {
+  background: #f3f3f3;
+}
+
+.compare-field-option.is-selected {
+  color: var(--blue);
+}
+
+.compare-field-empty {
+  color: #6a6a6a;
 }
 
 .compare-controls button {
@@ -2250,6 +2351,7 @@ body:has(.homepage-viewport) main {
 
 .homepage-masthead {
   display: flex;
+  min-height: 66px;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
@@ -2269,6 +2371,7 @@ body:has(.homepage-viewport) main {
   display: grid;
   place-items: center;
   width: 92px;
+  min-height: 66px;
   align-self: stretch;
   background: var(--muni-red);
   border-right: 2px solid var(--rule);
@@ -2313,17 +2416,28 @@ body:has(.homepage-viewport) main {
 }
 
 .homepage-nav a {
+  position: relative;
   color: var(--ink);
   font-size: clamp(0.96rem, 1vw, 1.08rem);
   font-weight: 800;
   white-space: nowrap;
 }
 
+.homepage-nav a.is-active,
 .homepage-nav a:hover,
 .homepage-story-banner a:hover,
 .homepage-explainer-link:hover,
 .homepage-ranking-route a:hover {
   color: var(--red);
+}
+
+.homepage-nav a.is-active::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.18rem;
+  left: 0;
+  border-top: 2px solid currentColor;
+  content: "";
 }
 
 .homepage-hero {
@@ -2623,6 +2737,91 @@ body:has(.homepage-viewport) main {
   background: #fff;
 }
 
+a.homepage-ranking-card,
+a.rankings-feature-card,
+a.rankings-dense-row,
+a.compare-card,
+.map-rail-route-link,
+.route-dossier-peer-link {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+a.homepage-ranking-card::after,
+a.rankings-feature-card::after,
+a.rankings-dense-row::after,
+a.compare-card::after {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  color: var(--red);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+  content: "View route →";
+  pointer-events: none;
+}
+
+a.homepage-ranking-card,
+a.rankings-feature-card,
+a.rankings-dense-row,
+a.compare-card {
+  cursor: pointer;
+}
+
+a.homepage-ranking-card:hover,
+a.rankings-feature-card:hover,
+a.rankings-dense-row:hover,
+a.compare-card:hover,
+.map-rail-route-link:hover,
+.route-dossier-peer-link:hover {
+  background: #f6f8fb;
+  transform: translateY(-1px);
+}
+
+a.homepage-ranking-card:hover .homepage-ranking-route p,
+a.rankings-feature-card:hover .rankings-feature-route h2,
+a.rankings-dense-row:hover .rankings-dense-route strong,
+a.compare-card:hover header h2,
+.map-rail-route-link:hover .map-rail-route strong,
+.route-dossier-peer-link:hover .route-dossier-peer-route strong {
+  color: var(--red);
+}
+
+a.homepage-ranking-card:hover::after,
+a.homepage-ranking-card:focus-visible::after,
+a.rankings-feature-card:hover::after,
+a.rankings-feature-card:focus-visible::after,
+a.rankings-dense-row:hover::after,
+a.rankings-dense-row:focus-visible::after,
+a.compare-card:hover::after,
+a.compare-card:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+a.homepage-ranking-card:focus-visible,
+a.rankings-feature-card:focus-visible,
+a.rankings-dense-row:focus-visible,
+a.compare-card:focus-visible,
+.map-rail-route-link:focus-visible,
+.route-dossier-peer-link:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: -3px;
+}
+
 .homepage-ranking-card:last-child {
   border-right: 0;
 }
@@ -2849,6 +3048,8 @@ body:has(.homepage-viewport) main {
   gap: 14px;
   padding: 8px 12px;
   background: linear-gradient(90deg, #f3f7ff 0%, #fff 18%, #fff 100%);
+  position: relative;
+  z-index: 8;
 }
 
 .homepage-compare-copy {
@@ -2877,18 +3078,19 @@ body:has(.homepage-viewport) main {
   gap: 12px;
 }
 
-.homepage-compare .compare-controls select,
+.homepage-compare .compare-field input,
 .homepage-compare .compare-controls button,
 .homepage-compare .compare-vs {
   min-height: 42px;
   height: 42px;
 }
 
-.homepage-compare .compare-controls select {
+.homepage-compare .compare-field {
+  min-width: 168px;
+}
+
+.homepage-compare .compare-field input {
   min-width: 180px;
-  padding: 0 14px;
-  border: 2px solid var(--rule);
-  background: #fff;
   font-size: 0.95rem;
 }
 
@@ -2896,6 +3098,7 @@ body:has(.homepage-viewport) main {
   padding: 0 20px;
   color: #111;
   font-size: 1rem;
+  align-self: stretch;
 }
 
 .homepage-compare .compare-controls button:disabled {
@@ -3057,14 +3260,14 @@ body:has(.homepage-viewport) main {
     font-size: 1.02rem;
   }
 
-  .homepage-compare .compare-controls select,
+  .homepage-compare .compare-field input,
   .homepage-compare .compare-controls button,
   .homepage-compare .compare-vs {
     min-height: 44px;
     height: 44px;
   }
 
-  .homepage-compare .compare-controls select {
+  .homepage-compare .compare-field input {
     min-width: 195px;
     font-size: 0.98rem;
   }
@@ -3176,14 +3379,14 @@ body:has(.homepage-viewport) main {
     font-size: 1.06rem;
   }
 
-  .homepage-compare .compare-controls select,
+  .homepage-compare .compare-field input,
   .homepage-compare .compare-controls button,
   .homepage-compare .compare-vs {
     min-height: 46px;
     height: 46px;
   }
 
-  .homepage-compare .compare-controls select {
+  .homepage-compare .compare-field input {
     min-width: 210px;
     font-size: 1rem;
   }
@@ -3861,7 +4064,7 @@ body:has(.homepage-viewport) main {
 
 .homepage-compare {
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .homepage-compare .compare-controls button,
@@ -3869,13 +4072,9 @@ body:has(.homepage-viewport) main {
   background: var(--yellow);
 }
 
-.homepage-compare .compare-controls select,
+.homepage-compare .compare-field input,
 .homepage-compare .compare-controls button {
   min-width: 0;
-}
-
-.homepage-compare .compare-controls select {
-  min-width: 168px;
 }
 
 .homepage-compare-controls {
@@ -3980,11 +4179,6 @@ body:has(.homepage-viewport) main {
   text-transform: uppercase;
 }
 
-.rankings-feature-route a:hover,
-.rankings-feature-notes a:hover {
-  color: var(--red);
-}
-
 .rankings-feature-route p,
 .rankings-dense-route p,
 .map-rail-route small,
@@ -4053,7 +4247,8 @@ body:has(.homepage-viewport) main {
   line-height: 1.28;
 }
 
-.rankings-feature-notes a {
+.rankings-feature-notes a,
+.rankings-dense-row > span:last-child {
   font-family: var(--font-display);
   font-size: 0.94rem;
   font-weight: 800;
@@ -4213,6 +4408,27 @@ body:has(.homepage-viewport) main {
 .route-dossier-peer-list b {
   font-family: var(--font-display);
   font-size: 1.16rem;
+}
+
+.map-rail-route-link,
+.route-dossier-peer-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.map-rail-route .route-badge,
+.route-dossier-peer-route .route-badge {
+  min-width: 3.15rem;
+  padding-inline: 0.52rem;
+  font-size: 1.18rem;
+  letter-spacing: -0.02em;
+}
+
+.map-rail-route .route-badge[data-label-length="2"],
+.route-dossier-peer-route .route-badge[data-label-length="2"] {
+  font-size: 1.12rem;
 }
 
 .map-rail-route .route-badge.medium,
@@ -4463,8 +4679,8 @@ body:has(.homepage-viewport) main {
   gap: 16px;
   padding: 16px 18px;
   border: 2px solid var(--rule);
-  background: linear-gradient(90deg, #f4f8ff 0%, #ffffff 38%, #fffdf6 100%);
-  overflow: hidden;
+  background: #fff;
+  overflow: visible;
 }
 
 .compare-toolbar-copy {
@@ -4499,7 +4715,8 @@ body:has(.homepage-viewport) main {
   min-width: 0;
 }
 
-.compare-page-controls select {
+.compare-page-controls .compare-field,
+.compare-page-controls input {
   min-width: 0;
   width: 100%;
 }
@@ -4546,8 +4763,10 @@ body:has(.homepage-viewport) main {
   border-top-width: 14px;
   border-top-color: var(--compare-accent, var(--blue));
   padding: 16px 18px 18px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--compare-accent, var(--blue)) 10%, #ffffff 0%) 0%, #ffffff 28%, #fbfbfb 100%);
+  background: #fff;
+  contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 360px;
 }
 
 .compare-card header h2 {
@@ -4642,6 +4861,11 @@ body:has(.homepage-viewport) main {
   background: #fff;
 }
 
+.compare-field input {
+  min-height: 42px;
+  padding-inline: 12px 16px;
+}
+
 .compare-controls button {
   padding-inline: 20px;
   color: #111;
@@ -4651,10 +4875,22 @@ body:has(.homepage-viewport) main {
   text-transform: uppercase;
 }
 
+.compare-controls button:not(:disabled) {
+  cursor: pointer;
+}
+
+.compare-controls button:disabled {
+  cursor: not-allowed;
+}
+
 .compare-vs {
-  width: 46px;
-  height: 46px;
-  font-size: 0.95rem;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  font-family: var(--font-roboto-condensed);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .compare-footnote {
@@ -4762,10 +4998,10 @@ body:has(.homepage-viewport) main {
     align-items: stretch;
   }
 
-  .homepage-compare .compare-controls select,
+  .homepage-compare .compare-field input,
   .homepage-compare .compare-controls button,
   .homepage-compare .compare-vs,
-  .compare-page-controls select,
+  .compare-page-controls .compare-field input,
   .compare-page-controls button,
   .compare-vs {
     width: 100%;

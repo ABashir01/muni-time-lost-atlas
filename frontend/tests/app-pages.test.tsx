@@ -139,6 +139,8 @@ describe("public pages", () => {
     expect(html).toContain("Published snapshot");
     expect(html).toContain("extra time per trip");
     expect(html).toContain("See full rankings");
+    expect(html).toContain("9:00-9:59 AM");
+    expect(html).toContain("/routes/14");
   });
 
   it("renders the route detail page with the published corridor language", async () => {
@@ -177,13 +179,17 @@ describe("public pages", () => {
     expect(compareHtml).toContain("Pick two to four published routes");
     expect(compareHtml).toContain("Compare uses the current published route snapshot.");
     expect(compareHtml).toContain("Median route loss");
+    expect(compareHtml).toContain("9:00-9:59 AM");
+    expect(compareHtml).toContain("/routes/14");
     expect(mapHtml).toContain("Citywide route delay map");
     expect(mapHtml).toContain("Transit-only lanes");
     expect(mapHtml).toContain("MapLibre GL JS citywide surface");
     expect(mapHtml).toContain("Highlight transit-only lanes");
     expect(rankingsHtml).toContain("Published route rankings");
     expect(rankingsHtml).toContain("current published snapshot");
-    expect(rankingsHtml).toContain("Route detail");
+    expect(rankingsHtml).toContain("Click any route row to open its route detail.");
+    expect(rankingsHtml).toContain("9:00-9:59 AM");
+    expect(rankingsHtml).toContain("/routes/14");
     expect(methodologyHtml).toContain("Typical trip: +X.X min is the public promise.");
     expect(methodologyHtml).toContain("Plain-English contract");
     expect(methodologyHtml).toContain("Waiting loss");

@@ -1,6 +1,14 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { SiteHeader } from "@/components/site-header";
+
 export default function Loading() {
+  const pathname = usePathname();
+
   return (
     <div className="page-stack">
+      {pathname === "/" ? <SiteHeader /> : null}
       <section className="section-shell">
         <p className="eyebrow">Loading live data</p>
         <h1 className="page-headline">Reading the historical/static API.</h1>
