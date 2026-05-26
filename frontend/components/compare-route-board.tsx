@@ -1,6 +1,8 @@
+import type { CSSProperties } from "react";
 import { RouteBadge } from "@/components/route-badge";
-import { MetricBreakout } from "@/components/metric-breakout";
 import { DataStatePanel } from "@/components/data-state-panel";
+import { MetricBreakout } from "@/components/metric-breakout";
+import { getRouteTheme } from "@/lib/presentation";
 import type { DataNotice, RouteSummary } from "@/lib/types";
 import { formatMinutes, formatSignedMinutes, routeDominantProblem } from "@/lib/utils";
 
@@ -21,48 +23,11 @@ export function CompareRouteBoard({
 
   return (
     <section className="compare-board">
-      <div className="compare-summary">
-        <article>
-          <span className="eyebrow">Routes selected</span>
-          <strong>{routeCount}</strong>
-        </article>
-        <article>
-          <span className="eyebrow">Current window</span>
-          <strong>{routes[0]?.window ?? "all_day"}</strong>
-        </article>
-        <article>
-          <span className="eyebrow">Median route loss</span>
-          <strong>{formatMinutes(systemMedianTypicalTripLoss)}</strong>
-        </article>
-        <article>
-          <span className="eyebrow">Worst selected route</span>
-          <strong>{leadingRoute?.route_short_name ?? "-"}</strong>
-        </article>
-      </div>
-
-      <div className="compare-topline">
-        <article className="panel-card compare-callout">
-          <p className="eyebrow">Topline read</p>
-          <h2>
-            {leadingRoute
-              ? `${leadingRoute.route_name} currently publishes the biggest typical trip loss in this compare set.`
-              : "Pick at least two routes to produce a compare readout."}
-          </h2>
-          {leadingRoute ? (
-            <p>
-              Its headline loss is {formatMinutes(leadingRoute.typical_trip_loss_minutes)} and
-              the dominant burden is {routeDominantProblem(leadingRoute)}.
-            </p>
-          ) : null}
-        </article>
-        <article className="panel-card compare-callout compare-callout-muted">
-          <p className="eyebrow">Historical/static note</p>
-          <ul className="compare-note-list">
-            {compareLimitations.map((note) => (
-              <li key={note}>{note}</li>
-            ))}
-          </ul>
-        </article>
+      <div className="compare-meta-row">
+        <span>{`${routeCount} routes selected`}</span>
+        <span>Current published snapshot</span>
+        <span>{`Median route loss: ${formatMinutes(systemMedianTypicalTripLoss)}`}</span>
+        {leadingRoute ? <span>{`Highest: ${leadingRoute.route_name}`}</span> : null}
       </div>
 
       {notices.map((notice) => (
@@ -71,7 +36,15 @@ export function CompareRouteBoard({
 
       <div className="compare-grid">
         {routes.map((route) => (
-          <article className="compare-card" key={route.route_id}>
+          <article
+            className="compare-card"
+            key={route.route_id}
+            style={
+              {
+                "--compare-accent": getRouteTheme(route.route_id).color,
+              } as CSSProperties
+            }
+          >
             <header>
               <div className="route-heading">
                 <RouteBadge routeId={route.route_id} label={route.route_short_name} />
@@ -80,14 +53,18 @@ export function CompareRouteBoard({
                   <p>{route.route_long_name}</p>
                 </div>
               </div>
-              <p>
-                Typical trip: <strong>{formatMinutes(route.typical_trip_loss_minutes)}</strong>
-              </p>
+              <div className="compare-card-headline-metric">
+                <span>Typical trip</span>
+                <div className="compare-card-headline-value">
+                  <strong>{`+${route.typical_trip_loss_minutes.toFixed(1)}`}</strong>
+                  <b>min</b>
+                </div>
+              </div>
             </header>
             <MetricBreakout route={route} />
             <div className="compare-delta-strip">
               <article>
-                <span className="eyebrow">Vs. system median</span>
+                <span className="eyebrow">Vs. median</span>
                 <strong>
                   {formatSignedMinutes(
                     route.typical_trip_loss_minutes - systemMedianTypicalTripLoss,
@@ -102,7 +79,7 @@ export function CompareRouteBoard({
             <ul className="compare-list">
               <li>
                 <div>
-                  <strong>Worst time window</strong>
+                  <strong>Worst time</strong>
                   <small>{route.worst_time_band}</small>
                 </div>
                 <b>{route.worst_time_band}</b>
@@ -132,6 +109,12 @@ export function CompareRouteBoard({
           </article>
         ))}
       </div>
+
+      {compareLimitations.length > 0 ? (
+        <p className="compare-footnote">
+          {compareLimitations[0]}
+        </p>
+      ) : null}
     </section>
   );
 }

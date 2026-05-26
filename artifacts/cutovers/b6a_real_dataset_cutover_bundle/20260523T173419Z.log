@@ -1,0 +1,3 @@
+2026-05-23T17:34:19.225533+00:00 starting real dataset cutover for historic_month=2026-04 historic_agency_id=SF
+2026-05-23T17:34:19.227170+00:00 fetching active GTFS acquisition metadata
+2026-05-23T17:34:19.698175+00:00 fetching historic RG -so acquisition metadata

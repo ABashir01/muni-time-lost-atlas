@@ -32,6 +32,11 @@ type MapFeatureCollection = {
   features: unknown[];
 };
 
+const EMPTY_LINE_FEATURES: FeatureLine[] = [];
+const EMPTY_STOP_FEATURES: StopWaitFeature[] = [];
+const EMPTY_NEIGHBORHOOD_LABELS: MapNeighborhoodLabel[] = [];
+const EMPTY_ROUTE_BADGES: MapRouteBadge[] = [];
+
 const mapStyle: StyleSpecification = {
   version: 8,
   sources: {
@@ -39,7 +44,7 @@ const mapStyle: StyleSpecification = {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       tileSize: 256,
-      tiles: ["https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"],
+      tiles: ["https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"],
       type: "raster",
     },
   },
@@ -47,7 +52,7 @@ const mapStyle: StyleSpecification = {
     {
       id: "background",
       paint: {
-        "background-color": "#e6eef2",
+        "background-color": "#dde7ee",
       },
       type: "background",
     },
@@ -55,11 +60,11 @@ const mapStyle: StyleSpecification = {
       id: "basemap",
       paint: {
         "raster-brightness-max": 1,
-        "raster-brightness-min": 0.9,
-        "raster-contrast": -0.22,
+        "raster-brightness-min": 0.84,
+        "raster-contrast": -0.08,
         "raster-fade-duration": 0,
-        "raster-opacity": 0.42,
-        "raster-saturation": -1,
+        "raster-opacity": 0.72,
+        "raster-saturation": -0.35,
       },
       source: "basemap",
       type: "raster",
@@ -122,7 +127,7 @@ type TransitMapSurfaceProps = {
 
 export function TransitMapSurface({
   ariaLabel,
-  backgroundRouteFeatures = [],
+  backgroundRouteFeatures = EMPTY_LINE_FEATURES,
   ctaHref,
   ctaLabel,
   fitMaxZoom = 15.4,
@@ -134,15 +139,15 @@ export function TransitMapSurface({
   lineMode = "default",
   legend,
   minHeight = "520px",
-  neighborhoodLabels = [],
-  overlayFeatures = [],
+  neighborhoodLabels = EMPTY_NEIGHBORHOOD_LABELS,
+  overlayFeatures = EMPTY_LINE_FEATURES,
   routeColorOverrides,
   routeColorMode = "metric",
-  routeBadges = [],
+  routeBadges = EMPTY_ROUTE_BADGES,
   routeFeatures,
-  segmentFeatures = [],
+  segmentFeatures = EMPTY_LINE_FEATURES,
   showControls = true,
-  stopFeatures = [],
+  stopFeatures = EMPTY_STOP_FEATURES,
   surfaceLabel = "MapLibre GL JS route surface",
   viewportBounds,
 }: TransitMapSurfaceProps) {

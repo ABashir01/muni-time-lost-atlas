@@ -8,6 +8,24 @@ export function formatSignedMinutes(value: number) {
   return `${value >= 0 ? "+" : "-"}${Math.abs(value).toFixed(1)} min`;
 }
 
+export function formatTimeBandLabel(value: string) {
+  const match =
+    /^(?<startHour>\d{2}):(?<startMinute>\d{2})-(?<endHour>\d{2}):(?<endMinute>\d{2})$/.exec(
+      value,
+    );
+
+  if (!match?.groups) {
+    return value;
+  }
+
+  const startHour = Number(match.groups.startHour);
+  const startMinute = match.groups.startMinute;
+  const endHour = Number(match.groups.endHour);
+  const endMinute = match.groups.endMinute;
+
+  return `${formatClockHour(startHour)}:${startMinute}-${formatClockHour(endHour)}:${endMinute} ${hourPeriod(endHour)}`;
+}
+
 export function median(values: number[]) {
   const sorted = [...values].sort((left, right) => left - right);
   const middle = Math.floor(sorted.length / 2);
@@ -49,4 +67,13 @@ export function formatTimestamp(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   });
+}
+
+function formatClockHour(value: number) {
+  const normalized = value % 12;
+  return normalized === 0 ? 12 : normalized;
+}
+
+function hourPeriod(value: number) {
+  return value >= 12 ? "PM" : "AM";
 }

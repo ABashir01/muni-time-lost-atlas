@@ -102,7 +102,8 @@ The current baseline now includes:
 - doc: [B7_realtime_bundle.md](./slices/B7_realtime_bundle.md)
 
 ### B8 Product Hardening Bundle
-- goal: polish, explain, and harden the MVP for public and portfolio use
+- goal: lock a shared editorial visual system across the homepage, rankings,
+  map, route detail, and lightly aligned compare surface
 - replaces: `S33` through `S35`
 - doc: [B8_product_hardening_bundle.md](./slices/B8_product_hardening_bundle.md)
 

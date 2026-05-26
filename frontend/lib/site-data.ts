@@ -96,6 +96,7 @@ const methodologySections: MethodologySection[] = [
 ];
 
 export type MapPageData = Awaited<ReturnType<typeof getMapPageData>>;
+export type RankingsPageData = Awaited<ReturnType<typeof getRankingsPageData>>;
 export type RouteDetailPageData = Awaited<ReturnType<typeof getRouteDetailPageData>>;
 
 type ReadyRouteDetailPageData = {
@@ -104,6 +105,7 @@ type ReadyRouteDetailPageData = {
   mapNotice?: DataNotice;
   peers: RouteSummary[];
   peersNotice?: DataNotice;
+  rankedRouteCount: number;
   routeRank: number | null;
   segmentCollection: RouteSegmentsResponse | null;
   segmentNotice?: DataNotice;
@@ -273,8 +275,8 @@ export async function getComparePageData(ids?: string | string[]) {
   return {
     availableRoutes,
     compareLimitations: [
-      "Compare accepts two to four route ids from the published all_day rankings surface.",
-      "The current historical/static bundle still exposes only the all_day window.",
+      "Compare uses the current published route snapshot.",
+      "The current release publishes one historical summary per route.",
     ],
     leadingRoute,
     notices,
@@ -285,6 +287,40 @@ export async function getComparePageData(ids?: string | string[]) {
         ? availableRoutes.map((route) => route.typical_trip_loss_minutes)
         : selectedRoutes.map((route) => route.typical_trip_loss_minutes),
     ),
+  };
+}
+
+export async function getRankingsPageData() {
+  const rankingsResult = await safeLoad(getRankings);
+  const rankings = rankingsResult.ok ? rankingsResult.data.routes : [];
+  const notices: DataNotice[] = [];
+
+  if (!rankingsResult.ok) {
+    notices.push(
+      buildErrorNotice(
+        "Published rankings are unavailable right now.",
+        "The live rankings endpoint could not be loaded.",
+        rankingsResult.error,
+      ),
+    );
+  } else if (rankings.length === 0) {
+    notices.push(
+      buildEmptyNotice(
+        "No published route rankings are available yet.",
+        "The rankings page will populate once the API returns at least one ranked route.",
+      ),
+    );
+  }
+
+  return {
+    featuredRoutes: rankings.slice(0, 3),
+    lastUpdatedAt: rankings[0]?.metric_updated_at ?? null,
+    notices,
+    rankings,
+    systemMedianTypicalTripLoss: median(
+      rankings.map((route) => route.typical_trip_loss_minutes),
+    ),
+    windowLabel: rankingsResult.ok ? rankingsResult.data.window : "all_day",
   };
 }
 
@@ -315,9 +351,14 @@ export async function getRouteDetailPageData(
 
   const summary = summaryResult.data;
   const rankedRoutes = rankingsResult.ok ? rankingsResult.data.routes : [];
-  const peers = rankedRoutes.filter((route) => route.route_id !== routeId);
   const routeRankIndex = rankedRoutes.findIndex((route) => route.route_id === routeId);
   const routeRank = routeRankIndex >= 0 ? routeRankIndex + 1 : null;
+  const peers =
+    routeRankIndex >= 0
+      ? rankedRoutes
+          .slice(Math.max(0, routeRankIndex - 2), routeRankIndex + 3)
+          .filter((route) => route.route_id !== routeId)
+      : rankedRoutes.filter((route) => route.route_id !== routeId).slice(0, 4);
   const routeMapFeatures = mapResult.ok
     ? mapResult.data.features.filter((feature) => feature.properties.route_id === routeId)
     : [];
@@ -353,7 +394,7 @@ export async function getRouteDetailPageData(
       ? peers.length === 0
         ? buildEmptyNotice(
             "No peer routes are published alongside this route yet.",
-            "Peer comparisons will appear once the rankings endpoint includes more routes.",
+            "Nearby route context will appear once the rankings endpoint includes more routes.",
           )
         : undefined
       : buildErrorNotice(
@@ -361,6 +402,7 @@ export async function getRouteDetailPageData(
           "The route detail page could not load the broader rankings context.",
           rankingsResult.error,
         ),
+    rankedRouteCount: rankedRoutes.length,
     routeRank,
     segmentCollection: segmentResult.data,
     segmentNotice: segmentResult.notice,

@@ -8,6 +8,10 @@ It exists to reduce design drift by turning the approved homepage direction into
 - `13_homepage_layout_spec.md`
 - `14_homepage_rebuild_contract.md`
 
+For the broader multi-page pass after the homepage lock, use the B8 visual
+system extension:
+- `18_b8_visual_system.md`
+
 If those documents conflict:
 1. `14_homepage_rebuild_contract.md`
 2. `13_homepage_layout_spec.md`

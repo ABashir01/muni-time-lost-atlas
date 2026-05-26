@@ -1,0 +1,16 @@
+2026-05-24T06:53:15.986134+00:00 starting real dataset cutover for historic_month=2026-04 historic_agency_id=SF
+2026-05-24T06:53:15.987832+00:00 reusing active GTFS metadata C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\operator_active\511_operator_active_SF_20260523T200155Z.json
+2026-05-24T06:53:15.989113+00:00 reusing historic RG metadata C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\regional_historic\511_regional_historic_RG_202604_with_so_20260523T200214Z.json
+2026-05-24T06:57:02.744354+00:00 prepared SF-only historic archive metadata=C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\regional_historic_sf\511_regional_historic_RG_202604_with_so_20260523T200214Z_SF_only.json reused_existing=False retained_row_counts={'routes.txt': 68, 'trips.txt': 34580, 'stop_times.txt': 1299058, 'stops.txt': 3245, 'shapes.txt': 43310, 'calendar_dates.txt': 1037400, 'stop_observations.txt': 9769249}
+2026-05-24T06:57:02.804877+00:00 loading active GTFS archive from C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\operator_active\511_operator_active_SF_20260523T200155Z.json
+2026-05-24T06:57:27.021198+00:00 loaded active GTFS snapshot archive_511_operator_active_SF_20260523T200155Z with tables={'raw.gtfs_routes': 70, 'raw.gtfs_trips': 34637, 'raw.gtfs_stops': 3246, 'raw.gtfs_stop_times': 1299589, 'raw.gtfs_shapes': 46048, 'raw.gtfs_calendar': 3, 'raw.gtfs_calendar_dates': 40}
+2026-05-24T06:57:27.022869+00:00 loading historic GTFS archive from C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\regional_historic_sf\511_regional_historic_RG_202604_with_so_20260523T200214Z_SF_only.json
+2026-05-24T06:57:53.661451+00:00 loaded historic GTFS snapshot archive_511_regional_historic_RG_202604_with_so_20260523T200214Z_SF_only with tables={'raw.gtfs_routes': 68, 'raw.gtfs_trips': 34580, 'raw.gtfs_stops': 3245, 'raw.gtfs_stop_times': 1299058, 'raw.gtfs_shapes': 43310, 'raw.gtfs_calendar': 0, 'raw.gtfs_calendar_dates': 1037400}
+2026-05-24T06:57:53.662593+00:00 loading historic stop observations from C:\Users\ahadb\Documents\New project 3\artifacts\acquisitions\511\regional_historic_sf\511_regional_historic_RG_202604_with_so_20260523T200214Z_SF_only.json
+2026-05-24T07:00:32.476363+00:00 loaded historic stop observations snapshot archive_511_regional_historic_RG_202604_with_so_20260523T200214Z_SF_only rows=9769249 skipped_missing_required=0
+2026-05-24T07:00:32.477880+00:00 loading transit lane overlay fixture
+2026-05-24T07:00:53.205377+00:00 loaded transit lane overlay rows=2
+2026-05-24T07:00:53.243549+00:00 skipping dbt run because raw snapshot labels, dbt vars, and dbt fingerprint match successful manifest C:\Users\ahadb\Documents\New project 3\artifacts\cutovers\b6a_real_dataset_cutover_bundle\20260524T021027Z.json
+2026-05-24T07:00:53.244770+00:00 querying app-facing route coverage counts
+2026-05-24T07:00:53.291887+00:00 route_count_with_metrics=68 map_route_count=68 top_route_ids=['SF:12', 'SF:LOWL', 'SF:14', 'SF:8BX', 'SF:PH', 'SF:F', 'SF:1', 'SF:8', 'SF:PM', 'SF:22']
+2026-05-24T07:00:53.295895+00:00 wrote manifests to C:\Users\ahadb\Documents\New project 3\artifacts\cutovers\b6a_real_dataset_cutover_bundle\20260524T065315Z.json and C:\Users\ahadb\Documents\New project 3\artifacts\cutovers\b6a_real_dataset_cutover_bundle\latest.json

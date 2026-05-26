@@ -13,13 +13,17 @@ export function RouteBadge({
   colorOverride?: string;
 }) {
   const theme = getRouteTheme(routeId);
+  const normalizedLabel = label.trim();
+  const badgeLength = normalizedLabel.length;
+  const badgeShapeClass = badgeLength >= 4 ? " wide" : badgeLength === 3 ? " medium" : "";
 
   return (
     <span
-      className={`route-badge${large ? " large" : ""}`}
+      className={`route-badge${large ? " large" : ""}${badgeShapeClass}`}
+      data-label-length={badgeLength}
       style={{ background: colorOverride ?? theme.color } as CSSProperties}
     >
-      {label}
+      {normalizedLabel}
     </span>
   );
 }

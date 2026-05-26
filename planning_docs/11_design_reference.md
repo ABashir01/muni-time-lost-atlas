@@ -11,6 +11,9 @@ Use together with:
 - [12_frontend_design_system.md](./12_frontend_design_system.md)
 - [13_homepage_layout_spec.md](./13_homepage_layout_spec.md)
 
+For the broader post-homepage visual-system pass, also use:
+- [17_b8_design_reference_addendum.md](./17_b8_design_reference_addendum.md)
+
 ## Primary Reference
 Use the attached mockup the user approved as the main visual reference for:
 - hierarchy

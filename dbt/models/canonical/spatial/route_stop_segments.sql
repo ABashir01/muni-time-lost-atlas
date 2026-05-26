@@ -62,6 +62,71 @@ deduplicated_pairs as (
             order by trip_id
         ) as pair_rank
     from adjacent_pairs
+),
+segment_geometry_inputs as (
+    select
+        pairs.route_id,
+        pairs.direction_id,
+        pairs.shape_id,
+        pairs.trip_id,
+        pairs.trip_headsign,
+        pairs.from_stop_sequence,
+        pairs.from_stop_id,
+        pairs.from_stop_name,
+        pairs.to_stop_id,
+        pairs.to_stop_name,
+        pairs.from_arrival_time_secs,
+        pairs.to_arrival_time_secs,
+        pairs.from_shape_dist_traveled,
+        pairs.to_shape_dist_traveled,
+        pairs.source_system,
+        pairs.feed_scope,
+        pairs.operator_id,
+        pairs.snapshot_label,
+        route_geometries.geom as route_geom,
+        route_geometries.max_shape_dist_traveled,
+        from_points.geom as from_point_geom,
+        to_points.geom as to_point_geom,
+        case
+            when route_geometries.max_shape_dist_traveled is not null
+             and route_geometries.max_shape_dist_traveled > 0
+             and pairs.from_shape_dist_traveled is not null
+             and pairs.to_shape_dist_traveled is not null
+             and pairs.to_shape_dist_traveled > pairs.from_shape_dist_traveled
+            then greatest(
+                0::double precision,
+                least(
+                    1::double precision,
+                    pairs.from_shape_dist_traveled / route_geometries.max_shape_dist_traveled
+                )
+            )
+            else null
+        end as start_fraction,
+        case
+            when route_geometries.max_shape_dist_traveled is not null
+             and route_geometries.max_shape_dist_traveled > 0
+             and pairs.from_shape_dist_traveled is not null
+             and pairs.to_shape_dist_traveled is not null
+             and pairs.to_shape_dist_traveled > pairs.from_shape_dist_traveled
+            then greatest(
+                0::double precision,
+                least(
+                    1::double precision,
+                    pairs.to_shape_dist_traveled / route_geometries.max_shape_dist_traveled
+                )
+            )
+            else null
+        end as end_fraction
+    from deduplicated_pairs as pairs
+    join {{ ref('route_geometries') }} as route_geometries
+      on route_geometries.route_id = pairs.route_id
+     and route_geometries.direction_id is not distinct from pairs.direction_id
+     and route_geometries.shape_id = pairs.shape_id
+    join {{ ref('stop_points') }} as from_points
+      on from_points.stop_id = pairs.from_stop_id
+    join {{ ref('stop_points') }} as to_points
+      on to_points.stop_id = pairs.to_stop_id
+    where pairs.pair_rank = 1
 )
 select
     pairs.route_id,
@@ -85,41 +150,18 @@ select
     pairs.from_shape_dist_traveled,
     pairs.to_shape_dist_traveled,
     case
-        when route_geometries.max_shape_dist_traveled is not null
-         and route_geometries.max_shape_dist_traveled > 0
-         and pairs.from_shape_dist_traveled is not null
-         and pairs.to_shape_dist_traveled is not null
-         and pairs.to_shape_dist_traveled > pairs.from_shape_dist_traveled
+        when pairs.start_fraction is not null
+         and pairs.end_fraction is not null
+         and pairs.end_fraction > pairs.start_fraction
         then st_linesubstring(
-            route_geometries.geom,
-            greatest(
-                0::double precision,
-                least(
-                    1::double precision,
-                    pairs.from_shape_dist_traveled / route_geometries.max_shape_dist_traveled
-                )
-            ),
-            greatest(
-                0::double precision,
-                least(
-                    1::double precision,
-                    pairs.to_shape_dist_traveled / route_geometries.max_shape_dist_traveled
-                )
-            )
+            pairs.route_geom,
+            pairs.start_fraction,
+            pairs.end_fraction
         )::geometry(LineString, 4326)
-        else st_makeline(from_points.geom, to_points.geom)::geometry(LineString, 4326)
+        else st_makeline(pairs.from_point_geom, pairs.to_point_geom)::geometry(LineString, 4326)
     end as geom,
     pairs.source_system,
     pairs.feed_scope,
     pairs.operator_id,
     pairs.snapshot_label
-from deduplicated_pairs as pairs
-join {{ ref('route_geometries') }} as route_geometries
-  on route_geometries.route_id = pairs.route_id
- and route_geometries.direction_id is not distinct from pairs.direction_id
- and route_geometries.shape_id = pairs.shape_id
-join {{ ref('stop_points') }} as from_points
-  on from_points.stop_id = pairs.from_stop_id
-join {{ ref('stop_points') }} as to_points
-  on to_points.stop_id = pairs.to_stop_id
-where pairs.pair_rank = 1
+from segment_geometry_inputs as pairs

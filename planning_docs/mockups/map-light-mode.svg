@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <style>
+    .bg { fill: #ffffff; }
+    .ink { fill: #050505; }
+    .muted { fill: #565656; }
+    .rule { stroke: #101010; stroke-width: 2; }
+    .thin { stroke: #101010; stroke-width: 1.2; }
+    .red { fill: #d81420; }
+    .yellow { fill: #fcc000; }
+    .blue { fill: #0868d0; }
+    .orange { fill: #e85c10; }
+    .eyebrow { font: 700 18px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+    .nav { font: 700 17px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; }
+    .brand { font: 700 46px 'Oswald', 'Arial Narrow', sans-serif; text-transform: uppercase; }
+    .headline { font: 700 72px 'Oswald', 'Arial Narrow', sans-serif; line-height: 0.94; text-transform: uppercase; }
+    .subhead { font: 700 32px 'Oswald', 'Arial Narrow', sans-serif; line-height: 0.98; text-transform: uppercase; }
+    .body { font: 400 20px 'Helvetica Neue', Arial, sans-serif; }
+    .small { font: 400 16px 'Helvetica Neue', Arial, sans-serif; }
+    .badgeText { font: 700 23px 'Oswald', 'Arial Narrow', sans-serif; fill: #fff; }
+  </style>
+  <rect class="bg" x="0" y="0" width="1440" height="900"/>
+  <rect class="red" x="24" y="18" width="84" height="40"/>
+  <text x="44" y="46" class="eyebrow" fill="#fff">Muni</text>
+  <text x="126" y="50" class="brand ink">Muni Lost Time Atlas</text>
+  <text x="933" y="47" class="nav ink">Explore the Map</text>
+  <text x="1108" y="47" class="nav ink">Rankings</text>
+  <text x="1216" y="47" class="nav ink">Compare</text>
+  <text x="1316" y="47" class="nav ink">Data &amp; Methods</text>
+  <line class="rule" x1="24" y1="70" x2="1416" y2="70"/>
+
+  <text x="24" y="110" class="eyebrow ink">Map view</text>
+  <text x="24" y="182" class="headline ink">The Citywide Evidence</text>
+  <text x="24" y="248" class="headline red">Surface.</text>
+  <text x="24" y="292" class="body ink">The map remains the hero, but the page frames it like a designed spread rather than a generic GIS app. Ranked context and plain-language notes sit beside it.</text>
+
+  <rect x="24" y="324" width="1000" height="542" fill="#dce9f7" stroke="#101010" stroke-width="2"/>
+  <rect x="24" y="324" width="1000" height="48" class="blue"/>
+  <text x="44" y="355" class="eyebrow" fill="#fff">Citywide route loss surface</text>
+  <text x="782" y="355" class="eyebrow" fill="#fff">Map first, story close by</text>
+
+  <path d="M190 420 L390 390 L560 470 L740 438 L940 522" fill="none" stroke="#d81420" stroke-width="9" stroke-linecap="round"/>
+  <path d="M160 520 L450 560 L670 520 L878 612" fill="none" stroke="#e85c10" stroke-width="8" stroke-linecap="round"/>
+  <path d="M246 680 L458 628 L690 702 L900 694" fill="none" stroke="#fcc000" stroke-width="8" stroke-linecap="round"/>
+  <path d="M248 438 L336 482 L444 454 L590 462 L778 430 L930 436" fill="none" stroke="#9db5d4" stroke-width="4" stroke-linecap="round"/>
+  <path d="M232 604 L374 644 L542 636 L716 604 L896 640" fill="none" stroke="#9db5d4" stroke-width="4" stroke-linecap="round"/>
+  <path d="M324 382 L324 784 M430 382 L430 784 M540 382 L540 784 M654 382 L654 784 M768 382 L768 784 M882 382 L882 784" fill="none" stroke="#f6fbff" stroke-width="2"/>
+  <path d="M116 428 L958 428 M116 518 L958 518 M116 608 L958 608 M116 698 L958 698" fill="none" stroke="#f6fbff" stroke-width="2"/>
+
+  <circle cx="390" cy="390" r="20" class="blue" stroke="#101010" stroke-width="2"/>
+  <text x="381" y="397" class="badgeText">5</text>
+  <circle cx="563" cy="470" r="22" class="red" stroke="#101010" stroke-width="2"/>
+  <text x="549" y="478" class="badgeText">14</text>
+  <circle cx="938" cy="524" r="21" class="orange" stroke="#101010" stroke-width="2"/>
+  <text x="925" y="531" class="badgeText">49</text>
+  <circle cx="688" cy="701" r="20" class="yellow" stroke="#101010" stroke-width="2"/>
+  <text x="664" y="708" class="badgeText">LOWL</text>
+
+  <rect x="1048" y="324" width="368" height="542" fill="#fff" stroke="#101010" stroke-width="2"/>
+  <rect x="1048" y="324" width="368" height="48" class="yellow"/>
+  <text x="1068" y="355" class="eyebrow ink">Read beside the map</text>
+
+  <text x="1070" y="414" class="subhead ink">Top corridors</text>
+  <line class="thin" x1="1070" y1="430" x2="1392" y2="430"/>
+  <circle cx="1090" cy="466" r="16" class="red" stroke="#101010" stroke-width="2"/>
+  <text x="1082" y="472" class="badgeText" style="font-size:18px">14</text>
+  <text x="1118" y="474" class="body ink">Mission</text>
+  <text x="1334" y="474" class="body ink">+2.3 min</text>
+  <circle cx="1090" cy="516" r="16" class="orange" stroke="#101010" stroke-width="2"/>
+  <text x="1082" y="522" class="badgeText" style="font-size:18px">49</text>
+  <text x="1118" y="524" class="body ink">Van Ness / Mission</text>
+  <text x="1328" y="524" class="body ink">+1.0 min</text>
+  <circle cx="1090" cy="566" r="16" class="yellow" stroke="#101010" stroke-width="2"/>
+  <text x="1068" y="572" class="badgeText" style="font-size:17px">LOWL</text>
+  <text x="1118" y="574" class="body ink">Lowell</text>
+  <text x="1328" y="574" class="body ink">+0.8 min</text>
+
+  <line class="thin" x1="1070" y1="610" x2="1392" y2="610"/>
+  <text x="1070" y="660" class="subhead ink">Editorial note</text>
+  <text x="1070" y="700" class="body ink">The map is evidence, not explanation. The supporting rail should hold context, ranked route clues, and legend language that prevents the page from feeling like a raw tool.</text>
+
+  <line class="thin" x1="1070" y1="736" x2="1392" y2="736"/>
+  <text x="1070" y="786" class="small ink">Reserve top-right space for a future shared date-range control, but do not show one yet.</text>
+</svg>

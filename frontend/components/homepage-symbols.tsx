@@ -80,7 +80,7 @@ export function HomepageExplainerSymbol({ icon }: { icon: ExplainerIcon }) {
     >
       <rect width="160" height="220" fill="#c7d4f4" />
       <rect
-        x="40"
+        x="34"
         y="60"
         width="76"
         height="36"
@@ -89,14 +89,14 @@ export function HomepageExplainerSymbol({ icon }: { icon: ExplainerIcon }) {
         stroke="#2467d6"
         strokeWidth="7"
       />
-      <rect x="50" y="69" width="15" height="9" rx="3" fill="#2467d6" />
-      <rect x="70" y="69" width="15" height="9" rx="3" fill="#2467d6" />
-      <rect x="90" y="69" width="15" height="9" rx="3" fill="#2467d6" />
-      <path d="M48 83H108" stroke="#2467d6" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="59" cy="96" r="6" fill="#2467d6" />
-      <circle cx="97" cy="96" r="6" fill="#2467d6" />
+      <rect x="44" y="69" width="15" height="9" rx="3" fill="#2467d6" />
+      <rect x="64" y="69" width="15" height="9" rx="3" fill="#2467d6" />
+      <rect x="84" y="69" width="15" height="9" rx="3" fill="#2467d6" />
+      <path d="M42 83H102" stroke="#2467d6" strokeWidth="5" strokeLinecap="round" />
+      <circle cx="53" cy="96" r="6" fill="#2467d6" />
+      <circle cx="91" cy="96" r="6" fill="#2467d6" />
       <rect
-        x="48"
+        x="42"
         y="96"
         width="76"
         height="36"
@@ -105,14 +105,14 @@ export function HomepageExplainerSymbol({ icon }: { icon: ExplainerIcon }) {
         stroke="#2467d6"
         strokeWidth="7"
       />
-      <rect x="58" y="105" width="15" height="9" rx="3" fill="#2467d6" />
-      <rect x="78" y="105" width="15" height="9" rx="3" fill="#2467d6" />
-      <rect x="98" y="105" width="15" height="9" rx="3" fill="#2467d6" />
-      <path d="M56 119H116" stroke="#2467d6" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="67" cy="132" r="6" fill="#2467d6" />
-      <circle cx="105" cy="132" r="6" fill="#2467d6" />
+      <rect x="52" y="105" width="15" height="9" rx="3" fill="#2467d6" />
+      <rect x="72" y="105" width="15" height="9" rx="3" fill="#2467d6" />
+      <rect x="92" y="105" width="15" height="9" rx="3" fill="#2467d6" />
+      <path d="M50 119H110" stroke="#2467d6" strokeWidth="5" strokeLinecap="round" />
+      <circle cx="61" cy="132" r="6" fill="#2467d6" />
+      <circle cx="99" cy="132" r="6" fill="#2467d6" />
       <rect
-        x="56"
+        x="50"
         y="132"
         width="76"
         height="36"
@@ -121,12 +121,12 @@ export function HomepageExplainerSymbol({ icon }: { icon: ExplainerIcon }) {
         stroke="#2467d6"
         strokeWidth="7"
       />
-      <rect x="66" y="141" width="15" height="9" rx="3" fill="#2467d6" />
-      <rect x="86" y="141" width="15" height="9" rx="3" fill="#2467d6" />
-      <rect x="106" y="141" width="15" height="9" rx="3" fill="#2467d6" />
-      <path d="M64 155H124" stroke="#2467d6" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="75" cy="168" r="6" fill="#2467d6" />
-      <circle cx="113" cy="168" r="6" fill="#2467d6" />
+      <rect x="60" y="141" width="15" height="9" rx="3" fill="#2467d6" />
+      <rect x="80" y="141" width="15" height="9" rx="3" fill="#2467d6" />
+      <rect x="100" y="141" width="15" height="9" rx="3" fill="#2467d6" />
+      <path d="M58 155H118" stroke="#2467d6" strokeWidth="5" strokeLinecap="round" />
+      <circle cx="69" cy="168" r="6" fill="#2467d6" />
+      <circle cx="107" cy="168" r="6" fill="#2467d6" />
     </svg>
   );
 }

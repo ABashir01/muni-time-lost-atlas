@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <style>
+    .bg { fill: #ffffff; }
+    .ink { fill: #050505; }
+    .muted { fill: #5d5d5d; }
+    .rule { stroke: #101010; stroke-width: 2; }
+    .red { fill: #d81420; }
+    .yellow { fill: #fcc000; }
+    .eyebrow { font: 700 18px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+    .label { font: 700 16px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+    .headlineA { font: 700 70px 'Oswald', 'Arial Narrow', sans-serif; text-transform: uppercase; }
+    .headlineB { font: 700 58px Helvetica, Arial, sans-serif; text-transform: uppercase; letter-spacing: -0.01em; }
+    .body { font: 400 19px 'Helvetica Neue', Arial, sans-serif; }
+    .rankA { font: 700 58px 'Oswald', 'Arial Narrow', sans-serif; }
+    .rankB { font: 700 48px Helvetica, Arial, sans-serif; }
+    .badgeA { font: 700 24px 'Oswald', 'Arial Narrow', sans-serif; fill: #fff; }
+    .badgeB { font: 700 20px Helvetica, Arial, sans-serif; fill: #fff; }
+  </style>
+  <rect class="bg" x="0" y="0" width="1440" height="900"/>
+  <text x="24" y="56" class="eyebrow ink">Typography comparison board</text>
+  <line class="rule" x1="24" y1="78" x2="1416" y2="78"/>
+
+  <rect x="24" y="110" width="672" height="750" fill="#fff" stroke="#101010" stroke-width="2"/>
+  <rect x="744" y="110" width="672" height="750" fill="#fff" stroke="#101010" stroke-width="2"/>
+
+  <rect x="24" y="110" width="672" height="44" class="yellow"/>
+  <rect x="744" y="110" width="672" height="44" class="yellow"/>
+  <text x="48" y="139" class="label ink">Current condensed editorial system</text>
+  <text x="768" y="139" class="label ink">Helvetica-led transit-signage variant</text>
+
+  <text x="48" y="232" class="headlineA ink">Where Riders</text>
+  <text x="48" y="298" class="headlineA red">Lose Time</text>
+  <text x="48" y="336" class="body ink">Stronger newspaper-front-page energy. Better at route-card drama. Feels closest to the accepted homepage.</text>
+
+  <circle cx="98" cy="420" r="22" class="red" stroke="#101010" stroke-width="2"/>
+  <text x="85" y="428" class="badgeA">14</text>
+  <text x="138" y="428" class="rankA ink">Mission</text>
+  <text x="138" y="494" class="rankA red" style="font-size:72px">+2.3 min</text>
+  <text x="138" y="526" class="body muted">better punch and hierarchy for rankings</text>
+
+  <text x="48" y="650" class="label ink">Recommendation</text>
+  <text x="48" y="694" class="body ink">Keep this as the B8 default. It carries the transit-poster and editorial tone that makes the homepage work.</text>
+
+  <text x="768" y="226" class="headlineB ink">Where Riders</text>
+  <text x="768" y="286" class="headlineB red">Lose Time</text>
+  <text x="768" y="336" class="body ink">Cleaner transit-agency association, but it softens the poster-like aggression and makes the page feel more institutional than editorial.</text>
+
+  <circle cx="818" cy="420" r="22" class="red" stroke="#101010" stroke-width="2"/>
+  <text x="807" y="428" class="badgeB">14</text>
+  <text x="858" y="426" class="rankB ink">Mission</text>
+  <text x="858" y="490" class="rankB red" style="font-size:62px">+2.3 min</text>
+  <text x="858" y="524" class="body muted">credible, but less dramatic and less homepage-like</text>
+
+  <text x="768" y="650" class="label ink">Decision</text>
+  <text x="768" y="694" class="body ink">Considered but not chosen for B8 by default. Reserve for future review only if the implementation loses the transit association entirely.</text>
+</svg>

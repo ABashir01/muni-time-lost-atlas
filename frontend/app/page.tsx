@@ -52,8 +52,8 @@ export default async function HomePage({
         </Link>
         <nav aria-label="Homepage" className="homepage-nav">
           <Link href="/map">Explore the Map</Link>
-          <Link href="/#rankings">Rankings</Link>
-          <Link href="/#compare">Compare</Link>
+          <Link href="/rankings">Rankings</Link>
+          <Link href="/compare">Compare</Link>
           <Link href="/methodology">Data &amp; Methods</Link>
         </nav>
       </header>
@@ -75,19 +75,18 @@ export default async function HomePage({
                 <HomepageTransitSymbol />
               </div>
               <p>
-                Historical route-delay evidence across San Francisco, wired to the
-                published static API surface.
+                Historical route-delay evidence across San Francisco.
               </p>
             </div>
           </div>
 
           <div className="homepage-story-controls">
-            <p>Historical/static API snapshot</p>
+            <p>Published snapshot</p>
           </div>
 
           <div className="homepage-story-banner">
             <span>Worst Published Routes</span>
-            <Link href="/map">See full rankings</Link>
+            <Link href="/rankings">See full rankings</Link>
           </div>
         </div>
 
@@ -96,8 +95,8 @@ export default async function HomePage({
             <p>Homepage map key</p>
             <h3>Worst routes highlighted</h3>
             <span>
-              Colored lines show the three homepage-ranked worst routes. Gray lines keep
-              the rest of the network in view. Open the full map for every corridor.
+              Colored lines show the three highest-loss routes on the homepage. Gray lines
+              keep the rest of the network in view.
             </span>
           </div>
           <TransitMapSurface
@@ -248,17 +247,11 @@ export default async function HomePage({
         </div>
 
         <CompareSelector
+          className="homepage-compare-controls"
           placeholderLabel="Select a route..."
           routes={data.rankings}
           selectedIds={[]}
         />
-
-        <div aria-hidden="true" className="homepage-compare-motif">
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
       </section>
     </div>
   );

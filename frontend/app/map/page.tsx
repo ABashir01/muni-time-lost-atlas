@@ -7,14 +7,13 @@ export default async function MapPage() {
   const data = await getMapPageData();
 
   return (
-    <div className="page-stack">
-      <section className="section-shell map-page-hero">
-        <div>
+    <div className="page-stack editorial-page map-page">
+      <section className="map-page-intro">
+        <div className="map-page-intro-copy">
           <p className="eyebrow">Map view</p>
-          <h1 className="page-headline">The citywide evidence surface.</h1>
-          <p className="page-dek">
-            Corridors are colored by typical trip loss so the map supports the
-            headline instead of replacing it.
+          <h1>Citywide route delay map</h1>
+          <p>
+            Published routes colored by typical extra time per trip.
           </p>
         </div>
       </section>

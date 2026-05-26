@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <style>
+    .bg { fill: #ffffff; }
+    .ink { fill: #050505; }
+    .muted { fill: #565656; }
+    .rule { stroke: #101010; stroke-width: 2; }
+    .thin { stroke: #101010; stroke-width: 1.2; }
+    .red { fill: #d81420; }
+    .yellow { fill: #fcc000; }
+    .blue { fill: #0868d0; }
+    .orange { fill: #e85c10; }
+    .eyebrow { font: 700 18px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+    .nav { font: 700 17px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; }
+    .brand { font: 700 46px 'Oswald', 'Arial Narrow', sans-serif; letter-spacing: 0.01em; text-transform: uppercase; }
+    .headline { font: 700 78px 'Oswald', 'Arial Narrow', sans-serif; line-height: 0.94; text-transform: uppercase; }
+    .subhead { font: 700 34px 'Oswald', 'Arial Narrow', sans-serif; line-height: 0.98; text-transform: uppercase; }
+    .body { font: 400 20px 'Helvetica Neue', Arial, sans-serif; }
+    .small { font: 400 16px 'Helvetica Neue', Arial, sans-serif; }
+    .num { font: 700 86px 'Oswald', 'Arial Narrow', sans-serif; }
+    .rank { font: 700 60px 'Oswald', 'Arial Narrow', sans-serif; }
+    .badgeText { font: 700 28px 'Oswald', 'Arial Narrow', sans-serif; fill: #fff; }
+  </style>
+  <rect class="bg" x="0" y="0" width="1440" height="900"/>
+  <rect class="red" x="24" y="18" width="84" height="40"/>
+  <text x="44" y="46" class="eyebrow" fill="#fff">Muni</text>
+  <text x="126" y="50" class="brand ink">Muni Lost Time Atlas</text>
+  <text x="933" y="47" class="nav ink">Explore the Map</text>
+  <text x="1108" y="47" class="nav ink">Rankings</text>
+  <text x="1216" y="47" class="nav ink">Compare</text>
+  <text x="1316" y="47" class="nav ink">Data &amp; Methods</text>
+  <line class="rule" x1="24" y1="70" x2="1416" y2="70"/>
+
+  <text x="24" y="110" class="eyebrow ink">Full rankings</text>
+  <text x="24" y="188" class="headline ink">Every Published Route.</text>
+  <text x="24" y="260" class="headline red">One Page. One Order.</text>
+  <text x="24" y="304" class="body ink">The homepage triptych expands into a full edition page: featured leaders first, then the rest of the published route set in a denser ranked field.</text>
+
+  <rect x="24" y="332" width="948" height="534" fill="#fff" stroke="#101010" stroke-width="2"/>
+  <rect x="24" y="332" width="948" height="48" class="red"/>
+  <text x="44" y="363" class="eyebrow" fill="#fff">Published route rankings</text>
+  <text x="784" y="363" class="eyebrow" fill="#fff">Current rolling historical window</text>
+
+  <g transform="translate(24 380)">
+    <rect x="0" y="0" width="948" height="166" fill="#fff"/>
+    <line class="thin" x1="0" y1="0" x2="948" y2="0"/>
+    <line class="thin" x1="88" y1="0" x2="88" y2="166"/>
+    <circle cx="146" cy="44" r="24" class="red" stroke="#101010" stroke-width="2"/>
+    <text x="132" y="52" class="badgeText">14</text>
+    <text x="24" y="62" class="rank ink">1</text>
+    <text x="188" y="56" class="subhead ink">Mission</text>
+    <text x="188" y="122" class="num red">+2.3 min</text>
+    <text x="188" y="147" class="small muted">extra time per trip</text>
+    <line class="thin" x1="188" y1="156" x2="926" y2="156"/>
+    <text x="678" y="62" class="eyebrow ink">Worst on</text>
+    <text x="678" y="90" class="body ink">09:00-09:59</text>
+    <text x="678" y="128" class="eyebrow ink">Most loss</text>
+    <text x="678" y="154" class="small ink">16th St Mission -> 24th St Mission</text>
+  </g>
+
+  <g transform="translate(24 546)">
+    <rect x="0" y="0" width="948" height="118" fill="#fff"/>
+    <line class="thin" x1="0" y1="0" x2="948" y2="0"/>
+    <line class="thin" x1="68" y1="0" x2="68" y2="118"/>
+    <text x="20" y="60" class="rank ink">2</text>
+    <circle cx="122" cy="33" r="18" class="orange" stroke="#101010" stroke-width="2"/>
+    <text x="110" y="40" class="badgeText" style="font-size:22px">49</text>
+    <text x="152" y="40" class="subhead ink">Van Ness / Mission</text>
+    <text x="152" y="92" class="num orange" style="font-size:66px">+1.0 min</text>
+    <text x="692" y="40" class="small ink">ranked list continues in one horizontal reading rhythm</text>
+  </g>
+
+  <g transform="translate(24 664)">
+    <rect x="0" y="0" width="948" height="202" fill="#fff"/>
+    <line class="thin" x1="0" y1="0" x2="948" y2="0"/>
+    <line class="thin" x1="88" y1="0" x2="88" y2="202"/>
+    <text x="20" y="60" class="rank ink">3</text>
+    <circle cx="146" cy="39" r="20" class="yellow" stroke="#101010" stroke-width="2"/>
+    <text x="119" y="46" class="badgeText" style="font-size:23px">LOWL</text>
+    <text x="188" y="44" class="subhead ink">Lowell</text>
+    <text x="188" y="102" class="num ink" style="fill:#111;font-size:60px">+0.8 min</text>
+    <text x="188" y="126" class="small muted">badge fit stays intact even for wide route labels</text>
+    <line class="thin" x1="188" y1="142" x2="926" y2="142"/>
+    <text x="188" y="170" class="small ink">featured triptych above, dense ranking field below, no dashboard table treatment</text>
+  </g>
+
+  <rect x="996" y="332" width="420" height="534" fill="#fff" stroke="#101010" stroke-width="2"/>
+  <rect x="996" y="332" width="420" height="48" class="yellow"/>
+  <text x="1016" y="363" class="eyebrow ink">How to read the page</text>
+
+  <text x="1018" y="424" class="subhead ink">Featured first.</text>
+  <text x="1018" y="462" class="body ink">The top band keeps the homepage's poster-card energy. The lower list compresses into denser rows without turning into a plain table.</text>
+  <line class="thin" x1="1018" y1="492" x2="1394" y2="492"/>
+
+  <text x="1018" y="546" class="subhead ink">Reserve for later.</text>
+  <text x="1018" y="584" class="body ink">The intro band and route-title block leave room for a future shared date-range control and direction subtitle without changing the page's core layout.</text>
+  <line class="thin" x1="1018" y1="614" x2="1394" y2="614"/>
+
+  <text x="1018" y="668" class="subhead ink">Shared language.</text>
+  <text x="1018" y="706" class="body ink">Same masthead. Same red/yellow/blue system. Same black rules. Same editorial voice. Rankings should feel like the homepage continued, not a separate app.</text>
+</svg>

@@ -3,6 +3,7 @@ import path from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import ComparePage from "@/app/compare/page";
 import HomePage from "@/app/page";
+import RankingsPage from "@/app/rankings/page";
 import RouteDetailPage from "@/app/routes/[routeId]/page";
 import MapPage from "@/app/map/page";
 import MethodologyPage from "@/app/methodology/page";
@@ -133,10 +134,11 @@ describe("public pages", () => {
     expect(html).toContain("Riders Lose");
     expect(html).toContain("Most Time");
     expect(html).toContain("Worst routes highlighted");
-    expect(html).toContain("three homepage-ranked worst routes");
+    expect(html).toContain("three highest-loss routes on the homepage");
     expect(html).toContain("MapLibre GL JS route surface");
-    expect(html).toContain("Historical/static API snapshot");
+    expect(html).toContain("Published snapshot");
     expect(html).toContain("extra time per trip");
+    expect(html).toContain("See full rankings");
   });
 
   it("renders the route detail page with the published corridor language", async () => {
@@ -144,9 +146,13 @@ describe("public pages", () => {
     const html = renderToStaticMarkup(page);
 
     expect(html).toContain("Route detail");
+    expect(html).toContain(
+      "Published route summary, corridor map, stop hotspot, and nearby ranks.",
+    );
     expect(html).toContain("16th St Mission -&gt; 24th St Mission");
-    expect(html).toContain("Worst published stop wait");
-    expect(html).toContain("Worst time window");
+    expect(html).toContain("Where does the wait pile up?");
+    expect(html).toContain("When is it worst?");
+    expect(html).toContain("Vs. system median");
     expect(html).toContain("MapLibre");
   });
 
@@ -164,15 +170,20 @@ describe("public pages", () => {
     });
     const compareHtml = renderToStaticMarkup(comparePage);
     const mapHtml = renderToStaticMarkup(await MapPage());
+    const rankingsHtml = renderToStaticMarkup(await RankingsPage());
     const methodologyHtml = renderToStaticMarkup(<MethodologyPage />);
 
-    expect(compareHtml).toContain("Put the routes next to each other.");
-    expect(compareHtml).toContain("Compare accepts two to four route ids");
-    expect(compareHtml).toContain("Worst selected route");
-    expect(mapHtml).toContain("The citywide evidence surface.");
-    expect(mapHtml).toContain("Highest published loss");
+    expect(compareHtml).toContain("Compare routes or corridors.");
+    expect(compareHtml).toContain("Pick two to four published routes");
+    expect(compareHtml).toContain("Compare uses the current published route snapshot.");
+    expect(compareHtml).toContain("Median route loss");
+    expect(mapHtml).toContain("Citywide route delay map");
+    expect(mapHtml).toContain("Transit-only lanes");
     expect(mapHtml).toContain("MapLibre GL JS citywide surface");
-    expect(mapHtml).toContain("Transit-only lane overlay");
+    expect(mapHtml).toContain("Highlight transit-only lanes");
+    expect(rankingsHtml).toContain("Published route rankings");
+    expect(rankingsHtml).toContain("current published snapshot");
+    expect(rankingsHtml).toContain("Route detail");
     expect(methodologyHtml).toContain("Typical trip: +X.X min is the public promise.");
     expect(methodologyHtml).toContain("Plain-English contract");
     expect(methodologyHtml).toContain("Waiting loss");

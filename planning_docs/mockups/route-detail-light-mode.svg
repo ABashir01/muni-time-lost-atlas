@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <style>
+    .bg { fill: #ffffff; }
+    .ink { fill: #050505; }
+    .muted { fill: #575757; }
+    .rule { stroke: #101010; stroke-width: 2; }
+    .thin { stroke: #101010; stroke-width: 1.2; }
+    .red { fill: #d81420; }
+    .yellow { fill: #fcc000; }
+    .blue { fill: #0868d0; }
+    .orange { fill: #e85c10; }
+    .eyebrow { font: 700 18px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+    .nav { font: 700 17px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; }
+    .brand { font: 700 46px 'Oswald', 'Arial Narrow', sans-serif; text-transform: uppercase; }
+    .headline { font: 700 64px 'Oswald', 'Arial Narrow', sans-serif; line-height: 0.94; text-transform: uppercase; }
+    .subhead { font: 700 30px 'Oswald', 'Arial Narrow', sans-serif; text-transform: uppercase; }
+    .body { font: 400 20px 'Helvetica Neue', Arial, sans-serif; }
+    .small { font: 400 16px 'Helvetica Neue', Arial, sans-serif; }
+    .num { font: 700 50px 'Oswald', 'Arial Narrow', sans-serif; }
+    .badgeText { font: 700 30px 'Oswald', 'Arial Narrow', sans-serif; fill: #fff; }
+  </style>
+  <rect class="bg" x="0" y="0" width="1440" height="900"/>
+  <rect class="red" x="24" y="18" width="84" height="40"/>
+  <text x="44" y="46" class="eyebrow" fill="#fff">Muni</text>
+  <text x="126" y="50" class="brand ink">Muni Lost Time Atlas</text>
+  <text x="933" y="47" class="nav ink">Explore the Map</text>
+  <text x="1108" y="47" class="nav ink">Rankings</text>
+  <text x="1216" y="47" class="nav ink">Compare</text>
+  <text x="1316" y="47" class="nav ink">Data &amp; Methods</text>
+  <line class="rule" x1="24" y1="70" x2="1416" y2="70"/>
+
+  <rect x="24" y="90" width="1392" height="192" fill="#fff" stroke="#101010" stroke-width="2"/>
+  <circle cx="104" cy="170" r="42" class="red" stroke="#101010" stroke-width="2"/>
+  <text x="79" y="181" class="badgeText" style="font-size:34px">14</text>
+  <text x="168" y="132" class="eyebrow ink">Route detail</text>
+  <text x="168" y="202" class="headline ink">Mission</text>
+  <text x="168" y="244" class="body muted">A route dossier: one strong identity band, then corridor evidence, stop burden, timing, and peer context in a designed spread.</text>
+
+  <line class="thin" x1="760" y1="106" x2="760" y2="264"/>
+  <text x="798" y="130" class="eyebrow ink">Typical trip</text>
+  <text x="798" y="192" class="num red">+2.3 min</text>
+  <text x="798" y="224" class="small muted">full one-way trip</text>
+
+  <text x="1000" y="130" class="eyebrow ink">Waiting loss</text>
+  <text x="1000" y="192" class="num ink">+0.8</text>
+  <text x="1000" y="224" class="small muted">35% of burden</text>
+
+  <text x="1178" y="130" class="eyebrow ink">Slow travel</text>
+  <text x="1178" y="192" class="num ink">+1.5</text>
+  <text x="1178" y="224" class="small muted">65% of burden</text>
+
+  <rect x="24" y="304" width="852" height="562" fill="#fff" stroke="#101010" stroke-width="2"/>
+  <rect x="24" y="304" width="852" height="44" class="blue"/>
+  <text x="46" y="333" class="eyebrow" fill="#fff">Corridor evidence</text>
+  <rect x="48" y="372" width="804" height="330" fill="#dfe9f4" stroke="#101010" stroke-width="1.2"/>
+  <path d="M120 646 L250 590 L390 628 L530 512 L704 548 L806 462" fill="none" stroke="#d81420" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="530" cy="512" r="20" class="red" stroke="#101010" stroke-width="2"/>
+  <text x="516" y="519" class="badgeText" style="font-size:22px">14</text>
+  <line class="thin" x1="48" y1="722" x2="852" y2="722"/>
+  <text x="52" y="754" class="eyebrow ink">Worst segment</text>
+  <text x="52" y="792" class="subhead ink">16th St Mission -> 24th St Mission</text>
+  <text x="602" y="792" class="num red" style="font-size:42px">+1.5 min</text>
+  <text x="52" y="826" class="small muted">Map, segment list, and supporting note should read as one designed evidence panel rather than stacked utilities.</text>
+
+  <rect x="896" y="304" width="520" height="270" fill="#fff" stroke="#101010" stroke-width="2"/>
+  <rect x="896" y="304" width="520" height="44" class="yellow"/>
+  <text x="918" y="333" class="eyebrow ink">Where does the wait pile up?</text>
+  <text x="920" y="404" class="subhead ink">30th St Mission</text>
+  <text x="920" y="446" class="body ink">Waiting-loss hotspot cards should feel like matching editorial sidebars, not detached tiles.</text>
+  <line class="thin" x1="920" y1="480" x2="1394" y2="480"/>
+  <text x="920" y="520" class="small ink">Direction label and future date-range state must have a clean home nearby later without reshaping the entire page.</text>
+
+  <rect x="896" y="596" width="250" height="270" fill="#fff" stroke="#101010" stroke-width="2"/>
+  <rect x="1166" y="596" width="250" height="270" fill="#fff" stroke="#101010" stroke-width="2"/>
+  <text x="918" y="636" class="eyebrow ink">When does it break?</text>
+  <text x="918" y="696" class="subhead ink">09:00-09:59</text>
+  <text x="918" y="738" class="small muted">timing band</text>
+  <text x="1188" y="636" class="eyebrow ink">Peer context</text>
+  <text x="1188" y="696" class="subhead ink">#3 in system</text>
+  <text x="1188" y="738" class="small muted">route median comparison</text>
+</svg>

@@ -9,11 +9,15 @@ export function CompareSelector({
   selectedIds,
   slotCount = 2,
   placeholderLabel,
+  optionalPlaceholderLabel,
+  className,
 }: {
   routes: RouteSummary[];
   selectedIds: string[];
   slotCount?: number;
   placeholderLabel?: string;
+  optionalPlaceholderLabel?: string;
+  className?: string;
 }) {
   const router = useRouter();
   const routeOptions = useMemo(
@@ -34,7 +38,7 @@ export function CompareSelector({
     selections.some((selectedId, index) => index !== currentIndex && selectedId === routeId);
 
   return (
-    <div className="compare-controls">
+    <div className={className ? `compare-controls ${className}` : "compare-controls"}>
       {selections.map((selection, index) => (
         <div className="compare-slot" key={`compare-slot-${index}`}>
           <select
@@ -50,7 +54,7 @@ export function CompareSelector({
           >
             {placeholderLabel ? (
               <option value="">
-                {index < 2 ? placeholderLabel : "Optional route"}
+                {index < 2 ? placeholderLabel : optionalPlaceholderLabel ?? "Optional route"}
               </option>
             ) : null}
             {routeOptions.map((route) => (

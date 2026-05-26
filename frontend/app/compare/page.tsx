@@ -16,20 +16,17 @@ export default async function ComparePage({
   const data = await getComparePageData(resolvedSearchParams?.ids);
 
   return (
-    <div className="page-stack">
-      <section className="section-shell compare-hero">
-        <div>
-          <p className="eyebrow">Compare routes</p>
-          <h1 className="page-headline">Put the routes next to each other.</h1>
-          <p className="page-dek">
-            Which route loses more time, whether it is mostly waiting or travel,
-            and which published window or segment stands out. The live compare
-            surface accepts up to four route slots and reads directly from the
-            historical/static API contract.
-          </p>
+    <div className="page-stack editorial-page compare-page">
+      <section className="compare-toolbar-shell">
+        <div className="compare-toolbar-copy">
+          <h1 className="sr-only">Compare routes or corridors</h1>
+          <p className="compare-toolbar-label">Compare routes or corridors.</p>
+          <p>Pick two to four published routes to compare trip loss, waiting, and slow travel.</p>
         </div>
         <CompareSelector
-          placeholderLabel="Select a route..."
+          className="compare-page-controls"
+          optionalPlaceholderLabel="Add route"
+          placeholderLabel="Route"
           routes={data.availableRoutes}
           selectedIds={data.selectedIds}
           slotCount={4}
