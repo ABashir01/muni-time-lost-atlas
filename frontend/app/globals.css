@@ -2365,14 +2365,20 @@ body:has(.homepage-viewport) main {
 }
 
 .homepage-masthead {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   min-height: 66px;
   align-items: center;
-  justify-content: space-between;
   gap: 1.5rem;
   padding: 0 12px 0 0;
   border-bottom: 2px solid var(--rule);
   background: #fff;
+}
+
+.homepage-masthead-top {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
 }
 
 .homepage-brand {
@@ -2380,6 +2386,7 @@ body:has(.homepage-viewport) main {
   align-items: center;
   min-width: 0;
   gap: 1.2rem;
+  flex: 1 1 auto;
 }
 
 .homepage-brand-mark {
@@ -2428,6 +2435,10 @@ body:has(.homepage-viewport) main {
   justify-content: flex-end;
   flex-wrap: nowrap;
   gap: clamp(0.9rem, 1.8vw, 2rem);
+}
+
+.homepage-menu-toggle {
+  display: none;
 }
 
 .homepage-nav a {
@@ -3716,6 +3727,9 @@ a.compare-card:focus-visible,
   }
 
   .homepage-ranking-card {
+    grid-template-rows: auto auto auto 1px;
+    gap: 6px;
+    padding: 12px 12px 10px;
     border-right: 0;
     border-bottom: 1.5px solid rgba(0, 0, 0, 0.8);
   }
@@ -5122,6 +5136,234 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
     --shell-gutter: 14px;
   }
 
+  .homepage-viewport {
+    grid-template-rows: auto auto auto auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .homepage-masthead {
+    gap: 0;
+    padding-right: 0;
+  }
+
+  .homepage-masthead-top {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+    min-height: 66px;
+  }
+
+  .homepage-brand {
+    width: auto;
+    min-width: 0;
+    gap: 0.52rem;
+  }
+
+  .homepage-brand-mark {
+    width: 52px;
+    min-height: 66px;
+    font-size: 0.98rem;
+  }
+
+  .homepage-brand-copy {
+    align-self: center;
+    padding: 0 8px 0 0;
+    font-size: clamp(1.08rem, 5.1vw, 1.36rem);
+    line-height: 0.92;
+    white-space: nowrap;
+  }
+
+  .homepage-menu-toggle {
+    display: inline-grid;
+    place-content: center;
+    align-self: stretch;
+    width: 54px;
+    padding: 0;
+    border: 0;
+    border-left: 2px solid var(--rule);
+    background: #fff;
+    cursor: pointer;
+    gap: 5px;
+  }
+
+  .homepage-menu-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #111;
+    transition:
+      transform 140ms ease,
+      opacity 140ms ease;
+  }
+
+  .homepage-menu-toggle.is-open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .homepage-menu-toggle.is-open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .homepage-menu-toggle.is-open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .homepage-nav {
+    display: none;
+    width: 100%;
+    gap: 0;
+    padding: 0;
+    border-top: 2px solid var(--rule);
+    background: #fff;
+  }
+
+  .homepage-nav.is-open {
+    display: grid;
+  }
+
+  .homepage-nav a {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    font-size: 0.9rem;
+    text-align: left;
+  }
+
+  .homepage-nav a:first-child {
+    border-top: 0;
+  }
+
+  .homepage-nav a.is-active::after {
+    right: 14px;
+    bottom: 8px;
+    left: 14px;
+  }
+
+  .homepage-story-banner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 12px;
+  }
+
+  .homepage-story-banner span {
+    min-width: 0;
+    font-size: 0.76rem;
+  }
+
+  .homepage-story-banner a {
+    display: inline-flex;
+    align-items: center;
+    justify-self: end;
+    padding-right: 2px;
+    font-size: 0.72rem;
+  }
+
+  .homepage-story-banner a::after {
+    margin-left: 0.32rem;
+  }
+
+  .homepage-story-copy {
+    gap: 28px;
+    padding-bottom: 18px;
+  }
+
+  .homepage-headline {
+    font-size: clamp(3.22rem, 15.9vw, 4.9rem);
+  }
+
+  .homepage-headline-emphasis {
+    gap: 0.16ch;
+  }
+
+  .homepage-subhead {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 12px;
+    padding-top: 18px;
+  }
+
+  .homepage-subhead-icon,
+  .homepage-subhead-icon svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .homepage-map-panel {
+    display: grid;
+    grid-template-rows: auto auto;
+    overflow: hidden;
+  }
+
+  .homepage-map-explainer {
+    position: static;
+    width: auto;
+    margin: 14px;
+    padding: 12px 14px 13px;
+  }
+
+  .homepage-map-explainer h3 {
+    font-size: clamp(1.18rem, 6.7vw, 1.42rem);
+    line-height: 0.96;
+  }
+
+  .homepage-map-explainer span {
+    font-size: 0.74rem;
+    line-height: 1.28;
+  }
+
+  .homepage-map-panel .schematic svg,
+  .homepage-map-panel .schematic,
+  .homepage-map-panel .map-surface,
+  .homepage-map-panel .map-canvas {
+    height: clamp(250px, 66vw, 310px);
+    min-height: 0;
+  }
+
+  .homepage-explainer {
+    padding: 14px 14px 0;
+  }
+
+  .homepage-explainer-head h2 {
+    font-size: clamp(1.7rem, 10vw, 2.2rem);
+  }
+
+  .homepage-explainer-item {
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .homepage-explainer-symbol {
+    min-height: 62px;
+  }
+
+  .homepage-explainer-copy p {
+    font-size: 0.88rem;
+  }
+
+  .compare-entry-band {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .compare-entry-band-copy {
+    gap: 6px;
+  }
+
+  .compare-entry-band-copy h2 {
+    font-size: clamp(1.45rem, 8vw, 2rem);
+  }
+
+  .compare-entry-band-copy p {
+    font-size: 0.94rem;
+    line-height: 1.32;
+  }
+
   .site-header {
     align-items: flex-start;
     flex-direction: column;
@@ -5146,6 +5388,11 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
     font-size: clamp(2.9rem, 15vw, 4.4rem);
   }
 
+  .rankings-page-intro,
+  .map-page-intro {
+    gap: 10px;
+  }
+
   .rankings-feature-card,
   .rankings-dense-row,
   .route-dossier-definition-list,
@@ -5162,9 +5409,121 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
     padding-bottom: 0;
   }
 
+  .rankings-feature-main {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .rankings-feature-route h2 {
+    font-size: clamp(1.75rem, 10vw, 2.35rem);
+  }
+
+  .rankings-feature-metric,
+  .rankings-dense-metric {
+    justify-items: start;
+  }
+
+  .rankings-feature-metric strong {
+    font-size: clamp(2.4rem, 13vw, 3.2rem);
+  }
+
+  .rankings-feature-notes {
+    gap: 0.7rem;
+  }
+
+  .rankings-dense-row {
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .rankings-dense-rank {
+    font-size: 2.2rem;
+  }
+
   .route-dossier-identity {
     align-items: flex-start;
     flex-direction: column;
+    padding: 16px 18px;
+  }
+
+  .route-dossier-scoreboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .route-dossier-scoreboard article {
+    padding: 14px 12px;
+  }
+
+  .route-dossier-scoreboard strong {
+    font-size: 2.1rem;
+  }
+
+  .route-dossier-map-card .map-surface,
+  .route-dossier-map-card .map-canvas {
+    min-height: 320px;
+  }
+
+  .route-dossier-map-footer {
+    padding: 14px;
+  }
+
+  .route-dossier-segment-list {
+    padding: 0 14px 14px;
+  }
+
+  .route-dossier-segment-list li {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .route-dossier-segment-list b {
+    font-size: 1.04rem;
+  }
+
+  .route-dossier-sidebar {
+    gap: 12px;
+  }
+
+  .map-edition-canvas {
+    min-height: 0;
+  }
+
+  .map-edition-canvas .map-surface,
+  .map-edition-canvas .map-canvas {
+    min-height: 360px;
+  }
+
+  .map-edition-canvas .map-legend {
+    width: auto;
+    margin: 12px;
+  }
+
+  .map-edition-canvas .map-ui-controls {
+    margin: 0 12px 12px;
+  }
+
+  .map-edition-rail {
+    gap: 12px;
+  }
+
+  .map-rail-route-list li,
+  .map-rail-route-link {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 8px;
+  }
+
+  .map-rail-route-list b {
+    justify-self: start;
+  }
+
+  .compare-page-band {
+    padding: 12px 14px;
+  }
+
+  .compare-page-band .compare-slot-primary,
+  .compare-page-band .compare-slot-optional {
+    flex: 1 1 auto;
   }
 
   .homepage-compare .compare-controls,
@@ -5181,6 +5540,7 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
   .compare-selection-group {
     flex-direction: column;
+    gap: 10px;
   }
 
   .compare-slot {
@@ -5194,5 +5554,225 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   .compare-page-band button,
   .compare-vs {
     width: 100%;
+  }
+
+  .compare-vs {
+    flex: 0 0 auto;
+    height: 42px;
+    min-height: 42px;
+  }
+
+  .compare-meta-row {
+    gap: 0.35rem 0.8rem;
+    font-size: 0.72rem;
+  }
+
+  .compare-card {
+    padding: 14px 14px 16px;
+    contain: none;
+    content-visibility: visible;
+  }
+
+  .compare-card header h2 {
+    font-size: clamp(1.75rem, 10vw, 2.3rem);
+  }
+
+  .compare-card-headline-metric strong {
+    font-size: 2rem;
+  }
+
+  .compare-list li {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .compare-list b {
+    justify-self: start;
+  }
+
+  .methodology-formula-block {
+    padding: 10px 12px;
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 540px) {
+  .homepage-masthead-top {
+    min-height: 72px;
+  }
+
+  .homepage-brand-mark {
+    width: 54px;
+    min-height: 72px;
+    font-size: 1rem;
+  }
+
+  .homepage-brand-copy {
+    font-size: clamp(0.98rem, 4.7vw, 1.18rem);
+    white-space: nowrap;
+  }
+
+  .homepage-headline {
+    font-size: clamp(2.84rem, 14.9vw, 4.1rem);
+  }
+
+  .homepage-subhead {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .homepage-subhead-icon {
+    display: none;
+  }
+
+  .homepage-ranking-card {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-rows: auto;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 12px 12px 10px;
+  }
+
+  .homepage-ranking-header {
+    display: contents;
+  }
+
+  .homepage-ranking-rank {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    font-size: 2.4rem;
+    line-height: 0.9;
+  }
+
+  .homepage-ranking-card .route-badge {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    width: 2.65rem;
+    height: 2.65rem;
+    font-size: 1.1rem;
+  }
+
+  .homepage-ranking-route {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    align-self: center;
+    min-height: 2.65rem;
+  }
+
+  .homepage-ranking-route p {
+    font-size: clamp(1.08rem, 6.3vw, 1.38rem);
+    line-height: 0.92;
+  }
+
+  .homepage-ranking-metric {
+    grid-column: 4;
+    grid-row: 1;
+    align-self: center;
+    justify-items: end;
+    text-align: right;
+  }
+
+  .homepage-ranking-value {
+    gap: 4px;
+    justify-content: flex-end;
+  }
+
+  .homepage-ranking-value strong {
+    font-size: clamp(2.45rem, 14.5vw, 3.15rem);
+  }
+
+  .homepage-ranking-value span {
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+  }
+
+  .homepage-ranking-metric p {
+    max-width: 4.9rem;
+    font-size: 0.73rem;
+    line-height: 1.08;
+  }
+
+  .homepage-ranking-divider {
+    display: none;
+  }
+
+  .homepage-ranking-notes {
+    display: none;
+  }
+
+  .homepage-ranking-notes span {
+    font-size: 0.68rem;
+  }
+
+  .homepage-ranking-notes strong {
+    font-size: 0.8rem;
+    line-height: 1.14;
+  }
+
+  .homepage-explainer-head {
+    padding-bottom: 12px;
+  }
+
+  .homepage-explainer-head h2 {
+    line-height: 0.94;
+  }
+
+  .homepage-story-panel,
+  .homepage-map-panel,
+  .homepage-rankings,
+  .homepage-explainer,
+  .homepage-compare {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  a.homepage-ranking-card::after {
+    display: none;
+  }
+
+  .route-dossier-scoreboard {
+    grid-template-columns: 1fr;
+  }
+
+  .map-edition-canvas .map-surface,
+  .map-edition-canvas .map-canvas,
+  .route-dossier-map-card .map-surface,
+  .route-dossier-map-card .map-canvas {
+    min-height: 300px;
+  }
+
+  .route-dossier-map-card .map-ui-controls,
+  .route-dossier-map-card .map-loading-state {
+    position: static;
+    margin: 0 14px 12px;
+  }
+
+  .route-dossier-map-card .map-ui-controls {
+    display: none;
+  }
+
+  .route-dossier-map-card .map-attribution {
+    display: none;
+  }
+
+  .route-dossier-map-footer {
+    padding: 12px 14px;
+  }
+
+  .route-dossier-map-footer h2 {
+    font-size: clamp(1.45rem, 10vw, 2rem);
+    line-height: 0.94;
+  }
+
+  .route-dossier-map-footer p {
+    font-size: 0.92rem;
+  }
+
+  .route-dossier-segment-metric {
+    justify-items: start;
   }
 }

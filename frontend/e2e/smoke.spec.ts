@@ -31,22 +31,47 @@ test("homepage, route detail, and map page render with real map surfaces", async
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(page.getByText("Worst Published Routes")).toBeVisible();
-  await expect(page.getByText("Worst routes highlighted")).toBeVisible();
+  await expect(page.getByText("Current Three Slowest Routes")).toBeVisible();
   await expectMapReady(page);
   await page.screenshot({ path: path.join(screenshotDir, "b5-homepage-desktop.png") });
 
   await page.goto(`/routes/${encodeURIComponent(routeIds[0])}`);
-  await expect(page.getByText("Worst time window")).toBeVisible();
+  await expect(page.getByText("When is it worst?")).toBeVisible();
   await expectMapReady(page);
 
   await page.goto("/map");
-  await expect(page.getByText(/Highest published loss/i)).toBeVisible();
+  await expect(page.getByText(/Current spread/i)).toBeVisible();
   await expectMapReady(page);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.getByText(/Historical\/static API snapshot/i)).toBeVisible();
+  await expect(page.getByText(/Compare routes or corridors/i)).toBeVisible();
   await expectMapReady(page);
+  await page.screenshot({ path: path.join(screenshotDir, "mobile-homepage.png"), fullPage: true });
+
+  await page.goto("/rankings");
+  await expect(page.getByText("Click any route row to open its route detail.")).toBeVisible();
+  await page.screenshot({ path: path.join(screenshotDir, "mobile-rankings.png"), fullPage: true });
+
+  await page.goto("/map");
+  await expect(page.getByText(/Citywide route delay map/i)).toBeVisible();
+  await expectMapReady(page);
+  await page.screenshot({ path: path.join(screenshotDir, "mobile-map.png"), fullPage: true });
+
+  await page.goto("/compare");
+  await expect(
+    page.getByText("Pick two to four published routes to compare trip loss, waiting, and slow travel."),
+  ).toBeVisible();
+  await page.screenshot({ path: path.join(screenshotDir, "mobile-compare.png"), fullPage: true });
+
+  await page.goto(`/routes/${encodeURIComponent(routeIds[0])}`);
+  await expect(page.getByText("When is it worst?")).toBeVisible();
+  await expectMapReady(page);
+  await page.screenshot({ path: path.join(screenshotDir, "mobile-route-detail.png"), fullPage: true });
+
+  await page.goto("/methodology");
+  await expect(page.getByText(/How the route time-loss number is calculated/i)).toBeVisible();
+  await page.screenshot({ path: path.join(screenshotDir, "mobile-methodology.png"), fullPage: true });
 });
 
 test("MapLibre route layers load without runtime failure", async ({ page, request }) => {
@@ -65,12 +90,12 @@ test("MapLibre route layers load without runtime failure", async ({ page, reques
   await expect(homepageMap).toHaveAttribute("data-background-route-count", /[1-9]/);
 
   await page.goto(`/routes/${encodeURIComponent(primaryRouteId)}`);
-  await expect(page.getByText("Worst time window")).toBeVisible();
+  await expect(page.getByText("When is it worst?")).toBeVisible();
   const routeMap = await expectMapReady(page);
   await expect(routeMap).toHaveAttribute("data-segment-count", /[1-9]/);
 
   await page.goto("/map");
-  await expect(page.getByText(/Highest published loss/i)).toBeVisible();
+  await expect(page.getByText(/Current spread/i)).toBeVisible();
   const citywideMap = await expectMapReady(page);
   await expect(citywideMap).toHaveAttribute("data-route-count", /[1-9]/);
 
