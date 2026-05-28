@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DataStamp } from "@/components/data-stamp";
 import { DataStatePanel } from "@/components/data-state-panel";
 import { RouteBadge } from "@/components/route-badge";
 import { TransitMapSurface } from "@/components/transit-map-surface";
@@ -86,7 +84,7 @@ export default async function RouteDetailPage({
             <h1 className="route-dossier-headline">{data.summary.route_name}</h1>
             <p className="route-dossier-subtitle">{data.summary.route_long_name}</p>
             <p className="route-dossier-dek">
-              Published route summary, corridor map, stop hotspot, and nearby ranks.
+              Published route summary, corridor map, stop hotspot, and sample context.
             </p>
           </div>
         </div>
@@ -209,17 +207,7 @@ export default async function RouteDetailPage({
             ) : null}
           </article>
 
-          <article className="editorial-rail-card">
-            <p className="eyebrow">Published summary</p>
-            <h2>Latest update</h2>
-            <p>Timestamp for the published route summary shown on this page.</p>
-            <DataStamp value={data.summary.metric_updated_at} />
-          </article>
-        </div>
-      </section>
-
-      <section className="route-dossier-lower-grid">
-        <article className="editorial-rail-card">
+          <article className="editorial-rail-card route-dossier-sidebar-card-compact">
           <p className="eyebrow">When is it worst?</p>
           <h2>{formattedWorstTimeBand}</h2>
           <p>Time band with the highest published route-level delay.</p>
@@ -229,7 +217,7 @@ export default async function RouteDetailPage({
           </div>
         </article>
 
-        <article className="editorial-rail-card">
+          <article className="editorial-rail-card route-dossier-sidebar-card-compact">
           <p className="eyebrow">Sample size</p>
           <h2>Matched trips and stops</h2>
           <p>Trips, headway intervals, and stop events behind this route summary.</p>
@@ -256,36 +244,7 @@ export default async function RouteDetailPage({
             </div>
           </dl>
         </article>
-
-        <article className="editorial-rail-card">
-          <p className="eyebrow">Nearby ranks</p>
-          <h2>{data.routeRank ? `Routes around #${data.routeRank}` : "Nearby routes"}</h2>
-          <p>Routes nearest this one in the current system order.</p>
-          {data.peers.length > 0 ? (
-            <ul className="route-dossier-peer-list">
-              {data.peers.slice(0, 4).map((peer) => (
-                <li key={peer.route_id}>
-                  <Link
-                    aria-label={`Open route detail for ${peer.route_name}`}
-                    className="route-dossier-peer-link"
-                    href={`/routes/${encodeURIComponent(peer.route_id)}`}
-                  >
-                    <div className="route-dossier-peer-route">
-                      <RouteBadge routeId={peer.route_id} label={peer.route_short_name} />
-                      <div>
-                        <strong>{peer.route_name}</strong>
-                        <small>{peer.rank ? `Rank #${peer.rank}` : "Published route"}</small>
-                      </div>
-                    </div>
-                    <b>{formatMinutes(peer.typical_trip_loss_minutes)}</b>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : data.peersNotice ? (
-            <DataStatePanel eyebrow="Peer context" notice={data.peersNotice} />
-          ) : null}
-        </article>
+        </div>
       </section>
     </div>
   );

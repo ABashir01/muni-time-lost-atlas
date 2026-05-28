@@ -105,6 +105,8 @@ export function CompareSelector({
   placeholderLabel,
   optionalPlaceholderLabel,
   className,
+  actionLabel = "Compare",
+  submitPath = "/compare",
 }: {
   routes: RouteSummary[];
   selectedIds: string[];
@@ -112,6 +114,8 @@ export function CompareSelector({
   placeholderLabel?: string;
   optionalPlaceholderLabel?: string;
   className?: string;
+  actionLabel?: string;
+  submitPath?: string;
 }) {
   const router = useRouter();
   const normalizedSlotCount = Math.max(2, Math.min(slotCount, 4));
@@ -229,12 +233,12 @@ export function CompareSelector({
         disabled={!canSubmit}
         onClick={() =>
           startTransition(() => {
-            router.push(`/compare?ids=${uniqueIds.join(",")}`);
+            router.push(`${submitPath}?ids=${uniqueIds.join(",")}`);
           })
         }
         type="button"
       >
-        Compare
+        {actionLabel}
       </button>
     </div>
   );

@@ -4648,6 +4648,33 @@ a.compare-card:focus-visible,
   gap: 16px;
 }
 
+.route-dossier-sidebar-card-compact {
+  gap: 0.45rem;
+}
+
+.route-dossier-sidebar-card-compact h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.1vw, 2.2rem);
+  line-height: 0.92;
+}
+
+.route-dossier-sidebar-card-compact p {
+  margin: 0;
+  line-height: 1.32;
+}
+
+.route-dossier-sidebar-card-compact .route-dossier-lower-stat {
+  padding-top: 0.1rem;
+}
+
+.route-dossier-sidebar-card-compact .route-dossier-definition-list {
+  gap: 10px 14px;
+}
+
+.route-dossier-sidebar-card-compact .route-dossier-definition-list dd {
+  font-size: 0.94rem;
+}
+
 .route-dossier-definition-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

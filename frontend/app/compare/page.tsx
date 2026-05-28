@@ -24,12 +24,14 @@ export default async function ComparePage({
           <p>Pick two to four published routes to compare trip loss, waiting, and slow travel.</p>
         </div>
         <CompareSelector
+          actionLabel="Update compare"
           className="compare-page-controls"
           optionalPlaceholderLabel="Add route"
           placeholderLabel="Route"
           routes={data.availableRoutes}
           selectedIds={data.selectedIds}
           slotCount={4}
+          submitPath="/compare"
         />
       </section>
 
