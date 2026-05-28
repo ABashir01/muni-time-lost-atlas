@@ -1,5 +1,5 @@
 import { CompareRouteBoard } from "@/components/compare-route-board";
-import { CompareSelector } from "@/components/compare-selector";
+import { CompareEntryBand } from "@/components/compare-entry-band";
 import { getComparePageData } from "@/lib/site-data";
 
 export const dynamic = "force-dynamic";
@@ -17,23 +17,19 @@ export default async function ComparePage({
 
   return (
     <div className="page-stack editorial-page compare-page">
-      <section className="compare-toolbar-shell">
-        <div className="compare-toolbar-copy">
-          <h1 className="sr-only">Compare routes or corridors</h1>
-          <p className="compare-toolbar-label">Compare routes or corridors.</p>
-          <p>Pick two to four published routes to compare trip loss, waiting, and slow travel.</p>
-        </div>
-        <CompareSelector
-          actionLabel="Update compare"
-          className="compare-page-controls"
-          optionalPlaceholderLabel="Add route"
-          placeholderLabel="Route"
-          routes={data.availableRoutes}
-          selectedIds={data.selectedIds}
-          slotCount={4}
-          submitPath="/compare"
-        />
-      </section>
+      <h1 className="sr-only">Compare routes or corridors</h1>
+      <CompareEntryBand
+        actionLabel="Update compare"
+        className="compare-page-band"
+        description="Pick two to four published routes to compare trip loss, waiting, and slow travel."
+        optionalPlaceholderLabel="Add route"
+        placeholderLabel="Select a route..."
+        routes={data.availableRoutes}
+        selectedIds={data.selectedIds}
+        slotCount={4}
+        submitPath="/compare"
+        title="Compare routes or corridors."
+      />
 
       <CompareRouteBoard
         compareLimitations={data.compareLimitations}

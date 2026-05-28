@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { CompareSelector } from "@/components/compare-selector";
+import { CompareEntryBand } from "@/components/compare-entry-band";
 import { DataStatePanel } from "@/components/data-state-panel";
 import {
   HomepageExplainerSymbol,
@@ -79,7 +79,7 @@ export default async function HomePage({
         <div className="homepage-map-panel">
           <div className="homepage-map-explainer">
             <p>Map view</p>
-            <h3>Three Routes To Watch</h3>
+            <h3>Current Three Slowest Routes</h3>
             <span>
               The map highlights the three routes with the highest time loss.
               The rest of the routes are faded out in gray.
@@ -228,19 +228,15 @@ export default async function HomePage({
         </aside>
       </section>
 
-      <section className="homepage-compare" id="compare">
-        <div className="homepage-compare-copy">
-          <h2>Compare routes or corridors.</h2>
-          <p>See how routes stack up or compare parts of the same route.</p>
-        </div>
-
-        <CompareSelector
-          className="homepage-compare-controls"
-          placeholderLabel="Select a route..."
-          routes={data.rankings}
-          selectedIds={[]}
-        />
-      </section>
+      <CompareEntryBand
+        className="homepage-compare"
+        description="See how routes stack up or compare parts of the same route."
+        id="compare"
+        placeholderLabel="Select a route..."
+        routes={data.rankings}
+        selectedIds={[]}
+        title="Compare routes or corridors."
+      />
     </div>
   );
 }
