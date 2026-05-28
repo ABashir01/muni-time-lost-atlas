@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useEffect, useMemo, useState } from "react";
+import { Fragment, startTransition, useEffect, useMemo, useState } from "react";
 import Select, { type FilterOptionOption, type StylesConfig } from "react-select";
 import { useRouter } from "next/navigation";
 import type { RouteSummary } from "@/lib/types";
@@ -15,6 +15,7 @@ const selectStyles: StylesConfig<RouteOption, false> = {
   container: (base) => ({
     ...base,
     width: "100%",
+    minWidth: 0,
   }),
   control: (base, state) => ({
     ...base,
@@ -24,10 +25,12 @@ const selectStyles: StylesConfig<RouteOption, false> = {
     boxShadow: "none",
     backgroundColor: "#fff",
     cursor: "text",
+    minWidth: 0,
   }),
   valueContainer: (base) => ({
     ...base,
     padding: "0 8px 0 10px",
+    overflow: "hidden",
   }),
   input: (base) => ({
     ...base,
@@ -40,11 +43,19 @@ const selectStyles: StylesConfig<RouteOption, false> = {
     ...base,
     color: "#111",
     font: "inherit",
+    maxWidth: "100%",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   }),
   placeholder: (base) => ({
     ...base,
     color: "#6a6a6a",
     font: "inherit",
+    maxWidth: "100%",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   }),
   indicatorsContainer: (base) => ({
     ...base,
@@ -193,53 +204,61 @@ export function CompareSelector({
 
   return (
     <div className={className ? `compare-controls ${className}` : "compare-controls"}>
-      {selections.map((selection, index) => (
-        <div className="compare-slot" key={`compare-slot-${index}`}>
-          <div className="compare-field">
-            <Select<RouteOption, false>
-              classNamePrefix="compare-react-select"
-              components={{ IndicatorSeparator: () => null }}
-              controlShouldRenderValue
-              filterOption={filterRouteOption}
-              inputId={`compare-route-${index + 1}`}
-              instanceId={`compare-route-${index + 1}`}
-              isClearable={index >= 2}
-              menuPlacement="auto"
-              menuPortalTarget={menuPortalTarget ?? undefined}
-              menuPosition={menuPortalTarget ? "fixed" : "absolute"}
-              menuShouldBlockScroll={false}
-              menuShouldScrollIntoView={false}
-              noOptionsMessage={() => "No matching routes"}
-              onChange={(nextOption) => {
-                setSelections((currentSelections) =>
-                  currentSelections.map((currentSelection, currentIndex) =>
-                    currentIndex === index ? nextOption?.value ?? "" : currentSelection,
-                  ),
-                );
-              }}
-              openMenuOnFocus
-              options={slotOptions[index] ?? []}
-              placeholder={placeholderForSlot(index)}
-              styles={selectStyles}
-              tabSelectsValue={false}
-              unstyled
-              value={selectedOptions[index]}
-            />
-          </div>
-          {index < selections.length - 1 ? <span className="compare-vs">VS</span> : null}
-        </div>
-      ))}
-      <button
-        disabled={!canSubmit}
-        onClick={() =>
-          startTransition(() => {
-            router.push(`${submitPath}?ids=${uniqueIds.join(",")}`);
-          })
-        }
-        type="button"
-      >
-        {actionLabel}
-      </button>
+      <div className="compare-selection-group">
+        {selections.map((selection, index) => (
+          <Fragment key={`compare-slot-${index}`}>
+            <div
+              className={`compare-slot ${index < 2 ? "compare-slot-primary" : "compare-slot-optional"}`}
+            >
+              <div className="compare-field">
+                <Select<RouteOption, false>
+                  classNamePrefix="compare-react-select"
+                  components={{ IndicatorSeparator: () => null }}
+                  controlShouldRenderValue
+                  filterOption={filterRouteOption}
+                  inputId={`compare-route-${index + 1}`}
+                  instanceId={`compare-route-${index + 1}`}
+                  isClearable={index >= 2}
+                  menuPlacement="auto"
+                  menuPortalTarget={menuPortalTarget ?? undefined}
+                  menuPosition={menuPortalTarget ? "fixed" : "absolute"}
+                  menuShouldBlockScroll={false}
+                  menuShouldScrollIntoView={false}
+                  noOptionsMessage={() => "No matching routes"}
+                  onChange={(nextOption) => {
+                    setSelections((currentSelections) =>
+                      currentSelections.map((currentSelection, currentIndex) =>
+                        currentIndex === index ? nextOption?.value ?? "" : currentSelection,
+                      ),
+                    );
+                  }}
+                  openMenuOnFocus
+                  options={slotOptions[index] ?? []}
+                  placeholder={placeholderForSlot(index)}
+                  styles={selectStyles}
+                  tabSelectsValue={false}
+                  unstyled
+                  value={selectedOptions[index]}
+                />
+              </div>
+            </div>
+            {index < selections.length - 1 ? <span className="compare-vs">VS</span> : null}
+          </Fragment>
+        ))}
+      </div>
+      <div className="compare-action-group">
+        <button
+          disabled={!canSubmit}
+          onClick={() =>
+            startTransition(() => {
+              router.push(`${submitPath}?ids=${uniqueIds.join(",")}`);
+            })
+          }
+          type="button"
+        >
+          {actionLabel}
+        </button>
+      </div>
     </div>
   );
 }

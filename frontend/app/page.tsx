@@ -78,11 +78,11 @@ export default async function HomePage({
 
         <div className="homepage-map-panel">
           <div className="homepage-map-explainer">
-            <p>Homepage map key</p>
-            <h3>Worst routes highlighted</h3>
+            <p>Map view</p>
+            <h3>Three Routes To Watch</h3>
             <span>
-              Colored lines show the three highest-loss routes on the homepage. Gray lines
-              keep the rest of the network in view.
+              The map highlights the three routes with the highest time loss.
+              The rest of the routes are faded out in gray.
             </span>
           </div>
           <TransitMapSurface

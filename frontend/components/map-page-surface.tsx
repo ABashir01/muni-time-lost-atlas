@@ -49,7 +49,7 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
                 title: "Typical extra time",
               }}
               fitMaxZoom={17}
-              fitPadding={2}
+              fitPadding={70}
               hoverRoutes
               lineMode="default"
               minHeight="540px"

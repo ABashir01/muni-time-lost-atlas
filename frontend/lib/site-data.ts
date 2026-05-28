@@ -182,19 +182,19 @@ export async function getHomepageData() {
     notices,
     problemTypes: [
       {
-        copy: "Longer or more irregular headways push effective wait above the scheduled baseline.",
+        copy: "You spend more time standing around because buses arrive later than expected or show up unevenly.",
         icon: "waiting",
         symbol: "O",
         title: "Waiting",
       },
       {
-        copy: "Traffic, signals, and dwell pressure extend the in-vehicle part of the trip.",
+        copy: "Once you board, the trip itself takes longer because of traffic, red lights, and slow stop-by-stop movement.",
         icon: "travel",
         symbol: "=",
         title: "Slow travel",
       },
       {
-        copy: "Vehicles clump together and leave gaps behind, amplifying rider delay even when service is present.",
+        copy: "Buses bunch together, which creates a long gap before the next vehicle arrives.",
         icon: "bunching",
         symbol: "|||",
         title: "Bunching",

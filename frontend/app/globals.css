@@ -1082,15 +1082,30 @@ main {
 
 .compare-controls {
   display: flex;
-  flex-wrap: wrap;
   align-items: stretch;
   gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.compare-selection-group {
+  display: flex;
+  align-items: stretch;
+  gap: 0.85rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.compare-action-group {
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 auto;
 }
 
 .compare-slot {
   display: flex;
   align-items: stretch;
-  gap: 0.85rem;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .compare-field {
@@ -2966,7 +2981,7 @@ a.compare-card:focus-visible,
 
 .homepage-explainer-copy h3 {
   margin: 0;
-  font-size: clamp(1.5rem, 1.45vw, 1.95rem);
+  font-size: clamp(1.18rem, 1.02vw, 1.52rem);
   font-weight: 900;
   line-height: 0.9;
 }
@@ -3046,7 +3061,19 @@ a.compare-card:focus-visible,
 .homepage-compare .compare-controls {
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 12px;
+  gap: 10px;
+}
+
+.homepage-compare .compare-selection-group {
+  gap: 10px;
+}
+
+.homepage-compare .compare-slot {
+  flex: 1 1 0;
+}
+
+.homepage-compare .compare-action-group {
+  margin-left: 2px;
 }
 
 .homepage-compare .compare-field input,
@@ -4806,6 +4833,12 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   min-width: 0;
 }
 
+.compare-page-controls .compare-selection-group {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
 .compare-page-controls .compare-slot {
   min-width: 0;
 }
@@ -4816,13 +4849,11 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   width: 100%;
 }
 
-.compare-page-controls .compare-slot:nth-child(1),
-.compare-page-controls .compare-slot:nth-child(2) {
+.compare-page-controls .compare-slot-primary {
   flex: 1 1 11.5rem;
 }
 
-.compare-page-controls .compare-slot:nth-child(3),
-.compare-page-controls .compare-slot:nth-child(4) {
+.compare-page-controls .compare-slot-optional {
   flex: 0 0 9.25rem;
 }
 
@@ -4962,6 +4993,8 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 }
 
 .compare-controls button {
+  min-height: var(--compare-field-height, 42px);
+  height: var(--compare-field-height, 42px);
   padding-inline: 20px;
   color: #111;
   font-family: var(--font-display);
@@ -5029,6 +5062,11 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
     flex-wrap: wrap;
   }
 
+  .compare-page-controls .compare-selection-group {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
   .compare-page-controls .compare-slot {
     width: 100%;
   }
@@ -5093,6 +5131,19 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   .compare-controls {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .compare-selection-group,
+  .compare-action-group {
+    width: 100%;
+  }
+
+  .compare-selection-group {
+    flex-direction: column;
+  }
+
+  .compare-slot {
+    width: 100%;
   }
 
   .homepage-compare .compare-field input,
