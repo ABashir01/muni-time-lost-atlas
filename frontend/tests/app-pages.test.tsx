@@ -190,8 +190,10 @@ describe("public pages", () => {
     expect(rankingsHtml).toContain("Click any route row to open its route detail.");
     expect(rankingsHtml).toContain("9:00-9:59 AM");
     expect(rankingsHtml).toContain("/routes/14");
-    expect(methodologyHtml).toContain("How this site works.");
-    expect(methodologyHtml).toContain("What the headline number means");
-    expect(methodologyHtml).toContain("What the transit-lane overlay is for");
+    expect(methodologyHtml).toContain("How the route time-loss number is calculated.");
+    expect(methodologyHtml).toContain("Typical route time loss");
+    expect(methodologyHtml).toContain("median full-trip in-vehicle loss");
+    expect(methodologyHtml).toContain("grouped by route_id, not by route_id plus direction_id");
+    expect(methodologyHtml).toContain("The current published metric combines two 511 data paths");
   });
 });

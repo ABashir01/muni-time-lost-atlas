@@ -2440,7 +2440,6 @@ body:has(.homepage-viewport) main {
 
 .homepage-nav a.is-active,
 .homepage-nav a:hover,
-.homepage-story-banner a:hover,
 .homepage-explainer-link:hover,
 .homepage-ranking-route a:hover {
   color: var(--red);
@@ -2564,13 +2563,44 @@ body:has(.homepage-viewport) main {
 }
 
 .homepage-story-banner a {
+  color: #fff;
   font-size: 0.76rem;
   font-weight: 700;
+  transition:
+    opacity 140ms ease,
+    text-decoration-color 140ms ease;
 }
 
 .homepage-story-banner a::after {
   content: "→";
   margin-left: 0.45rem;
+}
+
+.homepage-story-banner a:hover,
+.homepage-story-banner a:focus-visible {
+  color: #fff;
+  opacity: 0.84;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.16em;
+}
+
+.homepage-brand {
+  transition: opacity 140ms ease;
+}
+
+.homepage-brand-copy {
+  transition:
+    color 140ms ease,
+    text-decoration-color 140ms ease;
+}
+
+.homepage-brand:hover .homepage-brand-copy,
+.homepage-brand:focus-visible .homepage-brand-copy {
+  color: var(--red);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.16em;
 }
 
 .homepage-map-panel {
@@ -4764,6 +4794,33 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 .methodology-plain-card p {
   margin: 0;
   line-height: 1.52;
+}
+
+.methodology-formula-block {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1.5px solid rgba(0, 0, 0, 0.16);
+  background: #f7f7f7;
+  color: #111;
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.methodology-formula-line + .methodology-formula-line {
+  margin-top: 0.5rem;
+}
+
+.methodology-link {
+  color: var(--blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.14em;
+}
+
+.methodology-link:hover,
+.methodology-link:focus-visible {
+  color: #0048a9;
 }
 
 .methodology-plain-footer {
