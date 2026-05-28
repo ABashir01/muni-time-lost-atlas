@@ -88,7 +88,7 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
                       <RouteBadge routeId={route.route_id} label={route.route_short_name} />
                       <div>
                         <strong>{route.route_name}</strong>
-                        <small>{route.worst_segment_label}</small>
+                        <span className="map-route-cue">View route →</span>
                       </div>
                     </div>
                     <b>{formatMinutes(route.typical_trip_loss_minutes)}</b>
@@ -130,8 +130,9 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
             <p className="eyebrow">Overlay</p>
             <h2>Transit-only lanes</h2>
             <p>
-              Use this to see where dedicated transit lanes overlap the delayed routes.
-              It is context, not the delay metric itself.
+              This draws dedicated bus and transit lanes on top of the route map.
+              It helps show whether a delayed corridor already has lane priority,
+              but it does not change the ranking and it does not prove why a route is slow.
             </p>
             <button
               className="map-overlay-toggle"
@@ -139,7 +140,7 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
               onClick={() => setLanesOn((value) => !value)}
               type="button"
             >
-              {lanesOn ? "Hide transit-only lanes" : "Highlight transit-only lanes"}
+              {lanesOn ? "Hide transit lane overlay" : "Show transit lane overlay"}
             </button>
           </article>
         </aside>

@@ -64,13 +64,10 @@ export default async function HomePage({
                 <HomepageTransitSymbol />
               </div>
               <p>
-                Historical route-delay evidence across San Francisco.
+                A public map and ranking of where Muni riders lose the most time, using
+                published route-delay data across San Francisco.
               </p>
             </div>
-          </div>
-
-          <div className="homepage-story-controls">
-            <p>Published snapshot</p>
           </div>
 
           <div className="homepage-story-banner">
@@ -159,11 +156,11 @@ export default async function HomePage({
 
                 <div className="homepage-ranking-notes">
                   <p>
-                    <span>Worst on</span>
+                    <span>Worst time</span>
                     <strong>{formatTimeBandLabel(route.worst_time_band)}</strong>
                   </p>
                   <p>
-                    <span>Most loss</span>
+                    <span>Worst section</span>
                     <strong>{route.worst_segment_label}</strong>
                   </p>
                 </div>
@@ -186,11 +183,11 @@ export default async function HomePage({
                 <div className="homepage-ranking-divider" />
                 <div className="homepage-ranking-notes">
                   <p>
-                    <span>Worst on</span>
+                    <span>Worst time</span>
                     <strong>Not published</strong>
                   </p>
                   <p>
-                    <span>Most loss</span>
+                    <span>Worst section</span>
                     <strong>Not published</strong>
                   </p>
                 </div>

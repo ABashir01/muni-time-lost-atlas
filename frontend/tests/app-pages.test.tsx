@@ -149,7 +149,7 @@ describe("public pages", () => {
 
     expect(html).toContain("Route detail");
     expect(html).toContain(
-      "Published route summary, corridor map, stop hotspot, and nearby ranks.",
+      "Published route summary, corridor map, stop hotspot, and sample context.",
     );
     expect(html).toContain("16th St Mission -&gt; 24th St Mission");
     expect(html).toContain("Where does the wait pile up?");
@@ -184,14 +184,14 @@ describe("public pages", () => {
     expect(mapHtml).toContain("Citywide route delay map");
     expect(mapHtml).toContain("Transit-only lanes");
     expect(mapHtml).toContain("MapLibre GL JS citywide surface");
-    expect(mapHtml).toContain("Highlight transit-only lanes");
+    expect(mapHtml).toContain("Show transit lane overlay");
     expect(rankingsHtml).toContain("Published route rankings");
     expect(rankingsHtml).toContain("current published snapshot");
     expect(rankingsHtml).toContain("Click any route row to open its route detail.");
     expect(rankingsHtml).toContain("9:00-9:59 AM");
     expect(rankingsHtml).toContain("/routes/14");
-    expect(methodologyHtml).toContain("Typical trip: +X.X min is the public promise.");
-    expect(methodologyHtml).toContain("Plain-English contract");
-    expect(methodologyHtml).toContain("Waiting loss");
+    expect(methodologyHtml).toContain("How this site works.");
+    expect(methodologyHtml).toContain("What the headline number means");
+    expect(methodologyHtml).toContain("What the transit-lane overlay is for");
   });
 });

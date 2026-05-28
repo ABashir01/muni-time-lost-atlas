@@ -40,6 +40,7 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
                 <RouteBadge label={route.route_short_name} routeId={route.route_id} />
                 <div>
                   <h2>{route.route_name}</h2>
+                  <span className="rankings-route-cue">View route →</span>
                 </div>
               </div>
 
@@ -50,16 +51,12 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
 
               <dl className="rankings-feature-notes">
                 <div>
-                  <dt>Worst on</dt>
+                  <dt>Worst time</dt>
                   <dd>{formatTimeBandLabel(route.worst_time_band)}</dd>
                 </div>
                 <div>
-                  <dt>Most loss</dt>
+                  <dt>Worst section</dt>
                   <dd>{route.worst_segment_label}</dd>
-                </div>
-                <div>
-                  <dt>Open</dt>
-                  <dd>Route detail</dd>
                 </div>
               </dl>
             </div>
@@ -82,14 +79,13 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
                   <RouteBadge label={route.route_short_name} routeId={route.route_id} />
                   <div>
                     <strong>{route.route_name}</strong>
-                    <p>{route.worst_segment_label}</p>
+                    <span className="rankings-route-cue">View route →</span>
                   </div>
                 </div>
                 <div className="rankings-dense-metric">
                   <b>{`+${route.typical_trip_loss_minutes.toFixed(1)} min`}</b>
-                  <span>{formatTimeBandLabel(route.worst_time_band)}</span>
+                  <span>extra time per trip</span>
                 </div>
-                <span>Route detail</span>
               </Link>
             ))
           ) : (

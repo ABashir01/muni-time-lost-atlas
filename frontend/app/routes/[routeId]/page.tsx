@@ -135,7 +135,7 @@ export default async function RouteDetailPage({
           />
           <div className="route-dossier-map-footer">
             <div>
-              <p className="eyebrow">Worst segment</p>
+              <p className="eyebrow">Worst section</p>
               <h2>{data.summary.worst_segment_label}</h2>
               <p>
                 Main burden: {dominantProblem}. Worst time: {formattedWorstTimeBand}.

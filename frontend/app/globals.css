@@ -2455,7 +2455,7 @@ body:has(.homepage-viewport) main {
 
 .homepage-story-panel {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   border-right: 2px solid var(--rule);
   padding: 12px 12px 0;
 }
@@ -2463,15 +2463,16 @@ body:has(.homepage-viewport) main {
 .homepage-story-copy {
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: 40px;
   min-height: 0;
+  padding-bottom: 24px;
 }
 
 .homepage-headline {
   margin: 0;
   color: var(--ink-strong, #000);
   font-family: var(--home-font-headline, var(--font-display));
-  font-size: clamp(64px, 4.85vw, 90px);
+  font-size: clamp(72px, 5.3vw, 102px);
   font-weight: 900;
   line-height: 0.88;
   letter-spacing: -0.04em;
@@ -2506,7 +2507,7 @@ body:has(.homepage-viewport) main {
   align-items: center;
   gap: 10px;
   max-width: 100%;
-  padding-top: 12px;
+  padding-top: 24px;
   border-top: 2px solid var(--rule);
 }
 
@@ -2528,30 +2529,6 @@ body:has(.homepage-viewport) main {
 .homepage-subhead-icon svg {
   width: 40px;
   height: 40px;
-}
-
-.homepage-story-controls {
-  display: grid;
-  justify-content: start;
-  gap: 4px;
-  padding: 4px 0 10px;
-}
-
-.homepage-story-controls .window-strip {
-  border-width: 2px;
-}
-
-.homepage-story-controls .window-tab {
-  min-width: 98px;
-  justify-content: center;
-  padding: 7px 12px;
-  font-size: 0.82rem;
-}
-
-.homepage-story-controls p {
-  margin: 0;
-  color: #303030;
-  font-size: 0.78rem;
 }
 
 .homepage-story-banner {
@@ -2753,8 +2730,6 @@ a.compare-card,
 }
 
 a.homepage-ranking-card::after,
-a.rankings-feature-card::after,
-a.rankings-dense-row::after,
 a.compare-card::after {
   position: absolute;
   right: 14px;
@@ -2802,10 +2777,6 @@ a.compare-card:hover header h2,
 
 a.homepage-ranking-card:hover::after,
 a.homepage-ranking-card:focus-visible::after,
-a.rankings-feature-card:hover::after,
-a.rankings-feature-card:focus-visible::after,
-a.rankings-dense-row:hover::after,
-a.rankings-dense-row:focus-visible::after,
 a.compare-card:hover::after,
 a.compare-card:focus-visible::after {
   opacity: 1;
@@ -3161,7 +3132,7 @@ a.compare-card:focus-visible,
 
 @media (min-width: 1500px) and (max-width: 2199px) {
   .homepage-headline {
-    font-size: clamp(68px, 4.7vw, 98px);
+    font-size: clamp(76px, 5.15vw, 108px);
   }
 
   .homepage-subhead p {
@@ -3176,12 +3147,6 @@ a.compare-card:focus-visible,
     font-size: clamp(0.98rem, 0.94vw, 1.12rem);
   }
 
-  .homepage-story-controls .window-tab {
-    min-width: 104px;
-    font-size: 0.86rem;
-  }
-
-  .homepage-story-controls p,
   .homepage-story-banner span,
   .homepage-story-banner a {
     font-size: 0.82rem;
@@ -3674,24 +3639,6 @@ a.compare-card:focus-visible,
 
   .homepage-subhead {
     max-width: 100%;
-  }
-
-  .homepage-story-controls .window-strip {
-    width: 100%;
-    flex-wrap: wrap;
-    border-radius: 0;
-  }
-
-  .homepage-story-controls .window-tab {
-    width: 100%;
-    min-width: 0;
-    justify-content: space-between;
-    border-right: 0;
-    border-top: 2px solid var(--rule);
-  }
-
-  .homepage-story-controls .window-tab:first-child {
-    border-top: 0;
   }
 
   .homepage-story-banner {
@@ -4262,7 +4209,7 @@ a.compare-card:focus-visible,
 
 .rankings-dense-row {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1.55fr) minmax(0, 0.88fr) auto;
+  grid-template-columns: 52px minmax(0, 1.8fr) minmax(0, 0.82fr);
   gap: 14px;
   align-items: center;
   min-height: 78px;
@@ -4297,9 +4244,81 @@ a.compare-card:focus-visible,
   line-height: 1.18;
 }
 
+.rankings-route-cue {
+  display: inline-block;
+  margin-top: 0.26rem;
+  color: var(--red);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.map-route-cue {
+  display: inline-block;
+  margin-top: 0.24rem;
+  color: var(--red);
+  font-family: var(--font-display);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+a.rankings-feature-card:hover .rankings-route-cue,
+a.rankings-feature-card:focus-visible .rankings-route-cue,
+a.rankings-dense-row:hover .rankings-route-cue,
+a.rankings-dense-row:focus-visible .rankings-route-cue {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.map-rail-route-link:hover .map-route-cue,
+.map-rail-route-link:focus-visible .map-route-cue {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.rankings-dense-notes {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.rankings-dense-notes div {
+  display: grid;
+  gap: 0.08rem;
+}
+
+.rankings-dense-notes dt {
+  color: #5a5a5a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rankings-dense-notes dd {
+  margin: 0;
+  color: #111;
+  font-size: 0.84rem;
+  line-height: 1.24;
+}
+
 .rankings-dense-metric {
   display: grid;
-  justify-items: start;
+  justify-items: end;
   gap: 0.2rem;
 }
 
@@ -4311,6 +4330,7 @@ a.compare-card:focus-visible,
 .rankings-dense-metric span {
   color: #444;
   font-size: 0.8rem;
+  text-align: right;
 }
 
 .rankings-context-stats,
@@ -4675,6 +4695,54 @@ a.compare-card:focus-visible,
   font-size: 0.94rem;
 }
 
+.methodology-plain-page {
+  gap: 16px;
+}
+
+.methodology-plain-hero,
+.methodology-plain-card {
+  background: #fff;
+}
+
+.methodology-plain-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.methodology-plain-grid-tight {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.methodology-plain-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.methodology-plain-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 18px 20px;
+  border: 2px solid var(--rule);
+}
+
+.methodology-plain-card h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 1.9vw, 2rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.methodology-plain-card p {
+  margin: 0;
+  line-height: 1.52;
+}
+
+.methodology-plain-footer {
+  display: grid;
+}
+
 .route-dossier-definition-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4932,6 +5000,7 @@ a.compare-card:focus-visible,
   .route-dossier-summary,
   .route-dossier-grid,
   .route-dossier-lower-grid,
+  .methodology-plain-grid,
   .compare-toolbar-shell,
   .compare-grid {
     grid-template-columns: 1fr;
@@ -5001,7 +5070,8 @@ a.compare-card:focus-visible,
   .rankings-feature-card,
   .rankings-dense-row,
   .route-dossier-definition-list,
-  .compare-delta-strip {
+  .compare-delta-strip,
+  .methodology-plain-grid-tight {
     grid-template-columns: 1fr;
   }
 

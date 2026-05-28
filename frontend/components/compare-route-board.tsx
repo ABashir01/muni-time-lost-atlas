@@ -94,7 +94,7 @@ export function CompareRouteBoard({
               </li>
               <li>
                 <div>
-                  <strong>Worst segment</strong>
+                  <strong>Worst section</strong>
                   <small>{route.worst_segment_label}</small>
                 </div>
                 <b>{formatMinutes(route.in_vehicle_loss_minutes)}</b>
