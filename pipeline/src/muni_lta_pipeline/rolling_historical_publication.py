@@ -30,7 +30,7 @@ from muni_lta_pipeline.real_dataset_cutover import (
 
 
 DEFAULT_HISTORIC_AGENCY_ID = "SF"
-DEFAULT_ROLLING_WINDOW_MONTHS = 6
+DEFAULT_ROLLING_WINDOW_MONTHS = 3
 DEFAULT_PUBLICATION_ROOT = (
     REPO_ROOT / "artifacts" / "publications" / "b7_rolling_historical_publication"
 )

@@ -11,7 +11,7 @@ import { SiteHeader } from "@/components/site-header";
 import { TransitMapSurface } from "@/components/transit-map-surface";
 import { getRouteTheme } from "@/lib/presentation";
 import { getHomepageData } from "@/lib/site-data";
-import { formatTimeBandLabel } from "@/lib/utils";
+import { formatTimeBandLabel, formatTimestamp } from "@/lib/utils";
 
 const homepageFontVariants = {
   "anton-oswald": "homepage-font-anton-oswald",
@@ -42,6 +42,9 @@ export default async function HomePage({
     homepageFontVariants.oswald;
   const data = await getHomepageData();
   const rankingSlots = data.rankings.slice(0, 3);
+  const publishedWindowSummary = data.lastUpdatedAt
+    ? `Using the last 3 published months of route-delay data across San Francisco. Last updated ${formatTimestamp(data.lastUpdatedAt)}.`
+    : "Using the last 3 published months of route-delay data across San Francisco.";
 
   return (
     <div className={`homepage-viewport ${homepageFontClass === "homepage-font-oswald" ? "homepage-font-oswald-roboto" : homepageFontClass}`}>
@@ -64,8 +67,8 @@ export default async function HomePage({
                 <HomepageTransitSymbol />
               </div>
               <p>
-                A public map and ranking of where Muni riders lose the most time, using
-                published route-delay data across San Francisco.
+                A public map and ranking of where Muni riders lose the most time.{" "}
+                {publishedWindowSummary}
               </p>
             </div>
           </div>

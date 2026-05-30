@@ -1,0 +1,76 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      API_ENV: production
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: db
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      API_BASE_URL: ${API_BASE_URL}
+      MAINTENANCE_FLAG_PATH: /var/run/muni-lta/maintenance.flag
+      MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+      PORT: "3000"
+    restart: unless-stopped
+    volumes:
+      - maintenance_state:/var/run/muni-lta
+
+  publisher:
+    build:
+      context: .
+      dockerfile: publisher/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PIPELINE_ENV: production
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: db
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      PUBLICATION_ROOT: /app/artifacts/publications/b7_rolling_historical_publication
+      MAINTENANCE_FLAG_PATH: /var/run/muni-lta/maintenance.flag
+      TRANSIT_511_API_KEY: ${TRANSIT_511_API_KEY}
+    restart: unless-stopped
+    volumes:
+      - publication_artifacts:/app/artifacts
+      - maintenance_state:/var/run/muni-lta
+
+volumes:
+  maintenance_state:
+  postgres_data:
+  publication_artifacts:

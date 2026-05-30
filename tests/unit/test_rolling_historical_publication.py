@@ -88,8 +88,8 @@ class RollingHistoricalPublicationUnitTests(unittest.TestCase):
             "2026-04",
         )
         self.assertEqual(
-            build_trailing_publication_months("2026-04", window_months=6),
-            ("2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04"),
+            build_trailing_publication_months("2026-04", window_months=3),
+            ("2026-02", "2026-03", "2026-04"),
         )
 
     def test_combine_historic_month_archives_namespaces_month_scoped_ids(self) -> None:
@@ -181,7 +181,7 @@ class RollingHistoricalPublicationUnitTests(unittest.TestCase):
             request_method="HEAD",
             status_code=200,
         )
-        expected_months = ("2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04")
+        expected_months = ("2026-02", "2026-03", "2026-04")
         publication_result = {
             "action": "bootstrap",
             "historic_agency_id": "SF",
@@ -230,9 +230,6 @@ class RollingHistoricalPublicationUnitTests(unittest.TestCase):
                 {
                     "latest_available_month": "2026-04",
                     "publication_months": [
-                        "2025-11",
-                        "2025-12",
-                        "2026-01",
                         "2026-02",
                         "2026-03",
                         "2026-04",

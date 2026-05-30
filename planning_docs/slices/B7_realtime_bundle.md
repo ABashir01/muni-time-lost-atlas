@@ -37,7 +37,7 @@ This bundle exists to make the product:
 - date-range support across the retained window
 
 ## Implementation notes
-- use a **rolling 6-month** live database window
+- use a **rolling 3-month** live database window
 - update the published dataset on a **monthly** cadence when the next `RG -so` archive is available
 - keep the product historical/static in methodology and behavior
 - do not add GTFS-RT vehicle overlays in this bundle
@@ -85,7 +85,7 @@ This is preferable to a fixed once-per-month fire-and-forget job because:
 
 ## Acceptance criteria
 - the live app DB can be rebuilt/published from the most recent supported monthly archive
-- the published window retains the last 6 months and drops older live-serving months from the primary app DB
+- the published window retains the last 3 months and drops older live-serving months from the primary app DB
 - homepage, rankings, compare, route detail, and map still work against the rolling historical window
 - methodology and copy remain consistent with a monthly-refreshed historical product
 - no part of the app implies second-by-second or same-day live metric freshness

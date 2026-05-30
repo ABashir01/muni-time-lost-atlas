@@ -178,6 +178,7 @@ export async function getHomepageData() {
 
   return {
     heroMap,
+    lastUpdatedAt: rankings[0]?.metric_updated_at ?? null,
     map,
     notices,
     problemTypes: [

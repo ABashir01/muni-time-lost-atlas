@@ -57,6 +57,14 @@ Current limitations:
 - realtime vehicle ingestion remains deferred
 - the real-data cutover is intentionally bounded to validated historical slices rather than a continuously refreshed warehouse
 
+Production deployment artifacts:
+
+- `docker-compose.coolify.yml`
+- `frontend/Dockerfile`
+- `api/Dockerfile`
+- `publisher/Dockerfile`
+- `planning_docs/runbooks/production_hetzner_coolify_rollout.md`
+
 ## Quick start
 
 Create a local virtual environment:

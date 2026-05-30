@@ -136,7 +136,9 @@ describe("public pages", () => {
     expect(html).toContain("Current Three Slowest Routes");
     expect(html).toContain("three routes with the highest time loss");
     expect(html).toContain("MapLibre GL JS route surface");
-    expect(html).toContain("A public map and ranking of where Muni riders lose the most time");
+    expect(html).toContain("A public map and ranking of where Muni riders lose the most time.");
+    expect(html).toContain("Using the last 3 published months of route-delay data across San Francisco.");
+    expect(html).toContain("Last updated");
     expect(html).toContain("extra time per trip");
     expect(html).toContain("See full rankings");
     expect(html).toContain("9:00-9:59 AM");

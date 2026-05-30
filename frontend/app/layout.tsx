@@ -10,8 +10,12 @@ import {
   Roboto_Condensed,
 } from "next/font/google";
 import { AppChrome } from "@/components/app-chrome";
+import { MaintenanceModeScreen } from "@/components/maintenance-mode-screen";
+import { getMaintenanceState } from "@/lib/maintenance";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+export const dynamic = "force-dynamic";
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -70,12 +74,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const maintenanceState = getMaintenanceState();
+
   return (
     <html lang="en">
       <body
         className={`${oswald.variable} ${anton.variable} ${leagueGothic.variable} ${robotoCondensed.variable} ${bebasNeue.variable} ${archivoNarrow.variable} ${fjallaOne.variable} ${body.variable}`}
       >
-        <AppChrome>{children}</AppChrome>
+        {maintenanceState.enabled ? (
+          <MaintenanceModeScreen />
+        ) : (
+          <AppChrome>{children}</AppChrome>
+        )}
       </body>
     </html>
   );

@@ -39,10 +39,10 @@ The tradeoff is:
 That is acceptable for the MVP.
 
 ## Data Retention Decision
-Use a **rolling 6-month live database window**.
+Use a **rolling 3-month live database window**.
 
 Keep:
-- the last 6 months in the serving `Postgres/PostGIS` database
+- the last 3 months in the serving `Postgres/PostGIS` database
 - older monthly source and derived archives in retained artifact storage outside the live serving window
 
 For the `B7` publication implementation specifically:
@@ -50,8 +50,8 @@ For the `B7` publication implementation specifically:
 - and the publication-owned on-disk artifacts are pruned after each successful publish so they do not grow without bound on the VPS
 
 Reason:
-- 6 months preserves real date-range utility
-- 6 months stays operationally reasonable in a single Postgres instance
+- 3 months is enough retained context for a non-date-exploration MVP
+- 3 months keeps the live DB materially smaller and cheaper to host
 - the full historical archive is better retained as cold artifacts than as the live serving database
 
 ## Measured Baseline
@@ -70,7 +70,7 @@ Estimated archive-storage totals if retained:
 - 3 months: about `2.35 GB`
 - 6 months: about `4.71 GB`
 
-## Why 6 Months Instead Of 3 Or 1
+## Why 3 Months Instead Of 6 Or 1
 ### 1 month
 Pros:
 - cheapest
@@ -78,31 +78,30 @@ Pros:
 
 Cons:
 - weak historical comparison value
-- date range becomes barely meaningful
 - product starts to feel like a recent snapshot tool rather than a historical atlas
 
 ### 3 months
 Pros:
-- much cheaper than 6 months
-- still allows limited date-range exploration
+- materially cheaper than 6 months
+- still feels like a rolling historical publication rather than a single monthly report
+- fits the current non-date-range MVP more closely
 
 Cons:
-- weaker seasonal and recurring-pattern usefulness
-- easier to fall into partial-story conclusions
+- weaker long-range context than 6 months
+- less flexible if public date-range exploration is added later
 
 ### 6 months
 Pros:
-- enough history for real date-range use
-- better public/product credibility
-- still feasible on one VPS with Postgres/PostGIS
+- stronger long-range context
+- better fit for future date-range exploration
 
 Cons:
 - larger live DB
 - more expensive than 1 or 3 months
 
 Decision:
-- choose **6 months** as the default live retention window
-- keep the architecture compatible with reducing to 3 months later if deployment cost becomes a problem
+- choose **3 months** as the default live retention window
+- keep the architecture compatible with extending back to 6 months later if product needs change
 
 ## Hosting Assumption
 Preferred MVP host:
@@ -179,15 +178,12 @@ Do not:
 
 Do:
 - identify the newest completed month currently available from `511`
-- select that month plus the prior `5` completed months
-- build and publish the full 6-month live window before treating the deployment as complete
+- select that month plus the prior `2` completed months
+- build and publish the full 3-month live window before treating the deployment as complete
 
 Example:
 - if the newest available month is `2026-04`
 - the first production live window should be:
-  - `2025-11`
-  - `2025-12`
-  - `2026-01`
   - `2026-02`
   - `2026-03`
   - `2026-04`
@@ -196,15 +192,15 @@ Example:
 1. provision the VPS and deploy the application stack
 2. verify the app and database services are healthy
 3. determine the newest completed month available from `511`
-4. compute the 6-month bootstrap window ending at that month
+4. compute the 3-month bootstrap window ending at that month
 5. run the monthly cutover/build flow for each month in that bootstrap window
-6. publish the resulting 6-month retained dataset into the live serving DB
+6. publish the resulting 3-month retained dataset into the live serving DB
 7. verify homepage, rankings, compare, route detail, and map against the populated live window
 8. enable the normal monthly availability-check cron only after the initial bootstrap succeeds
 
 ### Operational rule
 The bootstrap path and the steady-state monthly publication path are different:
-- bootstrap fills the initial 6-month live window
+- bootstrap fills the initial 3-month live window
 - steady-state publication advances that window by one completed month at a time
 
 ## Operational Responsibilities On A VPS
@@ -260,7 +256,7 @@ Preferred MVP deploy target:
 - `FastAPI`
 - `Next.js`
 - `Caddy`
-- rolling 6-month live DB window
+- rolling 3-month live DB window
 - older archives retained separately
 
 This is the best balance of:
@@ -268,3 +264,10 @@ This is the best balance of:
 - lowest practical cost
 - honest spatial/data-engineering architecture
 - low enough complexity to ship
+
+Implementation artifacts:
+- `docker-compose.coolify.yml`
+- `frontend/Dockerfile`
+- `api/Dockerfile`
+- `publisher/Dockerfile`
+- `planning_docs/runbooks/production_hetzner_coolify_rollout.md`

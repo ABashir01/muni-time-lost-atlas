@@ -99,3 +99,7 @@ Expected future changes:
 - compare-specific implementation details if compare remains a later follow-on
 - realtime
 - major redesign of the homepage or map presentation
+
+## Companion implementation sketch
+See also:
+- [P3a_real_date_range_architecture.md](./P3a_real_date_range_architecture.md)

@@ -1,16 +1,39 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+function resolveFixturePath(...segments: string[]) {
+  const configuredRoot = process.env.FIXTURES_ROOT?.trim();
+  const candidateRoots = [
+    configuredRoot,
+    path.join(process.cwd(), "..", "fixtures"),
+    path.join(process.cwd(), "fixtures"),
+  ].filter((value): value is string => Boolean(value));
+
+  let lastTriedPath = "";
+
+  for (const root of candidateRoots) {
+    const candidatePath = path.join(root, ...segments);
+
+    try {
+      readFileSync(candidatePath, "utf8");
+      return candidatePath;
+    } catch {
+      lastTriedPath = candidatePath;
+    }
+  }
+
+  throw new Error(
+    `Unable to locate fixture ${segments.join("/")} from roots: ${candidateRoots.join(", ")}. Last attempted path: ${lastTriedPath}`,
+  );
+}
+
 export function loadTransitLaneOverlay() {
-  const overlayDir = path.join(
-    process.cwd(),
-    "..",
-    "fixtures",
+  const overlayPath = resolveFixturePath(
     "geospatial",
     "transit_only_lanes",
     "minimal.geojson",
   );
-  const overlay = JSON.parse(readFileSync(overlayDir, "utf8")) as {
+  const overlay = JSON.parse(readFileSync(overlayPath, "utf8")) as {
     features: Array<{
       geometry: { coordinates: [number, number][] };
       properties?: {

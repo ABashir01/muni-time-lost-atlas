@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from io import StringIO
 import os
 from pathlib import Path
+import psycopg
 import subprocess
 import time
 from typing import Iterable, Mapping
@@ -24,6 +25,8 @@ DEFAULT_FIXTURE_DIR = REPO_ROOT / "fixtures" / "gtfs_static" / "minimal"
 @dataclass(frozen=True)
 class PostgresSettings:
     database: str
+    host: str
+    port: int
     user: str
     password: str
 
@@ -133,9 +136,7 @@ TRUNCATE_ORDER = (
 
 def load_env_file(path: Path = ENV_FILE) -> dict[str, str]:
     if not path.exists():
-        raise FileNotFoundError(
-            "Missing .env at repo root. Copy .env.example to .env and set local DB values."
-        )
+        return {}
 
     values: dict[str, str] = {}
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -148,13 +149,21 @@ def load_env_file(path: Path = ENV_FILE) -> dict[str, str]:
     return values
 
 
-def get_postgres_settings(environ: Mapping[str, str] | None = None) -> PostgresSettings:
+def merged_env(environ: Mapping[str, str] | None = None) -> dict[str, str]:
     env = dict(load_env_file())
+    env.update(os.environ)
     if environ:
         env.update(environ)
+    return env
+
+
+def get_postgres_settings(environ: Mapping[str, str] | None = None) -> PostgresSettings:
+    env = merged_env(environ)
 
     return PostgresSettings(
         database=env["POSTGRES_DB"],
+        host=env.get("POSTGRES_HOST", "127.0.0.1"),
+        port=int(env.get("POSTGRES_PORT", "5432")),
         user=env["POSTGRES_USER"],
         password=env["POSTGRES_PASSWORD"],
     )
@@ -163,9 +172,7 @@ def get_postgres_settings(environ: Mapping[str, str] | None = None) -> PostgresS
 def build_postgres_connection_url(
     environ: Mapping[str, str] | None = None,
 ) -> str:
-    env = dict(load_env_file())
-    if environ:
-        env.update(environ)
+    env = merged_env(environ)
 
     database_name = env.get("POSTGRES_DB")
     user = env.get("POSTGRES_USER")
@@ -221,7 +228,7 @@ def docker_compose_psql_args(settings: PostgresSettings) -> list[str]:
         "-v",
         "ON_ERROR_STOP=1",
         "-h",
-        "127.0.0.1",
+        settings.host,
         "-U",
         settings.user,
         "-d",
@@ -229,25 +236,52 @@ def docker_compose_psql_args(settings: PostgresSettings) -> list[str]:
     ]
 
 
+def should_manage_db_service(environ: Mapping[str, str] | None = None) -> bool:
+    env = merged_env(environ)
+    explicit = env.get("MANAGE_DB_SERVICE")
+    if explicit is not None:
+        return explicit.strip().lower() in {"1", "true", "yes", "on"}
+    host = env.get("POSTGRES_HOST", "127.0.0.1").strip().lower()
+    return host in {"127.0.0.1", "localhost"}
+
+
+def _connect(settings: PostgresSettings) -> psycopg.Connection[tuple[object, ...]]:
+    quoted_user = quote(settings.user, safe="")
+    quoted_password = quote(settings.password, safe="")
+    quoted_database = quote(settings.database, safe="")
+    return psycopg.connect(
+        f"postgresql://{quoted_user}:{quoted_password}@{settings.host}:{settings.port}/{quoted_database}",
+        autocommit=True,
+    )
+
+
 def ensure_db_service() -> None:
-    run_command(["docker", "compose", "up", "-d", "db"])
+    if should_manage_db_service():
+        run_command(["docker", "compose", "up", "-d", "db"])
 
 
 def wait_for_database(settings: PostgresSettings, attempts: int = 12, sleep_seconds: int = 2) -> None:
     for _ in range(attempts):
         try:
-            run_psql_sql(settings, "SELECT 1;")
+            with _connect(settings) as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT 1;")
             return
-        except RuntimeError:
+        except psycopg.Error:
             time.sleep(sleep_seconds)
     raise RuntimeError("The Postgres service did not become ready in time.")
 
 
 def run_psql_sql(settings: PostgresSettings, sql: str) -> str:
-    result = run_command(
-        [*docker_compose_psql_args(settings), "-t", "-A", "-c", sql]
-    )
-    return result.stdout.strip()
+    with _connect(settings) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            if cursor.description is None:
+                return ""
+            row = cursor.fetchone()
+            if row is None:
+                return ""
+            return str(row[0]).strip()
 
 
 def execute_sql_file(settings: PostgresSettings, path: Path) -> None:

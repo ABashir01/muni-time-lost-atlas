@@ -1,7 +1,7 @@
 # B7 Rolling Historical Publication
 
 ## Purpose
-Operate the live app database as a rolling 6-month historical publication window.
+Operate the live app database as a rolling 3-month historical publication window.
 
 This runbook assumes:
 - `Hetzner + Coolify` or equivalent single-VPS deployment
@@ -20,8 +20,8 @@ This runbook assumes:
 
 After each successful bootstrap or advance run, the publication job prunes those roots so they only retain:
 - the current active GTFS acquisition
-- the current 6 retained monthly historic source artifacts
-- the current 6 retained monthly derived `SF` artifacts
+- the current 3 retained monthly historic source artifacts
+- the current 3 retained monthly derived `SF` artifacts
 - the current combined rolling-window archive
 - the latest publication manifest
 - the latest cutover manifest/log pair
@@ -57,7 +57,7 @@ Expected behavior:
 
 ### 2. First production bootstrap
 
-Use this once when initially populating the live 6-month window:
+Use this once when initially populating the live 3-month window:
 
 ```powershell
 .\.venv\Scripts\python.exe -m muni_lta_pipeline.rolling_historical_publication bootstrap-window
@@ -65,7 +65,7 @@ Use this once when initially populating the live 6-month window:
 
 Expected behavior:
 1. determine the newest completed month currently available from `511`
-2. derive the trailing 6-month window ending at that month
+2. derive the trailing 3-month window ending at that month
 3. fetch and derive each monthly `SF` archive
 4. synthesize one combined rolling-window historic archive
 5. rebuild the live app DB from:
@@ -88,11 +88,11 @@ Expected behavior:
 - checks whether a newer completed month is now available
 - exits cleanly with `action=unavailable` when it is not
 - exits cleanly with `action=already_published` when the newest available month is already live
-- rebuilds the rolling 6-month publication window when a newer month becomes available
+- rebuilds the rolling 3-month publication window when a newer month becomes available
 
 ## Current Publication Shape
 
-The implementation keeps the live DB to a rolling 6-month window by rebuilding from a single synthetic publication archive.
+The implementation keeps the live DB to a rolling 3-month window by rebuilding from a single synthetic publication archive.
 
 That means:
 - the live serving DB does **not** keep older months beyond the retained window
@@ -106,7 +106,7 @@ Instead it:
 - derives one `SF` archive per month
 - namespaces month-scoped `trip_id`, `service_id`, and `shape_id` values to avoid cross-month collisions
 - keeps the latest route/stop presentation rows when those IDs repeat across months
-- concatenates observations and schedule rows into one synthetic 6-month historic archive
+- concatenates observations and schedule rows into one synthetic 3-month historic archive
 
 This lets the accepted single-snapshot cutover path keep working without a broader dbt join-key refactor.
 

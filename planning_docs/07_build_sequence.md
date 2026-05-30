@@ -97,7 +97,7 @@ The current baseline now includes:
 - doc: [B6c_historic_shapes_api_fallback.md](./slices/B6c_historic_shapes_api_fallback.md)
 
 ### B7 Rolling Historical Publication Bundle
-- goal: publish a rolling 6-month historical window and refresh it monthly
+- goal: publish a rolling 3-month historical window and refresh it monthly
 - replaces: `S30` through `S32`
 - doc: [B7_realtime_bundle.md](./slices/B7_realtime_bundle.md)
 
