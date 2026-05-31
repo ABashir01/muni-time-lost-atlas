@@ -11,6 +11,7 @@ import json
 import os
 from io import TextIOWrapper
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any, Iterable, Mapping
 import zipfile
 
@@ -183,6 +184,42 @@ def _write_rows_to_zip(
     return len(rows)
 
 
+def _append_jsonl_row(path: Path, row: Mapping[str, str]) -> None:
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(dict(row), sort_keys=True))
+        handle.write("\n")
+
+
+def _iter_jsonl_rows(path: Path) -> Iterable[dict[str, str]]:
+    if not path.exists():
+        return ()
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            yield json.loads(stripped)
+
+
+def _write_jsonl_rows_to_zip(
+    archive: zipfile.ZipFile,
+    member_name: str,
+    *,
+    fieldnames: list[str],
+    spool_path: Path,
+) -> int:
+    row_count = 0
+    with archive.open(member_name, mode="w") as raw_handle:
+        text_handle = TextIOWrapper(raw_handle, encoding="utf-8", newline="")
+        writer = csv.DictWriter(text_handle, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        for row in _iter_jsonl_rows(spool_path):
+            writer.writerow({field: row.get(field, "") for field in fieldnames})
+            row_count += 1
+        text_handle.flush()
+    return row_count
+
+
 def _hash_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -216,243 +253,253 @@ def combine_historic_month_archives(
 
     routes_by_id: dict[str, dict[str, str]] = {}
     stops_by_id: dict[str, dict[str, str]] = {}
-    trip_rows: list[dict[str, str]] = []
-    stop_time_rows: list[dict[str, str]] = []
-    shape_rows: list[dict[str, str]] = []
-    stop_observation_rows: list[dict[str, str]] = []
-    calendar_rows: list[dict[str, str]] = []
-    calendar_dates_rows: list[dict[str, str]] = []
+    combined_acquisitions_root.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(prefix="combined_historic_", dir=combined_acquisitions_root) as temp_dir:
+        temp_root = Path(temp_dir)
+        trip_spool = temp_root / "trips.jsonl"
+        stop_time_spool = temp_root / "stop_times.jsonl"
+        shape_spool = temp_root / "shapes.jsonl"
+        stop_observation_spool = temp_root / "stop_observations.jsonl"
+        calendar_spool = temp_root / "calendar.jsonl"
+        calendar_dates_spool = temp_root / "calendar_dates.jsonl"
+        shape_row_count = 0
+        stop_observation_row_count = 0
+        calendar_row_count = 0
+        calendar_dates_row_count = 0
 
-    for metadata_path in ordered_metadata_paths:
-        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-        historic_month = validate_historic_month(str(metadata["requested_historic_month"]))
-        publication_months.append(historic_month)
-        month_token = historic_month.replace("-", "")
-        artifact_path = metadata_path.parent / str(metadata["artifact_filename"])
-        if not artifact_path.exists():
-            raise FileNotFoundError(f"Historic publication source zip not found: {artifact_path}")
+        for metadata_path in ordered_metadata_paths:
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            historic_month = validate_historic_month(str(metadata["requested_historic_month"]))
+            publication_months.append(historic_month)
+            month_token = historic_month.replace("-", "")
+            artifact_path = metadata_path.parent / str(metadata["artifact_filename"])
+            if not artifact_path.exists():
+                raise FileNotFoundError(f"Historic publication source zip not found: {artifact_path}")
 
-        trip_id_map: dict[str, str] = {}
-        service_id_map: dict[str, str] = {}
-        shape_id_map: dict[str, str] = {}
+            trip_id_map: dict[str, str] = {}
+            service_id_map: dict[str, str] = {}
+            shape_id_map: dict[str, str] = {}
 
-        with zipfile.ZipFile(artifact_path, mode="r") as archive:
-            current_route_fieldnames, route_rows = _read_archive_rows(archive, "routes.txt")
-            route_fieldnames = _merge_fieldnames(route_fieldnames, current_route_fieldnames)
-            for row in route_rows:
-                route_id = (row.get("route_id") or "").strip()
-                if route_id:
-                    routes_by_id[route_id] = row
+            with zipfile.ZipFile(artifact_path, mode="r") as archive:
+                current_route_fieldnames, route_rows = _read_archive_rows(archive, "routes.txt")
+                route_fieldnames = _merge_fieldnames(route_fieldnames, current_route_fieldnames)
+                for row in route_rows:
+                    route_id = (row.get("route_id") or "").strip()
+                    if route_id:
+                        routes_by_id[route_id] = row
 
-            current_stop_fieldnames, stop_rows = _read_archive_rows(archive, "stops.txt")
-            stop_fieldnames = _merge_fieldnames(stop_fieldnames, current_stop_fieldnames)
-            for row in stop_rows:
-                stop_id = (row.get("stop_id") or "").strip()
-                if stop_id:
-                    stops_by_id[stop_id] = row
+                current_stop_fieldnames, stop_rows = _read_archive_rows(archive, "stops.txt")
+                stop_fieldnames = _merge_fieldnames(stop_fieldnames, current_stop_fieldnames)
+                for row in stop_rows:
+                    stop_id = (row.get("stop_id") or "").strip()
+                    if stop_id:
+                        stops_by_id[stop_id] = row
 
-            current_trip_fieldnames, trips = _read_archive_rows(archive, "trips.txt")
-            trip_fieldnames = _merge_fieldnames(trip_fieldnames, current_trip_fieldnames)
-            for row in trips:
-                original_trip_id = (row.get("trip_id") or "").strip()
-                original_service_id = (row.get("service_id") or "").strip()
-                original_shape_id = (row.get("shape_id") or "").strip()
-                namespaced_row = dict(row)
-                namespaced_trip_id = _namespace_value(month_token, original_trip_id)
-                namespaced_service_id = _namespace_value(month_token, original_service_id)
-                namespaced_shape_id = _namespace_value(month_token, original_shape_id)
-                namespaced_row["trip_id"] = namespaced_trip_id
-                namespaced_row["service_id"] = namespaced_service_id
-                namespaced_row["shape_id"] = namespaced_shape_id
-                trip_rows.append(namespaced_row)
-                if original_trip_id:
-                    trip_id_map[original_trip_id] = namespaced_trip_id
-                if original_service_id:
-                    service_id_map[original_service_id] = namespaced_service_id
-                if original_shape_id:
-                    shape_id_map[original_shape_id] = namespaced_shape_id
+                current_trip_fieldnames, trips = _read_archive_rows(archive, "trips.txt")
+                trip_fieldnames = _merge_fieldnames(trip_fieldnames, current_trip_fieldnames)
+                for row in trips:
+                    original_trip_id = (row.get("trip_id") or "").strip()
+                    original_service_id = (row.get("service_id") or "").strip()
+                    original_shape_id = (row.get("shape_id") or "").strip()
+                    namespaced_row = dict(row)
+                    namespaced_trip_id = _namespace_value(month_token, original_trip_id)
+                    namespaced_service_id = _namespace_value(month_token, original_service_id)
+                    namespaced_shape_id = _namespace_value(month_token, original_shape_id)
+                    namespaced_row["trip_id"] = namespaced_trip_id
+                    namespaced_row["service_id"] = namespaced_service_id
+                    namespaced_row["shape_id"] = namespaced_shape_id
+                    _append_jsonl_row(trip_spool, namespaced_row)
+                    if original_trip_id:
+                        trip_id_map[original_trip_id] = namespaced_trip_id
+                    if original_service_id:
+                        service_id_map[original_service_id] = namespaced_service_id
+                    if original_shape_id:
+                        shape_id_map[original_shape_id] = namespaced_shape_id
 
-            current_stop_time_fieldnames, stop_times = _read_archive_rows(archive, "stop_times.txt")
-            stop_time_fieldnames = _merge_fieldnames(stop_time_fieldnames, current_stop_time_fieldnames)
-            for row in stop_times:
-                original_trip_id = (row.get("trip_id") or "").strip()
-                if original_trip_id not in trip_id_map:
-                    continue
-                namespaced_row = dict(row)
-                namespaced_row["trip_id"] = trip_id_map[original_trip_id]
-                stop_time_rows.append(namespaced_row)
+                current_stop_time_fieldnames, stop_times = _read_archive_rows(archive, "stop_times.txt")
+                stop_time_fieldnames = _merge_fieldnames(stop_time_fieldnames, current_stop_time_fieldnames)
+                for row in stop_times:
+                    original_trip_id = (row.get("trip_id") or "").strip()
+                    if original_trip_id not in trip_id_map:
+                        continue
+                    namespaced_row = dict(row)
+                    namespaced_row["trip_id"] = trip_id_map[original_trip_id]
+                    _append_jsonl_row(stop_time_spool, namespaced_row)
 
-            current_shape_fieldnames, shapes = _read_archive_rows(archive, "shapes.txt")
-            shape_fieldnames = _merge_fieldnames(shape_fieldnames, current_shape_fieldnames)
-            for row in shapes:
-                original_shape_id = (row.get("shape_id") or "").strip()
-                if original_shape_id not in shape_id_map:
-                    continue
-                namespaced_row = dict(row)
-                namespaced_row["shape_id"] = shape_id_map[original_shape_id]
-                shape_rows.append(namespaced_row)
+                current_shape_fieldnames, shapes = _read_archive_rows(archive, "shapes.txt")
+                shape_fieldnames = _merge_fieldnames(shape_fieldnames, current_shape_fieldnames)
+                for row in shapes:
+                    original_shape_id = (row.get("shape_id") or "").strip()
+                    if original_shape_id not in shape_id_map:
+                        continue
+                    namespaced_row = dict(row)
+                    namespaced_row["shape_id"] = shape_id_map[original_shape_id]
+                    _append_jsonl_row(shape_spool, namespaced_row)
+                    shape_row_count += 1
 
-            current_calendar_fieldnames, calendar_source_rows = _read_archive_rows(archive, "calendar.txt")
-            calendar_fieldnames = _merge_fieldnames(calendar_fieldnames, current_calendar_fieldnames)
-            for row in calendar_source_rows:
-                original_service_id = (row.get("service_id") or "").strip()
-                if original_service_id not in service_id_map:
-                    continue
-                namespaced_row = dict(row)
-                namespaced_row["service_id"] = service_id_map[original_service_id]
-                calendar_rows.append(namespaced_row)
+                current_calendar_fieldnames, calendar_source_rows = _read_archive_rows(archive, "calendar.txt")
+                calendar_fieldnames = _merge_fieldnames(calendar_fieldnames, current_calendar_fieldnames)
+                for row in calendar_source_rows:
+                    original_service_id = (row.get("service_id") or "").strip()
+                    if original_service_id not in service_id_map:
+                        continue
+                    namespaced_row = dict(row)
+                    namespaced_row["service_id"] = service_id_map[original_service_id]
+                    _append_jsonl_row(calendar_spool, namespaced_row)
+                    calendar_row_count += 1
 
-            current_calendar_dates_fieldnames, calendar_dates_source_rows = _read_archive_rows(
+                current_calendar_dates_fieldnames, calendar_dates_source_rows = _read_archive_rows(
+                    archive,
+                    "calendar_dates.txt",
+                )
+                calendar_dates_fieldnames = _merge_fieldnames(
+                    calendar_dates_fieldnames,
+                    current_calendar_dates_fieldnames,
+                )
+                for row in calendar_dates_source_rows:
+                    original_service_id = (row.get("service_id") or "").strip()
+                    if original_service_id not in service_id_map:
+                        continue
+                    namespaced_row = dict(row)
+                    namespaced_row["service_id"] = service_id_map[original_service_id]
+                    _append_jsonl_row(calendar_dates_spool, namespaced_row)
+                    calendar_dates_row_count += 1
+
+                current_stop_observation_fieldnames, stop_observations = _read_archive_rows(
+                    archive,
+                    STOP_OBSERVATIONS_FILENAME,
+                )
+                stop_observation_fieldnames = _merge_fieldnames(
+                    stop_observation_fieldnames,
+                    current_stop_observation_fieldnames,
+                )
+                for row in stop_observations:
+                    original_trip_id = (row.get("trip_id") or "").strip()
+                    if original_trip_id not in trip_id_map:
+                        continue
+                    namespaced_row = dict(row)
+                    namespaced_row["trip_id"] = trip_id_map[original_trip_id]
+                    _append_jsonl_row(stop_observation_spool, namespaced_row)
+                    stop_observation_row_count += 1
+
+        if shape_row_count <= 0:
+            raise RuntimeError("Combined rolling historic archive would contain no shapes.txt rows.")
+        if stop_observation_row_count <= 0:
+            raise RuntimeError(
+                "Combined rolling historic archive would contain no stop_observations.txt rows."
+            )
+
+        oldest_month = publication_months[0].replace("-", "")
+        latest_month = publication_months[-1].replace("-", "")
+        artifact_stem = (
+            f"511_{DERIVED_PUBLICATION_FEED_SCOPE}_{selected_agency_id}_{oldest_month}_{latest_month}_window{len(publication_months)}"
+        )
+        artifact_path = combined_acquisitions_root / f"{artifact_stem}.zip"
+        metadata_path = combined_acquisitions_root / f"{artifact_stem}.json"
+
+        retained_row_counts: dict[str, int] = {}
+        with zipfile.ZipFile(
+            artifact_path,
+            mode="w",
+            compression=zipfile.ZIP_DEFLATED,
+            compresslevel=6,
+        ) as archive:
+            retained_row_counts["routes.txt"] = _write_rows_to_zip(
                 archive,
-                "calendar_dates.txt",
+                "routes.txt",
+                fieldnames=route_fieldnames,
+                rows=list(routes_by_id.values()),
             )
-            calendar_dates_fieldnames = _merge_fieldnames(
-                calendar_dates_fieldnames,
-                current_calendar_dates_fieldnames,
+            retained_row_counts["trips.txt"] = _write_jsonl_rows_to_zip(
+                archive,
+                "trips.txt",
+                fieldnames=trip_fieldnames,
+                spool_path=trip_spool,
             )
-            for row in calendar_dates_source_rows:
-                original_service_id = (row.get("service_id") or "").strip()
-                if original_service_id not in service_id_map:
-                    continue
-                namespaced_row = dict(row)
-                namespaced_row["service_id"] = service_id_map[original_service_id]
-                calendar_dates_rows.append(namespaced_row)
-
-            current_stop_observation_fieldnames, stop_observations = _read_archive_rows(
+            retained_row_counts["stop_times.txt"] = _write_jsonl_rows_to_zip(
+                archive,
+                "stop_times.txt",
+                fieldnames=stop_time_fieldnames,
+                spool_path=stop_time_spool,
+            )
+            retained_row_counts["stops.txt"] = _write_rows_to_zip(
+                archive,
+                "stops.txt",
+                fieldnames=stop_fieldnames,
+                rows=list(stops_by_id.values()),
+            )
+            retained_row_counts["shapes.txt"] = _write_jsonl_rows_to_zip(
+                archive,
+                "shapes.txt",
+                fieldnames=shape_fieldnames,
+                spool_path=shape_spool,
+            )
+            if calendar_row_count > 0:
+                retained_row_counts["calendar.txt"] = _write_jsonl_rows_to_zip(
+                    archive,
+                    "calendar.txt",
+                    fieldnames=calendar_fieldnames,
+                    spool_path=calendar_spool,
+                )
+            if calendar_dates_row_count > 0:
+                retained_row_counts["calendar_dates.txt"] = _write_jsonl_rows_to_zip(
+                    archive,
+                    "calendar_dates.txt",
+                    fieldnames=calendar_dates_fieldnames,
+                    spool_path=calendar_dates_spool,
+                )
+            retained_row_counts[STOP_OBSERVATIONS_FILENAME] = _write_jsonl_rows_to_zip(
                 archive,
                 STOP_OBSERVATIONS_FILENAME,
+                fieldnames=stop_observation_fieldnames,
+                spool_path=stop_observation_spool,
             )
-            stop_observation_fieldnames = _merge_fieldnames(
-                stop_observation_fieldnames,
-                current_stop_observation_fieldnames,
-            )
-            for row in stop_observations:
-                original_trip_id = (row.get("trip_id") or "").strip()
-                if original_trip_id not in trip_id_map:
-                    continue
-                namespaced_row = dict(row)
-                namespaced_row["trip_id"] = trip_id_map[original_trip_id]
-                stop_observation_rows.append(namespaced_row)
 
-    if not shape_rows:
-        raise RuntimeError("Combined rolling historic archive would contain no shapes.txt rows.")
-    if not stop_observation_rows:
-        raise RuntimeError(
-            "Combined rolling historic archive would contain no stop_observations.txt rows."
-        )
+        with zipfile.ZipFile(artifact_path, mode="r") as archive:
+            zip_member_names = tuple(sorted(archive.namelist()))
 
-    oldest_month = publication_months[0].replace("-", "")
-    latest_month = publication_months[-1].replace("-", "")
-    artifact_stem = (
-        f"511_{DERIVED_PUBLICATION_FEED_SCOPE}_{selected_agency_id}_{oldest_month}_{latest_month}_window{len(publication_months)}"
-    )
-    combined_acquisitions_root.mkdir(parents=True, exist_ok=True)
-    artifact_path = combined_acquisitions_root / f"{artifact_stem}.zip"
-    metadata_path = combined_acquisitions_root / f"{artifact_stem}.json"
-
-    retained_row_counts: dict[str, int] = {}
-    with zipfile.ZipFile(
-        artifact_path,
-        mode="w",
-        compression=zipfile.ZIP_DEFLATED,
-        compresslevel=6,
-    ) as archive:
-        retained_row_counts["routes.txt"] = _write_rows_to_zip(
-            archive,
-            "routes.txt",
-            fieldnames=route_fieldnames,
-            rows=list(routes_by_id.values()),
+        metadata_payload = {
+            "artifact_filename": artifact_path.name,
+            "artifact_sha256": _hash_file(artifact_path),
+            "artifact_size_bytes": artifact_path.stat().st_size,
+            "combined_at": datetime.now(tz=UTC).isoformat(),
+            "feed_scope": DERIVED_PUBLICATION_FEED_SCOPE,
+            "operator_id": selected_agency_id,
+            "publication_kind": PUBLICATION_KIND,
+            "publication_window_months": publication_months,
+            "publication_window_size_months": len(publication_months),
+            "requested_historic_month": publication_months[-1],
+            "requested_historic_value": f"{publication_months[-1]}-so",
+            "requested_stop_observations": True,
+            "required_core_files": ["routes.txt", "trips.txt", "stops.txt", "stop_times.txt", "shapes.txt"],
+            "retained_row_counts": retained_row_counts,
+            "service_files_present": tuple(
+                file_name
+                for file_name in ("calendar.txt", "calendar_dates.txt")
+                if file_name in zip_member_names
+            ),
+            "selected_agency_id": selected_agency_id,
+            "source_artifact_filenames": [
+                str(json.loads(path.read_text(encoding="utf-8"))["artifact_filename"])
+                for path in ordered_metadata_paths
+            ],
+            "source_feed_scope": "regional_historic_sf",
+            "source_metadata_paths": [str(path) for path in ordered_metadata_paths],
+            "source_system": "511",
+            "stop_observations_present": True,
+            "shapes_present": True,
+            "zip_member_names": zip_member_names,
+        }
+        metadata_path.write_text(
+            json.dumps(metadata_payload, indent=2, sort_keys=True),
+            encoding="utf-8",
         )
-        retained_row_counts["trips.txt"] = _write_rows_to_zip(
-            archive,
-            "trips.txt",
-            fieldnames=trip_fieldnames,
-            rows=trip_rows,
+        return CombinedHistoricArchiveResult(
+            artifact_path=artifact_path,
+            metadata_path=metadata_path,
+            retained_row_counts=retained_row_counts,
+            publication_months=tuple(publication_months),
         )
-        retained_row_counts["stop_times.txt"] = _write_rows_to_zip(
-            archive,
-            "stop_times.txt",
-            fieldnames=stop_time_fieldnames,
-            rows=stop_time_rows,
-        )
-        retained_row_counts["stops.txt"] = _write_rows_to_zip(
-            archive,
-            "stops.txt",
-            fieldnames=stop_fieldnames,
-            rows=list(stops_by_id.values()),
-        )
-        retained_row_counts["shapes.txt"] = _write_rows_to_zip(
-            archive,
-            "shapes.txt",
-            fieldnames=shape_fieldnames,
-            rows=shape_rows,
-        )
-        if calendar_rows:
-            retained_row_counts["calendar.txt"] = _write_rows_to_zip(
-                archive,
-                "calendar.txt",
-                fieldnames=calendar_fieldnames,
-                rows=calendar_rows,
-            )
-        if calendar_dates_rows:
-            retained_row_counts["calendar_dates.txt"] = _write_rows_to_zip(
-                archive,
-                "calendar_dates.txt",
-                fieldnames=calendar_dates_fieldnames,
-                rows=calendar_dates_rows,
-            )
-        retained_row_counts[STOP_OBSERVATIONS_FILENAME] = _write_rows_to_zip(
-            archive,
-            STOP_OBSERVATIONS_FILENAME,
-            fieldnames=stop_observation_fieldnames,
-            rows=stop_observation_rows,
-        )
-
-    with zipfile.ZipFile(artifact_path, mode="r") as archive:
-        zip_member_names = tuple(sorted(archive.namelist()))
-
-    metadata_payload = {
-        "artifact_filename": artifact_path.name,
-        "artifact_sha256": _hash_file(artifact_path),
-        "artifact_size_bytes": artifact_path.stat().st_size,
-        "combined_at": datetime.now(tz=UTC).isoformat(),
-        "feed_scope": DERIVED_PUBLICATION_FEED_SCOPE,
-        "operator_id": selected_agency_id,
-        "publication_kind": PUBLICATION_KIND,
-        "publication_window_months": publication_months,
-        "publication_window_size_months": len(publication_months),
-        "requested_historic_month": publication_months[-1],
-        "requested_historic_value": f"{publication_months[-1]}-so",
-        "requested_stop_observations": True,
-        "required_core_files": ["routes.txt", "trips.txt", "stops.txt", "stop_times.txt", "shapes.txt"],
-        "retained_row_counts": retained_row_counts,
-        "service_files_present": tuple(
-            file_name
-            for file_name in ("calendar.txt", "calendar_dates.txt")
-            if file_name in zip_member_names
-        ),
-        "selected_agency_id": selected_agency_id,
-        "source_artifact_filenames": [
-            str(json.loads(path.read_text(encoding="utf-8"))["artifact_filename"])
-            for path in ordered_metadata_paths
-        ],
-        "source_feed_scope": "regional_historic_sf",
-        "source_metadata_paths": [str(path) for path in ordered_metadata_paths],
-        "source_system": "511",
-        "stop_observations_present": True,
-        "shapes_present": True,
-        "zip_member_names": zip_member_names,
-    }
-    metadata_path.write_text(
-        json.dumps(metadata_payload, indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
-    return CombinedHistoricArchiveResult(
-        artifact_path=artifact_path,
-        metadata_path=metadata_path,
-        retained_row_counts=retained_row_counts,
-        publication_months=tuple(publication_months),
-    )
 
 
 def _publication_manifest_paths(publication_root: Path) -> tuple[Path, Path]:
