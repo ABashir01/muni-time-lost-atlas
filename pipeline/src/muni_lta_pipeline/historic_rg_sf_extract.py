@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 import hashlib
 import json
 from io import StringIO, TextIOWrapper
+import os
 from pathlib import Path
 from typing import Any, Mapping
 import zipfile
@@ -25,7 +26,12 @@ from muni_lta_pipeline.historic_shapes_api import (
 DEFAULT_DERIVED_ACQUISITIONS_ROOT = (
     REPO_ROOT / "artifacts" / "acquisitions" / "511" / "regional_historic_sf"
 )
-DEFAULT_SHAPES_CACHE_ROOT = REPO_ROOT / "artifacts" / "acquisitions" / "511" / "shapes_api"
+DEFAULT_SHAPES_CACHE_ROOT = Path(
+    os.environ.get(
+        "SHAPES_CACHE_ROOT",
+        str(REPO_ROOT / "artifacts" / "acquisitions" / "511" / "shapes_api"),
+    )
+)
 DEFAULT_SELECTED_AGENCY_ID = "SF"
 DERIVED_FEED_SCOPE = "regional_historic_sf"
 OPTIONAL_GTFS_FILES = ("calendar.txt", "calendar_dates.txt")
@@ -504,6 +510,26 @@ def _build_unique_active_shape_lookup(
     return resolved
 
 
+def _append_active_trip_candidates(
+    *,
+    candidate_trip_ids: list[str],
+    active_candidates: list[tuple[str, str]],
+    seen_active_shape_ids: set[str],
+    seen_active_trip_ids: set[str],
+) -> None:
+    for active_trip_id, active_shape_id in active_candidates:
+        if not active_trip_id:
+            continue
+        if active_shape_id:
+            if active_shape_id in seen_active_shape_ids:
+                continue
+            seen_active_shape_ids.add(active_shape_id)
+        elif active_trip_id in seen_active_trip_ids:
+            continue
+        seen_active_trip_ids.add(active_trip_id)
+        candidate_trip_ids.append(active_trip_id)
+
+
 def _build_unique_active_shape_lookup_by_pattern(
     by_lookup_pattern: Mapping[tuple[str, str, str, str], list[tuple[str, str]]],
 ) -> dict[tuple[str, str, str, str], str]:
@@ -857,30 +883,36 @@ def extract_sf_historic_archive(
                                 continue
                     seen_active_shape_ids: set[str] = set()
                     seen_active_trip_ids: set[str] = set()
-                    for active_trip_id, active_shape_id in exact_active_candidates:
-                        if active_trip_id:
-                            if active_shape_id:
-                                if active_shape_id in seen_active_shape_ids:
-                                    continue
-                                seen_active_shape_ids.add(active_shape_id)
-                            elif active_trip_id in seen_active_trip_ids:
-                                continue
-                            seen_active_trip_ids.add(active_trip_id)
-                            candidate_trip_ids.append(active_trip_id)
-                    if not exact_active_candidates:
-                        same_headsign_candidates = list(
-                            active_by_route_direction_headsign.get(route_direction_headsign_key, [])
+                    _append_active_trip_candidates(
+                        candidate_trip_ids=candidate_trip_ids,
+                        active_candidates=exact_active_candidates,
+                        seen_active_shape_ids=seen_active_shape_ids,
+                        seen_active_trip_ids=seen_active_trip_ids,
+                    )
+                    same_headsign_candidates = list(
+                        active_by_route_direction_headsign.get(route_direction_headsign_key, [])
+                    )
+                    _append_active_trip_candidates(
+                        candidate_trip_ids=candidate_trip_ids,
+                        active_candidates=same_headsign_candidates,
+                        seen_active_shape_ids=seen_active_shape_ids,
+                        seen_active_trip_ids=seen_active_trip_ids,
+                    )
+                    same_route_direction_candidates = list(
+                        active_by_route_direction.get(
+                            (
+                                route_direction_headsign_key[0],
+                                route_direction_headsign_key[1],
+                            ),
+                            [],
                         )
-                        for active_trip_id, active_shape_id in same_headsign_candidates:
-                            if active_trip_id:
-                                if active_shape_id:
-                                    if active_shape_id in seen_active_shape_ids:
-                                        continue
-                                    seen_active_shape_ids.add(active_shape_id)
-                                elif active_trip_id in seen_active_trip_ids:
-                                    continue
-                                seen_active_trip_ids.add(active_trip_id)
-                                candidate_trip_ids.append(active_trip_id)
+                    )
+                    _append_active_trip_candidates(
+                        candidate_trip_ids=candidate_trip_ids,
+                        active_candidates=same_route_direction_candidates,
+                        seen_active_shape_ids=seen_active_shape_ids,
+                        seen_active_trip_ids=seen_active_trip_ids,
+                    )
                 deduped_candidate_trip_ids: list[str] = []
                 for candidate_trip_id in candidate_trip_ids:
                     if candidate_trip_id and candidate_trip_id not in deduped_candidate_trip_ids:

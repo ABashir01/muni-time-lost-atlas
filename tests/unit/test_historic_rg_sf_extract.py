@@ -643,6 +643,109 @@ class HistoricRgSfExtractTests(unittest.TestCase):
             shutil.rmtree(output_root, ignore_errors=True)
             shutil.rmtree(cache_root, ignore_errors=True)
 
+    def test_extract_sf_historic_archive_falls_back_to_route_direction_active_trip_candidates(self) -> None:
+        workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
+        workspace_tmp_root.mkdir(parents=True, exist_ok=True)
+        source_root = workspace_tmp_root / "historic_rg_sf_extract_route_direction_candidate_source"
+        output_root = workspace_tmp_root / "historic_rg_sf_extract_route_direction_candidate_output"
+        cache_root = workspace_tmp_root / "historic_rg_sf_extract_route_direction_candidate_cache"
+        shutil.rmtree(source_root, ignore_errors=True)
+        shutil.rmtree(output_root, ignore_errors=True)
+        shutil.rmtree(cache_root, ignore_errors=True)
+        source_root.mkdir(parents=True, exist_ok=True)
+        output_root.mkdir(parents=True, exist_ok=True)
+        cache_root.mkdir(parents=True, exist_ok=True)
+
+        try:
+            artifact_path = source_root / "511_regional_historic_RG_202604_with_so_test.zip"
+            artifact_path.write_bytes(_make_regional_archive_bytes_without_shapes_or_shape_ids())
+            metadata_path = source_root / "511_regional_historic_RG_202604_with_so_test.json"
+            metadata_path.write_text(
+                json.dumps(
+                    {
+                        "source_system": "511",
+                        "feed_scope": "regional_historic",
+                        "operator_id": "RG",
+                        "artifact_filename": artifact_path.name,
+                        "requested_historic_month": "2026-04",
+                        "requested_historic_value": "2026-04-so",
+                        "requested_stop_observations": True,
+                        "stop_observations_present": True,
+                        "shapes_present": False,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+
+            with (
+                patch(
+                    "muni_lta_pipeline.historic_rg_sf_extract._read_active_shape_fallback_data",
+                    return_value=(
+                        {},
+                        {("1", "1"): [("ACTIVE_TRIP_ROUTE_A", ""), ("ACTIVE_TRIP_ROUTE_B", "")]},
+                        {},
+                        {},
+                        {},
+                    ),
+                ),
+                patch(
+                    "muni_lta_pipeline.historic_rg_sf_extract.backfill_missing_shapes",
+                    return_value=SimpleNamespace(
+                        shape_rows=(
+                            {
+                                "shape_id": _build_shape_pattern_id(
+                                    selected_agency_id="SF",
+                                    route_id="SF:1",
+                                    direction_id="1",
+                                    trip_headsign="Downtown",
+                                    stop_pattern_key=_stop_pattern_key("1:SF:STOP1"),
+                                ),
+                                "shape_pt_lat": "37.0",
+                                "shape_pt_lon": "-122.0",
+                                "shape_pt_sequence": "1",
+                                "shape_dist_traveled": "",
+                            },
+                        ),
+                        request_count=1,
+                        cache_hit_count=0,
+                        successful_shape_count=1,
+                        failure_shape_ids=(),
+                        artifacts=(),
+                    ),
+                ) as mock_backfill,
+            ):
+                extract_sf_historic_archive(
+                    metadata_path=metadata_path,
+                    acquisitions_root=output_root,
+                    api_key="test-token",
+                    shapes_cache_root=cache_root,
+                    active_metadata_path=source_root / "unused_active_metadata.json",
+                )
+
+            expected_shape_id = _build_shape_pattern_id(
+                selected_agency_id="SF",
+                route_id="SF:1",
+                direction_id="1",
+                trip_headsign="Downtown",
+                stop_pattern_key=_stop_pattern_key("1:SF:STOP1"),
+            )
+            self.assertEqual(
+                mock_backfill.call_args.args[0],
+                {
+                    expected_shape_id: [
+                        "SF:TRIP1:20260415",
+                        "ACTIVE_TRIP_ROUTE_A",
+                        "ACTIVE_TRIP_ROUTE_B",
+                    ]
+                },
+            )
+        finally:
+            shutil.rmtree(source_root, ignore_errors=True)
+            shutil.rmtree(output_root, ignore_errors=True)
+            shutil.rmtree(cache_root, ignore_errors=True)
+
     def test_extract_sf_historic_archive_does_not_reuse_ambiguous_active_shape_rows(self) -> None:
         workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
         workspace_tmp_root.mkdir(parents=True, exist_ok=True)

@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, date, datetime
 import hashlib
 import json
+import os
 from io import TextIOWrapper
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -31,8 +32,11 @@ from muni_lta_pipeline.real_dataset_cutover import (
 
 DEFAULT_HISTORIC_AGENCY_ID = "SF"
 DEFAULT_ROLLING_WINDOW_MONTHS = 3
-DEFAULT_PUBLICATION_ROOT = (
-    REPO_ROOT / "artifacts" / "publications" / "b7_rolling_historical_publication"
+DEFAULT_PUBLICATION_ROOT = Path(
+    os.environ.get(
+        "PUBLICATION_ROOT",
+        str(REPO_ROOT / "artifacts" / "publications" / "b7_rolling_historical_publication"),
+    )
 )
 DEFAULT_PUBLICATION_CUTOVER_ROOT = DEFAULT_PUBLICATION_ROOT / "cutovers"
 DEFAULT_PUBLICATION_ACQUISITIONS_ROOT = DEFAULT_PUBLICATION_ROOT / "acquisitions"

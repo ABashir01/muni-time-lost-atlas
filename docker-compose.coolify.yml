@@ -64,6 +64,7 @@ services:
       POSTGRES_PORT: "5432"
       POSTGRES_USER: ${POSTGRES_USER}
       PUBLICATION_ROOT: /app/artifacts/publications/b7_rolling_historical_publication
+      SHAPES_CACHE_ROOT: /app/artifacts/acquisitions/511/shapes_api
       MAINTENANCE_FLAG_PATH: /var/run/muni-lta/maintenance.flag
       TRANSIT_511_API_KEY: ${TRANSIT_511_API_KEY}
     restart: unless-stopped
