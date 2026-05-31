@@ -40,6 +40,7 @@ services:
         condition: service_started
     environment:
       API_BASE_URL: ${API_BASE_URL}
+      HOSTNAME: "0.0.0.0"
       MAINTENANCE_FLAG_PATH: /var/run/muni-lta/maintenance.flag
       MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
