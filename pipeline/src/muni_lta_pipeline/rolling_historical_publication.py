@@ -267,6 +267,38 @@ def _find_latest_cached_active_metadata_path(active_acquisitions_root: Path) -> 
     return None
 
 
+def _find_latest_cached_historic_metadata_path(
+    historic_acquisitions_root: Path,
+    *,
+    historic_month: str,
+    include_stop_observations: bool = True,
+) -> Path | None:
+    if not historic_acquisitions_root.exists():
+        return None
+
+    normalized_month = validate_historic_month(historic_month)
+    for metadata_path in sorted(historic_acquisitions_root.glob("*.json"), reverse=True):
+        try:
+            payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+
+        if str(payload.get("requested_historic_month") or "").strip() != normalized_month:
+            continue
+        if bool(payload.get("requested_stop_observations")) != include_stop_observations:
+            continue
+
+        artifact_filename = str(payload.get("artifact_filename") or "").strip()
+        if not artifact_filename:
+            continue
+
+        artifact_path = metadata_path.parent / artifact_filename
+        if artifact_path.exists():
+            return metadata_path
+
+    return None
+
+
 def combine_historic_month_archives(
     *,
     metadata_paths: Iterable[Path],
@@ -727,14 +759,20 @@ def _publish_month_window(
 
     monthly_metadata_paths: list[Path] = []
     for historic_month in publication_months:
-        historic_fetch = fetch_historic_rg_gtfs_archive(
-            api_key=api_key,
+        historic_metadata_path = _find_latest_cached_historic_metadata_path(
+            historic_acquisitions_root,
             historic_month=historic_month,
             include_stop_observations=True,
-            acquisitions_root=historic_acquisitions_root,
         )
+        if historic_metadata_path is None:
+            historic_metadata_path = fetch_historic_rg_gtfs_archive(
+                api_key=api_key,
+                historic_month=historic_month,
+                include_stop_observations=True,
+                acquisitions_root=historic_acquisitions_root,
+            ).metadata_path
         historic_extract = extract_sf_historic_archive(
-            metadata_path=historic_fetch.metadata_path,
+            metadata_path=historic_metadata_path,
             selected_agency_id=historic_agency_id,
             api_key=api_key,
             active_metadata_path=active_metadata_path,

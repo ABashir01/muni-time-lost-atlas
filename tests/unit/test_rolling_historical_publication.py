@@ -27,6 +27,7 @@ _configure_src_paths()
 
 from muni_lta_pipeline.historic_rg_feed_fetch import HistoricAvailabilityResult  # noqa: E402
 from muni_lta_pipeline.rolling_historical_publication import (  # noqa: E402
+    _find_latest_cached_historic_metadata_path,
     advance_rolling_historical_publication,
     bootstrap_rolling_historical_publication,
     build_trailing_publication_months,
@@ -308,6 +309,38 @@ class RollingHistoricalPublicationUnitTests(unittest.TestCase):
 
         self.assertEqual(result, publication_result)
         self.assertEqual(mock_publish.call_args.kwargs["publication_months"], expected_months)
+
+    def test_bootstrap_rolling_historical_publication_reuses_cached_historic_metadata(self) -> None:
+        workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
+        workspace_tmp_root.mkdir(parents=True, exist_ok=True)
+        historic_root = workspace_tmp_root / "rolling_publication_historic_cache"
+        shutil.rmtree(historic_root, ignore_errors=True)
+        historic_root.mkdir(parents=True, exist_ok=True)
+
+        artifact_path = historic_root / "511_regional_historic_RG_202602_with_so_20260601T010203Z.zip"
+        artifact_path.write_bytes(b"zip")
+        metadata_path = historic_root / "511_regional_historic_RG_202602_with_so_20260601T010203Z.json"
+        metadata_path.write_text(
+            json.dumps(
+                {
+                    "artifact_filename": artifact_path.name,
+                    "requested_historic_month": "2026-02",
+                    "requested_stop_observations": True,
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertEqual(
+            _find_latest_cached_historic_metadata_path(
+                historic_root,
+                historic_month="2026-02",
+                include_stop_observations=True,
+            ),
+            metadata_path,
+        )
 
     def test_advance_rolling_historical_publication_exits_cleanly_when_latest_month_is_already_published(self) -> None:
         workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
