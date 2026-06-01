@@ -159,6 +159,21 @@ def _read_archive_rows(
     return fieldnames, rows
 
 
+def _open_archive_reader(
+    archive: zipfile.ZipFile,
+    member_name: str,
+) -> tuple[list[str], csv.DictReader[str], TextIOWrapper] | None:
+    if member_name not in archive.namelist():
+        return None
+    raw_handle = archive.open(member_name, mode="r")
+    text_handle = TextIOWrapper(raw_handle, encoding="utf-8", newline="")
+    reader = csv.DictReader(text_handle)
+    if reader.fieldnames is None:
+        text_handle.close()
+        raise ValueError(f"{member_name} has no header row.")
+    return list(reader.fieldnames), reader, text_handle
+
+
 def _merge_fieldnames(existing: list[str], incoming: Iterable[str]) -> list[str]:
     merged = list(existing)
     for fieldname in incoming:
@@ -295,92 +310,133 @@ def combine_historic_month_archives(
                     if stop_id:
                         stops_by_id[stop_id] = row
 
-                current_trip_fieldnames, trips = _read_archive_rows(archive, "trips.txt")
-                trip_fieldnames = _merge_fieldnames(trip_fieldnames, current_trip_fieldnames)
-                for row in trips:
-                    original_trip_id = (row.get("trip_id") or "").strip()
-                    original_service_id = (row.get("service_id") or "").strip()
-                    original_shape_id = (row.get("shape_id") or "").strip()
-                    namespaced_row = dict(row)
-                    namespaced_trip_id = _namespace_value(month_token, original_trip_id)
-                    namespaced_service_id = _namespace_value(month_token, original_service_id)
-                    namespaced_shape_id = _namespace_value(month_token, original_shape_id)
-                    namespaced_row["trip_id"] = namespaced_trip_id
-                    namespaced_row["service_id"] = namespaced_service_id
-                    namespaced_row["shape_id"] = namespaced_shape_id
-                    _append_jsonl_row(trip_spool, namespaced_row)
-                    if original_trip_id:
-                        trip_id_map[original_trip_id] = namespaced_trip_id
-                    if original_service_id:
-                        service_id_map[original_service_id] = namespaced_service_id
-                    if original_shape_id:
-                        shape_id_map[original_shape_id] = namespaced_shape_id
+                trip_reader_bundle = _open_archive_reader(archive, "trips.txt")
+                if trip_reader_bundle is None:
+                    raise ValueError("trips.txt is required in the historic publication source archive.")
+                current_trip_fieldnames, trip_reader, trip_handle = trip_reader_bundle
+                try:
+                    trip_fieldnames = _merge_fieldnames(trip_fieldnames, current_trip_fieldnames)
+                    for row in trip_reader:
+                        normalized_row = {key: (value or "").strip() for key, value in row.items()}
+                        original_trip_id = (normalized_row.get("trip_id") or "").strip()
+                        original_service_id = (normalized_row.get("service_id") or "").strip()
+                        original_shape_id = (normalized_row.get("shape_id") or "").strip()
+                        namespaced_trip_id = _namespace_value(month_token, original_trip_id)
+                        namespaced_service_id = _namespace_value(month_token, original_service_id)
+                        namespaced_shape_id = _namespace_value(month_token, original_shape_id)
+                        normalized_row["trip_id"] = namespaced_trip_id
+                        normalized_row["service_id"] = namespaced_service_id
+                        normalized_row["shape_id"] = namespaced_shape_id
+                        _append_jsonl_row(trip_spool, normalized_row)
+                        if original_trip_id:
+                            trip_id_map[original_trip_id] = namespaced_trip_id
+                        if original_service_id:
+                            service_id_map[original_service_id] = namespaced_service_id
+                        if original_shape_id:
+                            shape_id_map[original_shape_id] = namespaced_shape_id
+                finally:
+                    trip_handle.close()
 
-                current_stop_time_fieldnames, stop_times = _read_archive_rows(archive, "stop_times.txt")
-                stop_time_fieldnames = _merge_fieldnames(stop_time_fieldnames, current_stop_time_fieldnames)
-                for row in stop_times:
-                    original_trip_id = (row.get("trip_id") or "").strip()
-                    if original_trip_id not in trip_id_map:
-                        continue
-                    namespaced_row = dict(row)
-                    namespaced_row["trip_id"] = trip_id_map[original_trip_id]
-                    _append_jsonl_row(stop_time_spool, namespaced_row)
+                stop_time_reader_bundle = _open_archive_reader(archive, "stop_times.txt")
+                if stop_time_reader_bundle is None:
+                    raise ValueError("stop_times.txt is required in the historic publication source archive.")
+                current_stop_time_fieldnames, stop_time_reader, stop_time_handle = stop_time_reader_bundle
+                try:
+                    stop_time_fieldnames = _merge_fieldnames(stop_time_fieldnames, current_stop_time_fieldnames)
+                    for row in stop_time_reader:
+                        normalized_row = {key: (value or "").strip() for key, value in row.items()}
+                        original_trip_id = (normalized_row.get("trip_id") or "").strip()
+                        if original_trip_id not in trip_id_map:
+                            continue
+                        normalized_row["trip_id"] = trip_id_map[original_trip_id]
+                        _append_jsonl_row(stop_time_spool, normalized_row)
+                finally:
+                    stop_time_handle.close()
 
-                current_shape_fieldnames, shapes = _read_archive_rows(archive, "shapes.txt")
-                shape_fieldnames = _merge_fieldnames(shape_fieldnames, current_shape_fieldnames)
-                for row in shapes:
-                    original_shape_id = (row.get("shape_id") or "").strip()
-                    if original_shape_id not in shape_id_map:
-                        continue
-                    namespaced_row = dict(row)
-                    namespaced_row["shape_id"] = shape_id_map[original_shape_id]
-                    _append_jsonl_row(shape_spool, namespaced_row)
-                    shape_row_count += 1
+                shape_reader_bundle = _open_archive_reader(archive, "shapes.txt")
+                if shape_reader_bundle is None:
+                    raise ValueError("shapes.txt is required in the historic publication source archive.")
+                current_shape_fieldnames, shape_reader, shape_handle = shape_reader_bundle
+                try:
+                    shape_fieldnames = _merge_fieldnames(shape_fieldnames, current_shape_fieldnames)
+                    for row in shape_reader:
+                        normalized_row = {key: (value or "").strip() for key, value in row.items()}
+                        original_shape_id = (normalized_row.get("shape_id") or "").strip()
+                        if original_shape_id not in shape_id_map:
+                            continue
+                        normalized_row["shape_id"] = shape_id_map[original_shape_id]
+                        _append_jsonl_row(shape_spool, normalized_row)
+                        shape_row_count += 1
+                finally:
+                    shape_handle.close()
 
-                current_calendar_fieldnames, calendar_source_rows = _read_archive_rows(archive, "calendar.txt")
-                calendar_fieldnames = _merge_fieldnames(calendar_fieldnames, current_calendar_fieldnames)
-                for row in calendar_source_rows:
-                    original_service_id = (row.get("service_id") or "").strip()
-                    if original_service_id not in service_id_map:
-                        continue
-                    namespaced_row = dict(row)
-                    namespaced_row["service_id"] = service_id_map[original_service_id]
-                    _append_jsonl_row(calendar_spool, namespaced_row)
-                    calendar_row_count += 1
+                calendar_reader_bundle = _open_archive_reader(archive, "calendar.txt")
+                if calendar_reader_bundle is not None:
+                    current_calendar_fieldnames, calendar_reader, calendar_handle = calendar_reader_bundle
+                    try:
+                        calendar_fieldnames = _merge_fieldnames(calendar_fieldnames, current_calendar_fieldnames)
+                        for row in calendar_reader:
+                            normalized_row = {key: (value or "").strip() for key, value in row.items()}
+                            original_service_id = (normalized_row.get("service_id") or "").strip()
+                            if original_service_id not in service_id_map:
+                                continue
+                            normalized_row["service_id"] = service_id_map[original_service_id]
+                            _append_jsonl_row(calendar_spool, normalized_row)
+                            calendar_row_count += 1
+                    finally:
+                        calendar_handle.close()
 
-                current_calendar_dates_fieldnames, calendar_dates_source_rows = _read_archive_rows(
-                    archive,
-                    "calendar_dates.txt",
-                )
-                calendar_dates_fieldnames = _merge_fieldnames(
-                    calendar_dates_fieldnames,
-                    current_calendar_dates_fieldnames,
-                )
-                for row in calendar_dates_source_rows:
-                    original_service_id = (row.get("service_id") or "").strip()
-                    if original_service_id not in service_id_map:
-                        continue
-                    namespaced_row = dict(row)
-                    namespaced_row["service_id"] = service_id_map[original_service_id]
-                    _append_jsonl_row(calendar_dates_spool, namespaced_row)
-                    calendar_dates_row_count += 1
+                calendar_dates_reader_bundle = _open_archive_reader(archive, "calendar_dates.txt")
+                if calendar_dates_reader_bundle is not None:
+                    (
+                        current_calendar_dates_fieldnames,
+                        calendar_dates_reader,
+                        calendar_dates_handle,
+                    ) = calendar_dates_reader_bundle
+                    try:
+                        calendar_dates_fieldnames = _merge_fieldnames(
+                            calendar_dates_fieldnames,
+                            current_calendar_dates_fieldnames,
+                        )
+                        for row in calendar_dates_reader:
+                            normalized_row = {key: (value or "").strip() for key, value in row.items()}
+                            original_service_id = (normalized_row.get("service_id") or "").strip()
+                            if original_service_id not in service_id_map:
+                                continue
+                            normalized_row["service_id"] = service_id_map[original_service_id]
+                            _append_jsonl_row(calendar_dates_spool, normalized_row)
+                            calendar_dates_row_count += 1
+                    finally:
+                        calendar_dates_handle.close()
 
-                current_stop_observation_fieldnames, stop_observations = _read_archive_rows(
+                stop_observation_reader_bundle = _open_archive_reader(
                     archive,
                     STOP_OBSERVATIONS_FILENAME,
                 )
-                stop_observation_fieldnames = _merge_fieldnames(
-                    stop_observation_fieldnames,
+                if stop_observation_reader_bundle is None:
+                    raise ValueError(
+                        f"{STOP_OBSERVATIONS_FILENAME} is required in the historic publication source archive."
+                    )
+                (
                     current_stop_observation_fieldnames,
-                )
-                for row in stop_observations:
-                    original_trip_id = (row.get("trip_id") or "").strip()
-                    if original_trip_id not in trip_id_map:
-                        continue
-                    namespaced_row = dict(row)
-                    namespaced_row["trip_id"] = trip_id_map[original_trip_id]
-                    _append_jsonl_row(stop_observation_spool, namespaced_row)
-                    stop_observation_row_count += 1
+                    stop_observation_reader,
+                    stop_observation_handle,
+                ) = stop_observation_reader_bundle
+                try:
+                    stop_observation_fieldnames = _merge_fieldnames(
+                        stop_observation_fieldnames,
+                        current_stop_observation_fieldnames,
+                    )
+                    for row in stop_observation_reader:
+                        normalized_row = {key: (value or "").strip() for key, value in row.items()}
+                        original_trip_id = (normalized_row.get("trip_id") or "").strip()
+                        if original_trip_id not in trip_id_map:
+                            continue
+                        normalized_row["trip_id"] = trip_id_map[original_trip_id]
+                        _append_jsonl_row(stop_observation_spool, normalized_row)
+                        stop_observation_row_count += 1
+                finally:
+                    stop_observation_handle.close()
 
         if shape_row_count <= 0:
             raise RuntimeError("Combined rolling historic archive would contain no shapes.txt rows.")
