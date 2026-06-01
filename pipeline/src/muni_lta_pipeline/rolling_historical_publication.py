@@ -246,6 +246,27 @@ def _hash_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _find_latest_cached_active_metadata_path(active_acquisitions_root: Path) -> Path | None:
+    if not active_acquisitions_root.exists():
+        return None
+
+    for metadata_path in sorted(active_acquisitions_root.glob("*.json"), reverse=True):
+        try:
+            payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+
+        artifact_filename = str(payload.get("artifact_filename") or "").strip()
+        if not artifact_filename:
+            continue
+
+        artifact_path = metadata_path.parent / artifact_filename
+        if artifact_path.exists():
+            return metadata_path
+
+    return None
+
+
 def combine_historic_month_archives(
     *,
     metadata_paths: Iterable[Path],
@@ -695,10 +716,14 @@ def _publish_month_window(
 ) -> RollingPublicationResult:
     api_key = get_511_api_key()
     if active_metadata_path is None:
-        active_metadata_path = fetch_active_gtfs_archive(
-            api_key=api_key,
-            acquisitions_root=active_acquisitions_root,
-        ).metadata_path
+        active_metadata_path = _find_latest_cached_active_metadata_path(
+            active_acquisitions_root
+        )
+        if active_metadata_path is None:
+            active_metadata_path = fetch_active_gtfs_archive(
+                api_key=api_key,
+                acquisitions_root=active_acquisitions_root,
+            ).metadata_path
 
     monthly_metadata_paths: list[Path] = []
     for historic_month in publication_months:
