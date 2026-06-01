@@ -219,6 +219,44 @@ class RollingHistoricalPublicationUnitTests(unittest.TestCase):
         self.assertEqual(result, publication_result)
         self.assertEqual(mock_publish.call_args.kwargs["publication_months"], expected_months)
 
+    def test_bootstrap_rolling_historical_publication_skips_availability_probe_for_explicit_month(self) -> None:
+        expected_months = ("2026-02", "2026-03", "2026-04")
+        publication_result = {
+            "action": "bootstrap",
+            "historic_agency_id": "SF",
+            "latest_available_month": "2026-04",
+            "publication_months": expected_months,
+            "publication_manifest_path": Path("publication.json"),
+            "latest_publication_manifest_path": Path("latest.json"),
+            "active_metadata_path": None,
+            "combined_metadata_path": None,
+            "cutover_manifest_path": None,
+            "availability_status_code": 200,
+            "availability_request_method": "manual_override",
+            "published": True,
+            "route_count_with_metrics": 68,
+            "map_route_count": 68,
+            "top_route_ids": ("SF:12", "SF:14"),
+        }
+
+        with (
+            patch(
+                "muni_lta_pipeline.rolling_historical_publication.check_historic_rg_gtfs_archive_availability",
+                side_effect=AssertionError("explicit month should not probe availability"),
+            ),
+            patch(
+                "muni_lta_pipeline.rolling_historical_publication._publish_month_window",
+                return_value=publication_result,
+            ) as mock_publish,
+        ):
+            result = bootstrap_rolling_historical_publication(
+                latest_available_month="2026-04"
+            )
+
+        self.assertEqual(result, publication_result)
+        self.assertEqual(mock_publish.call_args.kwargs["publication_months"], expected_months)
+        self.assertEqual(mock_publish.call_args.kwargs["latest_available_month"], "2026-04")
+
     def test_advance_rolling_historical_publication_exits_cleanly_when_latest_month_is_already_published(self) -> None:
         workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
         workspace_tmp_root.mkdir(parents=True, exist_ok=True)
@@ -268,6 +306,65 @@ class RollingHistoricalPublicationUnitTests(unittest.TestCase):
         self.assertEqual(result.action, "already_published")
         self.assertFalse(result.published)
         self.assertEqual(result.latest_available_month, "2026-04")
+
+    def test_advance_rolling_historical_publication_skips_availability_probe_for_explicit_target_month(self) -> None:
+        workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
+        workspace_tmp_root.mkdir(parents=True, exist_ok=True)
+        publication_root = workspace_tmp_root / "rolling_publication_manual_target"
+        shutil.rmtree(publication_root, ignore_errors=True)
+        publication_root.mkdir(parents=True, exist_ok=True)
+        (publication_root / "latest.json").write_text(
+            json.dumps(
+                {
+                    "latest_available_month": "2026-03",
+                    "publication_months": [
+                        "2026-01",
+                        "2026-02",
+                        "2026-03",
+                    ],
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        expected_months = ("2026-02", "2026-03", "2026-04")
+        publication_result = {
+            "action": "advance",
+            "historic_agency_id": "SF",
+            "latest_available_month": "2026-04",
+            "publication_months": expected_months,
+            "publication_manifest_path": Path("publication.json"),
+            "latest_publication_manifest_path": Path("latest.json"),
+            "active_metadata_path": None,
+            "combined_metadata_path": None,
+            "cutover_manifest_path": None,
+            "availability_status_code": 200,
+            "availability_request_method": "manual_override",
+            "published": True,
+            "route_count_with_metrics": 68,
+            "map_route_count": 68,
+            "top_route_ids": ("SF:12", "SF:14"),
+        }
+
+        with (
+            patch(
+                "muni_lta_pipeline.rolling_historical_publication.check_historic_rg_gtfs_archive_availability",
+                side_effect=AssertionError("explicit target month should not probe availability"),
+            ),
+            patch(
+                "muni_lta_pipeline.rolling_historical_publication._publish_month_window",
+                return_value=publication_result,
+            ) as mock_publish,
+        ):
+            result = advance_rolling_historical_publication(
+                publication_root=publication_root,
+                target_month="2026-04",
+            )
+
+        self.assertEqual(result, publication_result)
+        self.assertEqual(mock_publish.call_args.kwargs["publication_months"], expected_months)
+        self.assertEqual(mock_publish.call_args.kwargs["latest_available_month"], "2026-04")
 
     def test_prune_publication_storage_keeps_only_current_rolling_artifacts(self) -> None:
         workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"

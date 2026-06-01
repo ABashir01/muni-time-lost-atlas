@@ -816,16 +816,22 @@ def bootstrap_rolling_historical_publication(
     window_months: int = DEFAULT_ROLLING_WINDOW_MONTHS,
     skip_dbt: bool = False,
 ) -> RollingPublicationResult:
-    api_key = get_511_api_key()
-    availability = (
-        check_newest_available_completed_month(api_key=api_key, current_date=current_date)
-        if latest_available_month is None
-        else check_historic_rg_gtfs_archive_availability(
-            api_key=api_key,
-            historic_month=latest_available_month,
-            include_stop_observations=True,
+    if latest_available_month is None:
+        api_key = get_511_api_key()
+        availability = check_newest_available_completed_month(
+            api_key=api_key, current_date=current_date
         )
-    )
+    else:
+        normalized_month = validate_historic_month(latest_available_month)
+        availability = HistoricAvailabilityResult(
+            historic_month=normalized_month,
+            include_stop_observations=True,
+            requested_url="manual_override",
+            available=True,
+            checked_at=datetime.now(tz=UTC).isoformat(),
+            request_method="manual_override",
+            status_code=200,
+        )
     if not availability.available:
         raise RuntimeError(
             f"Historic archive for newest completed month {availability.historic_month} is not available yet."
@@ -867,16 +873,22 @@ def advance_rolling_historical_publication(
     if existing_manifest is None:
         raise RuntimeError("No rolling publication manifest exists yet. Run bootstrap first.")
 
-    api_key = get_511_api_key()
-    availability = (
-        check_newest_available_completed_month(api_key=api_key, current_date=current_date)
-        if target_month is None
-        else check_historic_rg_gtfs_archive_availability(
-            api_key=api_key,
-            historic_month=target_month,
-            include_stop_observations=True,
+    if target_month is None:
+        api_key = get_511_api_key()
+        availability = check_newest_available_completed_month(
+            api_key=api_key, current_date=current_date
         )
-    )
+    else:
+        normalized_month = validate_historic_month(target_month)
+        availability = HistoricAvailabilityResult(
+            historic_month=normalized_month,
+            include_stop_observations=True,
+            requested_url="manual_override",
+            available=True,
+            checked_at=datetime.now(tz=UTC).isoformat(),
+            request_method="manual_override",
+            status_code=200,
+        )
     latest_published_month = str(existing_manifest["latest_available_month"])
     publication_manifest_path = publication_root / "latest.json"
 
