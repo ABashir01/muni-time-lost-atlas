@@ -14,6 +14,7 @@ class PipelineSettings:
 
     environment: str = "development"
     database_url: str | None = None
+    app_root: Path = Path(".")
     fixtures_root: Path = Path("fixtures")
 
 
@@ -22,9 +23,11 @@ def get_pipeline_settings(
 ) -> PipelineSettings:
     """Read pipeline settings from environment variables."""
     env = environ or os.environ
+    app_root = Path(env.get("APP_ROOT", Path(__file__).resolve().parents[3]))
     fixtures_root = Path(env.get("FIXTURES_ROOT", "fixtures"))
     return PipelineSettings(
         environment=env.get("PIPELINE_ENV", "development"),
         database_url=env.get("DATABASE_URL"),
+        app_root=app_root,
         fixtures_root=fixtures_root,
     )

@@ -10,7 +10,6 @@ from pathlib import Path
 
 from muni_lta_pipeline.config import get_pipeline_settings
 from muni_lta_pipeline.gtfs_static_fixture_ingest import (
-    REPO_ROOT,
     ensure_db_service,
     execute_sql_file,
     get_postgres_settings,
@@ -20,7 +19,12 @@ from muni_lta_pipeline.gtfs_static_fixture_ingest import (
 )
 
 
-DDL_FILE = REPO_ROOT / "db" / "sql" / "06-create-raw-transit-lane-overlays-table.sql"
+DDL_FILE = (
+    get_pipeline_settings().app_root
+    / "db"
+    / "sql"
+    / "06-create-raw-transit-lane-overlays-table.sql"
+)
 RAW_TABLE_NAME = "raw.transit_only_lanes"
 TABLE_COLUMNS = (
     "overlay_id",

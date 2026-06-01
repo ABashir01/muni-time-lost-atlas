@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 from typing import Iterable, Mapping
 
+from muni_lta_pipeline.config import get_pipeline_settings
 from muni_lta_pipeline.gtfs_static_fixture_ingest import (
     ensure_db_service,
     execute_sql_file,
@@ -21,8 +22,10 @@ from muni_lta_pipeline.gtfs_static_fixture_ingest import (
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DDL_FILE = REPO_ROOT / "db" / "sql" / "03-create-raw-stop-observations-table.sql"
-DEFAULT_FIXTURE_DIR = REPO_ROOT / "fixtures" / "stop_observations" / "regional_rg_minimal"
+DDL_FILE = get_pipeline_settings().app_root / "db" / "sql" / "03-create-raw-stop-observations-table.sql"
+DEFAULT_FIXTURE_DIR = (
+    get_pipeline_settings().fixtures_root / "stop_observations" / "regional_rg_minimal"
+)
 FIXTURE_FILENAME = "stop_observations.txt"
 TABLE_NAME = "raw.stop_observations"
 TABLE_COLUMNS = (

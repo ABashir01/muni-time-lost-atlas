@@ -15,11 +15,14 @@ import time
 from typing import Iterable, Mapping
 from urllib.parse import quote
 
+from muni_lta_pipeline.config import get_pipeline_settings
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+APP_ROOT = get_pipeline_settings().app_root
 ENV_FILE = REPO_ROOT / ".env"
-DDL_FILE = REPO_ROOT / "db" / "sql" / "01-create-raw-gtfs-tables.sql"
-DEFAULT_FIXTURE_DIR = REPO_ROOT / "fixtures" / "gtfs_static" / "minimal"
+DDL_FILE = APP_ROOT / "db" / "sql" / "01-create-raw-gtfs-tables.sql"
+DEFAULT_FIXTURE_DIR = get_pipeline_settings().fixtures_root / "gtfs_static" / "minimal"
 
 
 @dataclass(frozen=True)
@@ -200,7 +203,7 @@ def run_command(
 ) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
         command,
-        cwd=REPO_ROOT,
+        cwd=APP_ROOT,
         input=input_text,
         text=True,
         capture_output=capture_output,

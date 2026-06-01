@@ -10,8 +10,8 @@ import subprocess
 import sys
 from typing import Any, Iterable, Mapping
 
+from muni_lta_pipeline.config import get_pipeline_settings
 from muni_lta_pipeline.gtfs_static_fixture_ingest import (
-    REPO_ROOT,
     ensure_db_service,
     get_postgres_settings,
     load_env_file,
@@ -19,7 +19,8 @@ from muni_lta_pipeline.gtfs_static_fixture_ingest import (
 )
 
 
-DBT_PROJECT_DIR = REPO_ROOT / "dbt"
+APP_ROOT = get_pipeline_settings().app_root
+DBT_PROJECT_DIR = APP_ROOT / "dbt"
 
 
 def _dbt_command() -> list[str]:
@@ -74,7 +75,7 @@ def _run_dbt(
 
     process = subprocess.Popen(
         command,
-        cwd=REPO_ROOT,
+        cwd=APP_ROOT,
         env=env,
         text=True,
         stdout=subprocess.PIPE,

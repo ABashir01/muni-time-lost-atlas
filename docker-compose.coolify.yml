@@ -57,6 +57,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      APP_ROOT: /app
       FIXTURES_ROOT: /app/fixtures
       PIPELINE_ENV: production
       POSTGRES_DB: ${POSTGRES_DB}
