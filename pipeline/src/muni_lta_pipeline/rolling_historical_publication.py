@@ -189,7 +189,7 @@ def _write_rows_to_zip(
     fieldnames: list[str],
     rows: list[dict[str, str]],
 ) -> int:
-    with archive.open(member_name, mode="w") as raw_handle:
+    with archive.open(member_name, mode="w", force_zip64=True) as raw_handle:
         text_handle = TextIOWrapper(raw_handle, encoding="utf-8", newline="")
         writer = csv.DictWriter(text_handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
@@ -224,7 +224,7 @@ def _write_jsonl_rows_to_zip(
     spool_path: Path,
 ) -> int:
     row_count = 0
-    with archive.open(member_name, mode="w") as raw_handle:
+    with archive.open(member_name, mode="w", force_zip64=True) as raw_handle:
         text_handle = TextIOWrapper(raw_handle, encoding="utf-8", newline="")
         writer = csv.DictWriter(text_handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
