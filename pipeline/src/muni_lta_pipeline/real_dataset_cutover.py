@@ -38,7 +38,7 @@ from muni_lta_pipeline.historic_stop_observations_archive_ingest import (
     load_historic_stop_observations_archive,
 )
 from muni_lta_pipeline.transit_lane_overlay_fixture_ingest import (
-    DEFAULT_FIXTURE_PATH as TRANSIT_LANE_OVERLAY_FIXTURE_PATH,
+    get_default_fixture_path as get_transit_lane_overlay_fixture_path,
     load_transit_lane_overlay_fixture,
 )
 
@@ -232,8 +232,9 @@ def _compute_raw_input_fingerprint(
     *,
     active_metadata_path: Path,
     historic_metadata_path: Path,
-    overlay_fixture_path: Path = TRANSIT_LANE_OVERLAY_FIXTURE_PATH,
+    overlay_fixture_path: Path | None = None,
 ) -> dict[str, Any]:
+    overlay_fixture_path = overlay_fixture_path or get_transit_lane_overlay_fixture_path()
     digest = hashlib.sha256()
     tracked_inputs: list[str] = []
 
@@ -675,7 +676,7 @@ def materialize_prepared_historic_publication(
                 latest_log_path=latest_log_path,
             )
             overlay_row_count = load_transit_lane_overlay_fixture(
-                fixture_path=TRANSIT_LANE_OVERLAY_FIXTURE_PATH,
+                fixture_path=get_transit_lane_overlay_fixture_path(),
                 snapshot_label=overlay_snapshot_label,
             )
             _log(

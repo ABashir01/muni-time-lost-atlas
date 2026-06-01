@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from io import StringIO
 from pathlib import Path
 
+from muni_lta_pipeline.config import get_pipeline_settings
 from muni_lta_pipeline.gtfs_static_fixture_ingest import (
     REPO_ROOT,
     ensure_db_service,
@@ -20,9 +21,6 @@ from muni_lta_pipeline.gtfs_static_fixture_ingest import (
 
 
 DDL_FILE = REPO_ROOT / "db" / "sql" / "06-create-raw-transit-lane-overlays-table.sql"
-DEFAULT_FIXTURE_PATH = (
-    REPO_ROOT / "fixtures" / "geospatial" / "transit_only_lanes" / "minimal.geojson"
-)
 RAW_TABLE_NAME = "raw.transit_only_lanes"
 TABLE_COLUMNS = (
     "overlay_id",
@@ -38,6 +36,18 @@ METADATA_COLUMNS = (
     "snapshot_label",
     "ingested_at",
 )
+
+
+def get_default_fixture_path() -> Path:
+    return (
+        get_pipeline_settings().fixtures_root
+        / "geospatial"
+        / "transit_only_lanes"
+        / "minimal.geojson"
+    )
+
+
+DEFAULT_FIXTURE_PATH = get_default_fixture_path()
 
 
 def read_fixture_rows(fixture_path: Path, metadata: dict[str, str]) -> list[dict[str, str]]:
@@ -98,12 +108,13 @@ def insert_rows(settings, rows: list[dict[str, str]]) -> int:
 
 def load_transit_lane_overlay_fixture(
     *,
-    fixture_path: Path = DEFAULT_FIXTURE_PATH,
+    fixture_path: Path | None = None,
     source_system: str = "sfmta_open_data",
     feed_scope: str = "context_overlay",
     operator_id: str = "SFMTA",
     snapshot_label: str = "fixture_transit_lanes_v1",
 ) -> int:
+    fixture_path = fixture_path or get_default_fixture_path()
     settings = get_postgres_settings()
     ensure_db_service()
     wait_for_database(settings)
@@ -126,7 +137,7 @@ def main() -> int:
     parser.add_argument(
         "--fixture-path",
         type=Path,
-        default=DEFAULT_FIXTURE_PATH,
+        default=get_default_fixture_path(),
         help="Path to the transit-only-lane GeoJSON fixture.",
     )
     parser.add_argument(
