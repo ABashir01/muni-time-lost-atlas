@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 from typing import Any, Iterable, Mapping
@@ -24,19 +23,6 @@ DBT_PROJECT_DIR = APP_ROOT / "dbt"
 
 
 def _dbt_command() -> list[str]:
-    executable_path = Path(sys.executable)
-    sibling_candidates = (
-        executable_path.with_name("dbt.exe"),
-        executable_path.with_name("dbt"),
-    )
-    for candidate in sibling_candidates:
-        if candidate.exists():
-            return [str(candidate)]
-
-    discovered = shutil.which("dbt")
-    if discovered:
-        return [discovered]
-
     return [sys.executable, "-m", "dbt.cli.main"]
 
 
