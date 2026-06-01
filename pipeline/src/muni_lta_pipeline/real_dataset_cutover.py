@@ -576,7 +576,7 @@ def materialize_prepared_historic_publication(
     reused_existing_observed_raw = False
     reused_existing_overlay_raw = False
     connection_url = build_postgres_connection_url()
-    with psycopg.connect(connection_url) as metadata_connection:
+    with psycopg.connect(connection_url, autocommit=True) as metadata_connection:
         if reuse_existing_raw and (
             _gtfs_snapshot_present(metadata_connection, active_gtfs_snapshot_label)
             and _gtfs_snapshot_present(metadata_connection, historic_gtfs_snapshot_label)

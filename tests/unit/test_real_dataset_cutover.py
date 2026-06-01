@@ -55,6 +55,110 @@ class _FakeConnection:
 
 
 class RealDatasetCutoverUnitTests(unittest.TestCase):
+    def test_materialize_real_dataset_cutover_uses_autocommit_for_metadata_checks(self) -> None:
+        workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
+        workspace_tmp_root.mkdir(parents=True, exist_ok=True)
+        scenario_root = workspace_tmp_root / "real_dataset_cutover_autocommit"
+        shutil.rmtree(scenario_root, ignore_errors=True)
+        scenario_root.mkdir(parents=True, exist_ok=True)
+
+        active_metadata_path = scenario_root / "active.json"
+        historic_metadata_path = scenario_root / "historic.json"
+        cutover_root = scenario_root / "cutovers"
+        cutover_root.mkdir(parents=True, exist_ok=True)
+        active_metadata_path.write_text("{}", encoding="utf-8")
+        historic_metadata_path.write_text("{}", encoding="utf-8")
+
+        historic_extract_result = SimpleNamespace(
+            metadata_path=historic_metadata_path,
+            reused_existing=True,
+            metadata=SimpleNamespace(
+                feed_scope="regional_historic_sf",
+                retained_row_counts={"routes.txt": 65},
+            ),
+        )
+
+        def _fake_query_int(_connection: object, sql: str) -> int:
+            if "route_window_summary" in sql:
+                return 65
+            if "route_map_layer" in sql:
+                return 65
+            return 0
+
+        try:
+            with (
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.extract_sf_historic_archive",
+                    return_value=historic_extract_result,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.build_gtfs_archive_snapshot_label",
+                    side_effect=["active_label", "historic_label"],
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.build_observed_archive_snapshot_label",
+                    return_value="observed_label",
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.build_postgres_connection_url",
+                    return_value="postgresql://example",
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._compute_raw_input_fingerprint",
+                    return_value={"sha256": "raw_a", "tracked_inputs": []},
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._compute_dbt_fingerprint",
+                    return_value={"sha256": "dbt_a", "tracked_paths": []},
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._find_reusable_raw_manifest",
+                    return_value=(cutover_root / "prior.json", {}),
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._find_reusable_dbt_manifest",
+                    return_value=(cutover_root / "prior.json", {}),
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._gtfs_snapshot_present",
+                    return_value=True,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._stop_observations_snapshot_present",
+                    return_value=True,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._overlay_snapshot_present",
+                    return_value=True,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._snapshot_row_count",
+                    return_value=2,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover._query_int",
+                    side_effect=_fake_query_int,
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.run_dbt_run",
+                ),
+                patch(
+                    "muni_lta_pipeline.real_dataset_cutover.psycopg.connect",
+                    return_value=_FakeConnection(),
+                ) as mock_connect,
+            ):
+                materialize_real_dataset_cutover(
+                    historic_month="2023-02",
+                    historic_agency_id="SF",
+                    active_metadata_path=active_metadata_path,
+                    historic_metadata_path=historic_metadata_path,
+                    cutover_root=cutover_root,
+                )
+
+            self.assertEqual(mock_connect.call_args_list[0].kwargs.get("autocommit"), True)
+        finally:
+            shutil.rmtree(scenario_root, ignore_errors=True)
+
     def test_compute_dbt_fingerprint_tracks_dbt_files_and_vars(self) -> None:
         workspace_tmp_root = Path(__file__).resolve().parents[2] / ".tmp"
         workspace_tmp_root.mkdir(parents=True, exist_ok=True)
