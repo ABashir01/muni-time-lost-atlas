@@ -11,13 +11,12 @@ models:
   - name: route_segment_layer
     tests:
       - unique_column_combination:
-          arguments:
-            columns:
-              - route_id
-              - direction_id
-              - shape_id
-              - segment_sequence
-              - window_key
+          columns:
+            - route_id
+            - direction_id
+            - shape_id
+            - segment_sequence
+            - window_key
     columns:
       - name: route_id
         tests:
@@ -36,12 +35,11 @@ models:
   - name: stop_wait_hotspots
     tests:
       - unique_column_combination:
-          arguments:
-            columns:
-              - route_id
-              - direction_id
-              - stop_id
-              - window_key
+          columns:
+            - route_id
+            - direction_id
+            - stop_id
+            - window_key
     columns:
       - name: route_id
         tests:
