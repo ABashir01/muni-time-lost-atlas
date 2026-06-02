@@ -40,6 +40,10 @@ METADATA_COLUMNS = (
     "snapshot_label",
     "ingested_at",
 )
+POSTGIS_EXTENSION_SQL = """
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS postgis_topology;
+"""
 
 
 def get_default_fixture_path() -> Path:
@@ -93,6 +97,10 @@ def truncate_overlay_table(settings) -> None:
     run_psql_sql(settings, f"TRUNCATE TABLE {RAW_TABLE_NAME};")
 
 
+def ensure_postgis_extensions(settings) -> None:
+    run_psql_sql(settings, POSTGIS_EXTENSION_SQL)
+
+
 def insert_rows(settings, rows: list[dict[str, str]]) -> int:
     if not rows:
         return 0
@@ -122,6 +130,7 @@ def load_transit_lane_overlay_fixture(
     settings = get_postgres_settings()
     ensure_db_service()
     wait_for_database(settings)
+    ensure_postgis_extensions(settings)
     execute_sql_file(settings, DDL_FILE)
     truncate_overlay_table(settings)
 

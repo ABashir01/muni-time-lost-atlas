@@ -18,6 +18,9 @@ def _configure_src_paths() -> None:
 _configure_src_paths()
 
 from muni_lta_pipeline.transit_lane_overlay_fixture_ingest import get_default_fixture_path
+from muni_lta_pipeline.transit_lane_overlay_fixture_ingest import (
+    ensure_postgis_extensions,
+)
 
 
 class TransitLaneOverlayFixtureIngestTests(unittest.TestCase):
@@ -27,6 +30,20 @@ class TransitLaneOverlayFixtureIngestTests(unittest.TestCase):
                 get_default_fixture_path(),
                 Path("/app/fixtures/geospatial/transit_only_lanes/minimal.geojson"),
             )
+
+    def test_ensure_postgis_extensions_runs_extension_sql(self) -> None:
+        settings = object()
+        with patch(
+            "muni_lta_pipeline.transit_lane_overlay_fixture_ingest.run_psql_sql"
+        ) as mock_run_psql_sql:
+            ensure_postgis_extensions(settings)
+
+        mock_run_psql_sql.assert_called_once()
+        self.assertIn("CREATE EXTENSION IF NOT EXISTS postgis", mock_run_psql_sql.call_args.args[1])
+        self.assertIn(
+            "CREATE EXTENSION IF NOT EXISTS postgis_topology",
+            mock_run_psql_sql.call_args.args[1],
+        )
 
 
 if __name__ == "__main__":

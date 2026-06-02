@@ -70,6 +70,15 @@ Current integration artifacts:
   - verifies that a second unchanged cutover rerun skips dbt entirely through the manifest-aware no-op guard
   - verifies the rebuilt marts and serving layers expose a broad real Muni route set
   - verifies the live FastAPI contract reads from that rebuilt real dataset rather than the old two-route development cut
+- `integration/test_publisher_bootstrap_smoke.py`
+  - builds local active and historic publication archives from committed fixtures instead of calling live `511`
+  - runs the real `materialize_prepared_historic_publication()` path, including raw loads, transit overlay ingest, dbt, manifests, and app-facing coverage queries
+  - reruns the same cutover once more to verify raw-snapshot reuse and dbt-manifest reuse both work locally
+- `integration/publisher_bootstrap_smoke.ps1`
+  - one-command local smoke wrapper for the publisher path
+  - runs the DB smoke check first, rebuilds the publisher Docker image, then runs a containerized offline smoke module inside the `publisher` image
+  - can optionally run the host-Python `test_publisher_bootstrap_smoke.py` test as a second pass when you specifically want local-venv coverage too
+  - catches both image/runtime dependency drift and publication-path regressions before a Coolify redeploy
 
 Current unit artifacts:
 
@@ -116,4 +125,22 @@ Bundled-runtime alternative:
 
 ```powershell
 & 'C:\Users\ahadb\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m unittest discover -s tests -v
+```
+
+Publisher bootstrap smoke command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tests\integration\publisher_bootstrap_smoke.ps1
+```
+
+Fast rerun when you only changed Python/dbt code and do not need to rebuild the Docker image:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tests\integration\publisher_bootstrap_smoke.ps1 -SkipDockerBuild
+```
+
+Optional host-Python coverage after the containerized smoke succeeds:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tests\integration\publisher_bootstrap_smoke.ps1 -RunHostPythonSmoke
 ```

@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('scheduled_trips') }}
 {{ config(materialized=var('metrics_intermediate_materialization', 'ephemeral'), tags=['metrics']) }}
 
 select
