@@ -1,4 +1,13 @@
-{{ config(materialized='view', tags=['observed']) }}
+{{ config(
+    materialized=var('observed_join_audit_materialization', 'view'),
+    tags=['observed'],
+    post_hook=(
+        [
+            "create index if not exists observed_stop_event_join_audit_status_idx on {{ this }} (join_status)",
+            "create index if not exists observed_stop_event_join_audit_trip_stop_idx on {{ this }} (service_date, trip_id, stop_sequence, observed_stop_id)"
+        ] if var('observed_join_audit_materialization', 'view') == 'table' and var('performance_indexing', false) else []
+    )
+) }}
 
 with observed_base as (
     select

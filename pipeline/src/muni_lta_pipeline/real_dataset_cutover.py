@@ -692,6 +692,7 @@ def materialize_prepared_historic_publication(
         "metrics_intermediate_materialization": "table",
         "observed_feed_scope": historic_feed_scope,
         "observed_canonical_materialization": "table",
+        "observed_join_audit_materialization": "table",
         "observed_snapshot_label": historic_observed_snapshot_label,
         "performance_indexing": True,
     }
