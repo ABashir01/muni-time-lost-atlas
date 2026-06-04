@@ -518,17 +518,7 @@ export function TransitMapSurface({
       const occupiedRects: Rect[] = [];
       const featuredRouteSegments = projectFeatureSegments(map, routeFeatures);
       const placedBadges = routeBadges
-        .map((badge) =>
-          placeRouteBadge(
-            map,
-            badge,
-            routeFeatures,
-            routeColorById,
-            occupiedRects,
-            width,
-            height,
-          ),
-        )
+        .map((badge) => placeRouteBadge(map, badge, routeColorById, occupiedRects, width, height))
         .filter(
           (badge): badge is MapRouteBadge & { color: string; x: number; y: number } =>
             Boolean(badge),
@@ -922,7 +912,6 @@ type Rect = {
 function placeRouteBadge(
   map: MapLibreMap,
   badge: MapRouteBadge,
-  routeFeatures: FeatureLine[],
   routeColorById: Map<string, string>,
   occupiedRects: Rect[],
   width: number,
@@ -930,19 +919,8 @@ function placeRouteBadge(
 ) {
   const badgeWidth = Math.max(36, badge.route_short_name.length * 12 + 18);
   const badgeHeight = 36;
-  const fallbackCandidates = badge.candidate_coordinates
-    .map((coordinate) => map.project(coordinate))
-    .map((point) => ({ x: point.x, y: point.y }));
-  const projectedCandidates = getProjectedRouteBadgeCandidates(
-    map,
-    badge,
-    routeFeatures,
-    width,
-    height,
-  );
-  const candidatePoints = dedupeBadgeCandidates([...projectedCandidates, ...fallbackCandidates]);
-
-  for (const point of candidatePoints) {
+  for (const coordinate of badge.candidate_coordinates) {
+    const point = map.project(coordinate);
 
     if (!isPointInsideMap(point.x, point.y, width, height, 20)) {
       continue;
@@ -970,106 +948,6 @@ function placeRouteBadge(
   }
 
   return null;
-}
-
-function getProjectedRouteBadgeCandidates(
-  map: MapLibreMap,
-  badge: MapRouteBadge,
-  routeFeatures: FeatureLine[],
-  width: number,
-  height: number,
-) {
-  const routeLines = routeFeatures.filter(
-    (feature) => feature.properties.route_id === badge.route_id,
-  );
-
-  if (routeLines.length === 0) {
-    return [];
-  }
-
-  const otherRouteSegments = projectFeatureSegments(
-    map,
-    routeFeatures.filter((feature) => feature.properties.route_id !== badge.route_id),
-  );
-
-  const scoredCandidates = routeLines.flatMap((feature) => {
-    const lines =
-      feature.geometry.type === "MultiLineString"
-        ? feature.geometry.coordinates
-        : [feature.geometry.coordinates];
-
-    return lines.flatMap((line) => {
-      const projectedLine = line.map((coordinate) => map.project(coordinate));
-
-      return projectedLine.slice(1).flatMap((endPoint, index) => {
-        const startPoint = projectedLine[index];
-        const dx = endPoint.x - startPoint.x;
-        const dy = endPoint.y - startPoint.y;
-        const segmentLength = Math.hypot(dx, dy);
-
-        if (segmentLength < 22) {
-          return [];
-        }
-
-        const sampleFractions =
-          segmentLength >= 160
-            ? [0.2, 0.4, 0.6, 0.8]
-            : segmentLength >= 96
-              ? [0.33, 0.5, 0.67]
-              : [0.5];
-
-        return sampleFractions
-          .map((fraction) => {
-            const x = startPoint.x + dx * fraction;
-            const y = startPoint.y + dy * fraction;
-
-            if (!isPointInsideMap(x, y, width, height, 20)) {
-              return null;
-            }
-
-            const edgeClearance = Math.min(x, width - x, y, height - y);
-            const routeClearance =
-              otherRouteSegments.length === 0
-                ? 160
-                : Math.min(
-                    ...otherRouteSegments.map((segment) =>
-                      pointToSegmentDistance([x, y], segment[0], segment[1]),
-                    ),
-                  );
-
-            return {
-              score:
-                Math.min(segmentLength, 220) +
-                Math.min(routeClearance, 160) * 2 +
-                Math.min(edgeClearance, 120),
-              x,
-              y,
-            };
-          })
-          .filter((candidate): candidate is { score: number; x: number; y: number } =>
-            Boolean(candidate),
-          );
-      });
-    });
-  });
-
-  return scoredCandidates.sort((left, right) => right.score - left.score);
-}
-
-function dedupeBadgeCandidates(candidates: Array<{ x: number; y: number }>) {
-  const deduped: Array<{ x: number; y: number }> = [];
-
-  for (const candidate of candidates) {
-    const isNearExisting = deduped.some(
-      (existing) => Math.hypot(existing.x - candidate.x, existing.y - candidate.y) < 18,
-    );
-
-    if (!isNearExisting) {
-      deduped.push(candidate);
-    }
-  }
-
-  return deduped;
 }
 
 function placeNeighborhoodLabel(
