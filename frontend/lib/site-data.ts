@@ -102,9 +102,11 @@ export type RankingsPageData = Awaited<ReturnType<typeof getRankingsPageData>>;
 export type RouteDetailPageData = Awaited<ReturnType<typeof getRouteDetailPageData>>;
 
 type ReadyRouteDetailPageData = {
+  backgroundMapFeatures: RouteMapResponse["features"];
   kind: "ready";
   mapFeatures: RouteMapResponse["features"];
   mapNotice?: DataNotice;
+  neighborhoodLabels: MapNeighborhoodLabel[];
   peers: RouteSummary[];
   peersNotice?: DataNotice;
   rankedRouteCount: number;
@@ -370,6 +372,9 @@ export async function getRouteDetailPageData(
   const routeMapFeatures = mapResult.ok
     ? mapResult.data.features.filter((feature) => feature.properties.route_id === routeId)
     : [];
+  const backgroundMapFeatures = mapResult.ok
+    ? mapResult.data.features.filter((feature) => feature.properties.route_id !== routeId)
+    : [];
   const segmentResult = await loadDirectionalResource(
     (direction) => getRouteSegments(routeId, direction),
     "No directional segment layer is published for this route yet.",
@@ -384,6 +389,7 @@ export async function getRouteDetailPageData(
 
   return {
     kind: "ready",
+    backgroundMapFeatures,
     mapFeatures: routeMapFeatures,
     mapNotice: mapResult.ok
       ? routeMapFeatures.length === 0
@@ -397,6 +403,7 @@ export async function getRouteDetailPageData(
           "The route-level geometry could not be loaded from the live map endpoint.",
           mapResult.error,
         ),
+    neighborhoodLabels: homepageNeighborhoodLabels,
     peers,
     peersNotice: rankingsResult.ok
       ? peers.length === 0

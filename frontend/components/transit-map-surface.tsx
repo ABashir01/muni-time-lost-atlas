@@ -100,6 +100,7 @@ type TransitMapSurfaceProps = {
   ctaHref?: string;
   ctaLabel?: string;
   fitMaxZoom?: number;
+  fitBackgroundRouteFeatures?: boolean;
   fitPadding?: number;
   focusRouteId?: string;
   gestureNavigation?: boolean;
@@ -121,6 +122,7 @@ type TransitMapSurfaceProps = {
   segmentFeatures?: FeatureLine[];
   showControls?: boolean;
   stopFeatures?: StopWaitFeature[];
+  stopMarkerScale?: number;
   surfaceLabel?: string;
   viewportBounds?: MapBounds;
 };
@@ -131,6 +133,7 @@ export function TransitMapSurface({
   ctaHref,
   ctaLabel,
   fitMaxZoom = 15.4,
+  fitBackgroundRouteFeatures = true,
   fitPadding = 26,
   focusRouteId,
   gestureNavigation,
@@ -148,6 +151,7 @@ export function TransitMapSurface({
   segmentFeatures = EMPTY_LINE_FEATURES,
   showControls = true,
   stopFeatures = EMPTY_STOP_FEATURES,
+  stopMarkerScale = 1,
   surfaceLabel = "MapLibre GL JS route surface",
   viewportBounds,
 }: TransitMapSurfaceProps) {
@@ -192,8 +196,8 @@ export function TransitMapSurface({
     [segmentFeatures],
   );
   const decoratedStops = useMemo(
-    () => decorateStopHotspots(stopFeatures),
-    [stopFeatures],
+    () => decorateStopHotspots(stopFeatures, stopMarkerScale),
+    [stopFeatures, stopMarkerScale],
   );
   const routeCollection = useMemo(
     () => toFeatureCollection(decoratedRoutes),
@@ -219,11 +223,20 @@ export function TransitMapSurface({
     () =>
       getMapBounds({
         overlayFeatures,
-        routeFeatures: [...backgroundRouteFeatures, ...routeFeatures],
+        routeFeatures: fitBackgroundRouteFeatures
+          ? [...backgroundRouteFeatures, ...routeFeatures]
+          : routeFeatures,
         segmentFeatures,
         stopFeatures,
       }),
-    [backgroundRouteFeatures, overlayFeatures, routeFeatures, segmentFeatures, stopFeatures],
+    [
+      backgroundRouteFeatures,
+      fitBackgroundRouteFeatures,
+      overlayFeatures,
+      routeFeatures,
+      segmentFeatures,
+      stopFeatures,
+    ],
   );
   const targetBounds = viewportBounds ?? fitBounds;
   const fitKey = useMemo(

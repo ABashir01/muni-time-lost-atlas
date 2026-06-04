@@ -120,13 +120,17 @@ export default async function RouteDetailPage({
           </div>
           <TransitMapSurface
             ariaLabel={`Route ${data.summary.route_short_name} detail map`}
+            backgroundRouteFeatures={data.backgroundMapFeatures}
+            fitBackgroundRouteFeatures={false}
             focusRouteId={data.summary.route_id}
             minHeight="420px"
+            neighborhoodLabels={data.neighborhoodLabels}
             overlayFeatures={data.transitLaneOverlay}
             routeColorMode="focus"
             routeFeatures={data.mapFeatures}
             segmentFeatures={data.segmentCollection?.features ?? []}
             stopFeatures={topStopWait ? [topStopWait] : []}
+            stopMarkerScale={0.68}
             surfaceLabel={
               data.segmentCollection
                 ? `${data.segmentCollection.direction_label} MapLibre corridor`

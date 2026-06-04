@@ -107,7 +107,10 @@ export function decorateSegmentFeatures(features: FeatureLine[]): DecoratedLineF
   });
 }
 
-export function decorateStopHotspots(features: StopWaitFeature[]): DecoratedStopFeature[] {
+export function decorateStopHotspots(
+  features: StopWaitFeature[],
+  radiusScale = 1,
+): DecoratedStopFeature[] {
   return features.map((feature) => {
     const loss = feature.properties.waiting_loss_minutes ?? 0;
 
@@ -116,7 +119,7 @@ export function decorateStopHotspots(features: StopWaitFeature[]): DecoratedStop
       properties: {
         ...feature.properties,
         map_color: getStopWaitColor(loss),
-        map_radius: getStopWaitRadius(loss),
+        map_radius: Math.max(6, Math.round(getStopWaitRadius(loss) * radiusScale)),
       },
     };
   });
