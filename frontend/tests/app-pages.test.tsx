@@ -189,9 +189,9 @@ describe("public pages", () => {
     expect(compareHtml).toContain("/routes/14");
     expect(mapHtml).toContain("Citywide route delay map");
     expect(mapHtml).toContain("expected rider time loss");
-    expect(mapHtml).toContain("Transit-only lanes");
+    expect(mapHtml).toContain("What this map is showing");
     expect(mapHtml).toContain("MapLibre GL JS citywide surface");
-    expect(mapHtml).toContain("Show transit lane overlay");
+    expect(mapHtml).toContain("See how we calculate time loss");
     expect(rankingsHtml).toContain("Published route rankings");
     expect(rankingsHtml).toContain("current published snapshot");
     expect(rankingsHtml).toContain("Click any route row to open its route detail.");

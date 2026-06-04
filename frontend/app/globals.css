@@ -4790,6 +4790,12 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   background: #fff;
 }
 
+.methodology-plain-hero .page-headline {
+  font-size: clamp(2.7rem, 3.5vw, 4rem);
+  line-height: 0.88;
+  text-wrap: balance;
+}
+
 .methodology-plain-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

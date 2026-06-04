@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { DataStamp } from "@/components/data-stamp";
 import { DataStatePanel } from "@/components/data-state-panel";
 import { RouteBadge } from "@/components/route-badge";
@@ -25,7 +24,6 @@ const cityNeighborhoodLabels: MapNeighborhoodLabel[] = [
 ];
 
 export function MapPageSurface({ data }: { data: MapPageData }) {
-  const [lanesOn, setLanesOn] = useState(false);
   const hasRoutes = data.routes.features.length > 0;
   const leadingRoutes = data.rankings.slice(0, 5);
 
@@ -54,7 +52,6 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
               lineMode="default"
               minHeight="540px"
               neighborhoodLabels={cityNeighborhoodLabels}
-              overlayFeatures={lanesOn ? data.transitLaneOverlay : []}
               routeFeatures={data.routes.features}
               routeColorMode="metric"
               surfaceLabel="MapLibre GL JS citywide surface"
@@ -127,21 +124,30 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
           </article>
 
           <article className="editorial-rail-card">
-            <p className="eyebrow">Overlay</p>
-            <h2>Transit-only lanes</h2>
+            <p className="eyebrow">How to read it</p>
+            <h2>What this map is showing</h2>
             <p>
-              This draws dedicated bus and transit lanes on top of the route map.
-              It helps show whether a delayed corridor already has lane priority,
-              but it does not change the ranking and it does not prove why a route is slow.
+              Each route is colored by expected rider time loss, not just slow vehicle
+              movement. The published number combines extra waiting before boarding
+              with extra time spent riding.
             </p>
-            <button
-              className="map-overlay-toggle"
-              data-active={lanesOn}
-              onClick={() => setLanesOn((value) => !value)}
-              type="button"
-            >
-              {lanesOn ? "Hide transit lane overlay" : "Show transit lane overlay"}
-            </button>
+            <ul className="method-list">
+              <li>
+                <strong>Waiting matters most:</strong> owl routes can rank high because
+                sparse, uneven overnight headways create large rider wait penalties.
+              </li>
+              <li>
+                <strong>Red does not mean traffic alone:</strong> a high-loss route can
+                be driven mostly by waiting, mostly by ride time, or by both.
+              </li>
+              <li>
+                <strong>Use route detail pages for evidence:</strong> open a route to see
+                its worst stop wait, worst segment, and sample sizes behind the summary.
+              </li>
+            </ul>
+            <Link className="text-link" href="/methodology">
+              See how we calculate time loss
+            </Link>
           </article>
         </aside>
       </div>
