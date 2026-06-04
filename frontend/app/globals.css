@@ -2785,7 +2785,6 @@ a.compare-card,
     transform 120ms ease;
 }
 
-a.homepage-ranking-card::after,
 a.compare-card::after {
   position: absolute;
   right: 14px;
@@ -2831,8 +2830,6 @@ a.compare-card:hover header h2,
   color: var(--red);
 }
 
-a.homepage-ranking-card:hover::after,
-a.homepage-ranking-card:focus-visible::after,
 a.compare-card:hover::after,
 a.compare-card:focus-visible::after {
   opacity: 1;

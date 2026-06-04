@@ -82,9 +82,9 @@ export default async function HomePage({
         <div className="homepage-map-panel">
           <div className="homepage-map-explainer">
             <p>Map view</p>
-            <h3>Current Three Slowest Routes</h3>
+            <h3>Three Highest Rider-Loss Routes</h3>
             <span>
-              The map highlights the three routes with the highest time loss.
+              The map highlights the three routes with the highest published rider time loss.
               The rest of the routes are faded out in gray.
             </span>
           </div>
@@ -229,7 +229,7 @@ export default async function HomePage({
 
           <div className="homepage-explainer-footer">
             <Link className="homepage-explainer-link" href="/methodology">
-              Learn more about lost time
+              See how we calculate time loss
             </Link>
           </div>
         </aside>

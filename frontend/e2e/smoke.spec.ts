@@ -31,7 +31,7 @@ test("homepage, route detail, and map page render with real map surfaces", async
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(page.getByText("Worst Published Routes")).toBeVisible();
-  await expect(page.getByText("Current Three Slowest Routes")).toBeVisible();
+  await expect(page.getByText("Three Highest Rider-Loss Routes")).toBeVisible();
   await expectMapReady(page);
   await page.screenshot({ path: path.join(screenshotDir, "b5-homepage-desktop.png") });
 
