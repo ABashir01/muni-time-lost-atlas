@@ -38,12 +38,6 @@ const homepageNeighborhoodLabels: MapNeighborhoodLabel[] = [
 ];
 const homepageFeaturedRouteColors = ["#d81420", "#e85c10", "#fcc000"] as const;
 const defaultFeatureAnchorRatios = [0.5, 0.38, 0.62, 0.26, 0.74] as const;
-const homepageBadgeCandidateRatiosByRouteId: Record<string, readonly number[]> = {
-  // The 91 route geometry doubles back through the city core, so the generic midpoint-based
-  // badge candidates place the hero-map label in open space near the middle of the map.
-  // Favor the southeast branch first so the badge sits on top of the highlighted route.
-  "SF:91": [0.8, 0.78, 0.82, 0.74, 0.86],
-};
 
 type HomepageHeroMap = {
   backgroundFeatures: FeatureLine[];
@@ -608,12 +602,10 @@ function buildHomepageHeroMap(
     const routeId = feature.properties.route_id;
     const routeShortName =
       featuredShortNameById.get(routeId) ?? feature.properties.route_short_name ?? routeId;
-    const badgeCandidateRatios =
-      homepageBadgeCandidateRatiosByRouteId[routeId] ?? defaultFeatureAnchorRatios;
 
     return {
-      candidate_coordinates: getFeatureAnchorCandidates(feature, badgeCandidateRatios),
-      coordinate: getFeatureAnchorCoordinate(feature, badgeCandidateRatios),
+      candidate_coordinates: getFeatureAnchorCandidates(feature),
+      coordinate: getFeatureAnchorCoordinate(feature),
       route_id: routeId,
       route_short_name: routeShortName,
     };
