@@ -13,6 +13,7 @@ import type {
   DataNotice,
   FeatureLine,
   MapBounds,
+  MapCoordinate,
   MapNeighborhoodLabel,
   MapRouteBadge,
   MethodologySection,
@@ -611,16 +612,16 @@ async function buildHomepageHeroMap(
     const routeShortName =
       featuredShortNameById.get(routeId) ?? feature.properties.route_short_name ?? routeId;
     const stopAnchors = badgeStopCoordinatesByRouteId.get(routeId) ?? [];
+    const fallbackCandidateCoordinates = getFeatureAnchorCandidates(feature);
     const candidateCoordinates =
-      stopAnchors.length > 0
-        ? orderStopAnchorsFromMiddleOut(feature, stopAnchors)
-        : getFeatureAnchorCandidates(feature);
+      stopAnchors.length > 0 ? stopAnchors : fallbackCandidateCoordinates;
 
     return {
-      candidate_coordinates: candidateCoordinates,
       coordinate: candidateCoordinates[0] ?? getFeatureAnchorCoordinate(feature),
+      fallback_candidate_coordinates: fallbackCandidateCoordinates,
       route_id: routeId,
       route_short_name: routeShortName,
+      stop_candidate_coordinates: stopAnchors,
     };
   });
 
@@ -716,155 +717,76 @@ function getFeatureAnchorCandidates(
 }
 
 async function loadHomepageRouteBadgeStops(routeId: string): Promise<[number, number][]> {
-  const stopWaitResult = await loadDirectionalResource(
-    (direction) => getRouteStopWait(routeId, direction),
-    "",
-    "",
-  );
-
-  if (!stopWaitResult.data) {
-    return [];
-  }
-
-  const seen = new Set<string>();
+  const seenByStopId = new Set<string>();
+  const seenByCoordinate = new Set<string>();
   const coordinates: [number, number][] = [];
 
-  for (const feature of stopWaitResult.data.features) {
-    const coordinate = feature.geometry.coordinates;
-    const key = `${coordinate[0].toFixed(6)},${coordinate[1].toFixed(6)}`;
+  for (const direction of preferredDirections) {
+    const segmentResult = await safeLoad(() => getRouteSegments(routeId, direction));
 
-    if (!seen.has(key)) {
-      seen.add(key);
-      coordinates.push(coordinate);
+    if (!segmentResult.ok) {
+      if (segmentResult.error instanceof ApiRequestError && segmentResult.error.status === 404) {
+        continue;
+      }
+
+      return coordinates;
+    }
+
+    for (const stopAnchor of extractStopAnchorsFromSegments(segmentResult.data.features)) {
+      const coordinateKey = `${stopAnchor.coordinate[0].toFixed(6)},${stopAnchor.coordinate[1].toFixed(6)}`;
+
+      if (stopAnchor.stopId) {
+        if (seenByStopId.has(stopAnchor.stopId)) {
+          continue;
+        }
+
+        seenByStopId.add(stopAnchor.stopId);
+      } else if (seenByCoordinate.has(coordinateKey)) {
+        continue;
+      }
+
+      seenByCoordinate.add(coordinateKey);
+      coordinates.push(stopAnchor.coordinate);
     }
   }
 
   return coordinates;
 }
 
-function orderStopAnchorsFromMiddleOut(
-  feature: FeatureLine,
-  stopCoordinates: [number, number][],
-): [number, number][] {
-  const routeCoordinates =
-    feature.geometry.type === "MultiLineString"
-      ? feature.geometry.coordinates.flat()
-      : feature.geometry.coordinates;
+function extractStopAnchorsFromSegments(features: FeatureLine[]) {
+  return features
+    .slice()
+    .sort(
+      (left, right) =>
+        (left.properties.segment_sequence ?? Number.MAX_SAFE_INTEGER) -
+        (right.properties.segment_sequence ?? Number.MAX_SAFE_INTEGER),
+    )
+    .flatMap((feature) => {
+      const coordinates =
+        feature.geometry.type === "MultiLineString"
+          ? feature.geometry.coordinates.flat()
+          : feature.geometry.coordinates;
 
-  const orderedStops = stopCoordinates
-    .map((coordinate) => ({
-      coordinate,
-      progress: getCoordinateProgressAlongLine(routeCoordinates, coordinate),
-    }))
-    .sort((left, right) => left.progress - right.progress);
+      const fromCoordinate = coordinates[0];
+      const toCoordinate = coordinates.at(-1);
 
-  if (orderedStops.length <= 1) {
-    return orderedStops.map((item) => item.coordinate);
-  }
-
-  const middleIndex = Math.floor((orderedStops.length - 1) / 2);
-  const orderedIndices: number[] = [middleIndex];
-
-  for (let offset = 1; orderedIndices.length < orderedStops.length; offset += 1) {
-    const forwardIndex = middleIndex + offset;
-    const backwardIndex = middleIndex - offset;
-
-    if (forwardIndex < orderedStops.length) {
-      orderedIndices.push(forwardIndex);
-    }
-
-    if (backwardIndex >= 0) {
-      orderedIndices.push(backwardIndex);
-    }
-  }
-
-  return orderedIndices.map((index) => orderedStops[index].coordinate);
-}
-
-function getCoordinateProgressAlongLine(
-  coordinates: [number, number][],
-  coordinate: [number, number],
-): number {
-  if (coordinates.length <= 1) {
-    return 0;
-  }
-
-  const segments = coordinates.slice(1).map((lineCoordinate, index) => {
-    const start = coordinates[index];
-    const dx = lineCoordinate[0] - start[0];
-    const dy = lineCoordinate[1] - start[1];
-
-    return {
-      end: lineCoordinate,
-      length: Math.hypot(dx, dy),
-      start,
-    };
-  });
-  const totalLength = segments.reduce((sum, segment) => sum + segment.length, 0);
-
-  if (totalLength === 0) {
-    return 0;
-  }
-
-  let traversed = 0;
-  let bestProgress = 0;
-  let bestDistance = Number.POSITIVE_INFINITY;
-
-  for (const segment of segments) {
-    const distance = pointToSegmentDistanceGeographic(coordinate, segment.start, segment.end);
-    const projection = projectionRatioOnSegment(coordinate, segment.start, segment.end);
-    const progress = (traversed + segment.length * projection) / totalLength;
-
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestProgress = progress;
-    }
-
-    traversed += segment.length;
-  }
-
-  return bestProgress;
-}
-
-function pointToSegmentDistanceGeographic(
-  point: [number, number],
-  start: [number, number],
-  end: [number, number],
-): number {
-  const [px, py] = point;
-  const [x1, y1] = start;
-  const [x2, y2] = end;
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-
-  if (dx === 0 && dy === 0) {
-    return Math.hypot(px - x1, py - y1);
-  }
-
-  const projection = projectionRatioOnSegment(point, start, end);
-  const closestX = x1 + dx * projection;
-  const closestY = y1 + dy * projection;
-
-  return Math.hypot(px - closestX, py - closestY);
-}
-
-function projectionRatioOnSegment(
-  point: [number, number],
-  start: [number, number],
-  end: [number, number],
-): number {
-  const [px, py] = point;
-  const [x1, y1] = start;
-  const [x2, y2] = end;
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-
-  if (dx === 0 && dy === 0) {
-    return 0;
-  }
-
-  const projection = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy);
-  return Math.max(0, Math.min(1, projection));
+      return [
+        fromCoordinate
+          ? {
+              coordinate: fromCoordinate,
+              stopId: feature.properties.from_stop_id ?? null,
+            }
+          : null,
+        toCoordinate
+          ? {
+              coordinate: toCoordinate,
+              stopId: feature.properties.to_stop_id ?? null,
+            }
+          : null,
+      ].filter((stopAnchor): stopAnchor is { coordinate: MapCoordinate; stopId: string | null } =>
+        Boolean(stopAnchor),
+      );
+    });
 }
 
 function getCoordinateAtLineRatio(

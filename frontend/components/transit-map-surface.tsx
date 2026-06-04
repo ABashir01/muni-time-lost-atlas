@@ -517,8 +517,30 @@ export function TransitMapSurface({
       const height = map.getCanvas().clientHeight;
       const occupiedRects: Rect[] = [];
       const featuredRouteSegments = projectFeatureSegments(map, routeFeatures);
+      const routeFeaturesById = routeFeatures.reduce<Map<string, FeatureLine[]>>((result, feature) => {
+        const routeId = feature.properties.route_id;
+        const existing = result.get(routeId);
+
+        if (existing) {
+          existing.push(feature);
+        } else {
+          result.set(routeId, [feature]);
+        }
+
+        return result;
+      }, new Map());
       const placedBadges = routeBadges
-        .map((badge) => placeRouteBadge(map, badge, routeColorById, occupiedRects, width, height))
+        .map((badge) =>
+          placeRouteBadge(
+            map,
+            badge,
+            routeFeaturesById.get(badge.route_id) ?? [],
+            routeColorById,
+            occupiedRects,
+            width,
+            height,
+          ),
+        )
         .filter(
           (badge): badge is MapRouteBadge & { color: string; x: number; y: number } =>
             Boolean(badge),
@@ -912,6 +934,7 @@ type Rect = {
 function placeRouteBadge(
   map: MapLibreMap,
   badge: MapRouteBadge,
+  routeFeatures: FeatureLine[],
   routeColorById: Map<string, string>,
   occupiedRects: Rect[],
   width: number,
@@ -919,7 +942,17 @@ function placeRouteBadge(
 ) {
   const badgeWidth = Math.max(36, badge.route_short_name.length * 12 + 18);
   const badgeHeight = 36;
-  for (const coordinate of badge.candidate_coordinates) {
+  const orderedStopCandidates = orderStopCandidatesFromRouteCenter(
+    map,
+    routeFeatures,
+    badge.stop_candidate_coordinates,
+  );
+  const candidateCoordinates = dedupeCoordinates([
+    ...orderedStopCandidates,
+    ...badge.fallback_candidate_coordinates,
+  ]);
+
+  for (const coordinate of candidateCoordinates) {
     const point = map.project(coordinate);
 
     if (!isPointInsideMap(point.x, point.y, width, height, 20)) {
@@ -948,6 +981,90 @@ function placeRouteBadge(
   }
 
   return null;
+}
+
+function orderStopCandidatesFromRouteCenter(
+  map: MapLibreMap,
+  routeFeatures: FeatureLine[],
+  stopCandidates: [number, number][],
+) {
+  if (stopCandidates.length <= 1) {
+    return stopCandidates;
+  }
+
+  const routeCenter = getProjectedRouteCenter(map, routeFeatures);
+
+  if (!routeCenter) {
+    return stopCandidates;
+  }
+
+  return stopCandidates
+    .map((coordinate, index) => {
+      const projected = map.project(coordinate);
+      return {
+        coordinate,
+        distance: Math.hypot(projected.x - routeCenter[0], projected.y - routeCenter[1]),
+        index,
+      };
+    })
+    .sort((left, right) => left.distance - right.distance || left.index - right.index)
+    .map((entry) => entry.coordinate);
+}
+
+function getProjectedRouteCenter(
+  map: MapLibreMap,
+  routeFeatures: FeatureLine[],
+): [number, number] | null {
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  for (const feature of routeFeatures) {
+    const lines =
+      feature.geometry.type === "MultiLineString"
+        ? feature.geometry.coordinates
+        : [feature.geometry.coordinates];
+
+    for (const line of lines) {
+      for (const coordinate of line) {
+        const projected = map.project(coordinate);
+        minX = Math.min(minX, projected.x);
+        maxX = Math.max(maxX, projected.x);
+        minY = Math.min(minY, projected.y);
+        maxY = Math.max(maxY, projected.y);
+      }
+    }
+  }
+
+  if (
+    !Number.isFinite(minX) ||
+    !Number.isFinite(maxX) ||
+    !Number.isFinite(minY) ||
+    !Number.isFinite(maxY)
+  ) {
+    return null;
+  }
+
+  return [(minX + maxX) / 2, (minY + maxY) / 2];
+}
+
+function dedupeCoordinates(coordinates: [number, number][]) {
+  const seen = new Set<string>();
+  const uniqueCoordinates: [number, number][] = [];
+
+  for (const coordinate of coordinates) {
+    const key = `${coordinate[0].toFixed(6)},${coordinate[1].toFixed(6)}`;
+
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    uniqueCoordinates.push(coordinate);
+  }
+
+  return uniqueCoordinates;
 }
 
 function placeNeighborhoodLabel(

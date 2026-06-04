@@ -40,10 +40,11 @@ export type MapCoordinate = [number, number];
 export type MapBounds = [MapCoordinate, MapCoordinate];
 
 export type MapRouteBadge = {
-  candidate_coordinates: MapCoordinate[];
   coordinate: MapCoordinate;
+  fallback_candidate_coordinates: MapCoordinate[];
   route_id: string;
   route_short_name: string;
+  stop_candidate_coordinates: MapCoordinate[];
 };
 
 export type MapNeighborhoodLabel = {
