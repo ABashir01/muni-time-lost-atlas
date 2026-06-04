@@ -139,7 +139,9 @@ describe("public pages", () => {
     expect(html).toContain("A public map and ranking of where Muni riders lose the most time.");
     expect(html).toContain("Using the last 3 published months of route-delay data across San Francisco.");
     expect(html).toContain("Last updated");
-    expect(html).toContain("extra time per trip");
+    expect(html).toContain("expected rider time loss");
+    expect(html).toContain("wait +0.8 min");
+    expect(html).toContain("ride +1.5 min");
     expect(html).toContain("See full rankings");
     expect(html).toContain("9:00-9:59 AM");
     expect(html).toContain("/routes/14");
@@ -181,9 +183,11 @@ describe("public pages", () => {
     expect(compareHtml).toContain("Pick two to four published routes");
     expect(compareHtml).toContain("Compare uses the current published route snapshot.");
     expect(compareHtml).toContain("Median route loss");
+    expect(compareHtml).toContain("Expected rider loss");
     expect(compareHtml).toContain("9:00-9:59 AM");
     expect(compareHtml).toContain("/routes/14");
     expect(mapHtml).toContain("Citywide route delay map");
+    expect(mapHtml).toContain("expected rider time loss");
     expect(mapHtml).toContain("Transit-only lanes");
     expect(mapHtml).toContain("MapLibre GL JS citywide surface");
     expect(mapHtml).toContain("Show transit lane overlay");

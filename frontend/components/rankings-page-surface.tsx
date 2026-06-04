@@ -4,7 +4,7 @@ import { DataStamp } from "@/components/data-stamp";
 import { DataStatePanel } from "@/components/data-state-panel";
 import { RouteBadge } from "@/components/route-badge";
 import type { RankingsPageData } from "@/lib/site-data";
-import { formatTimeBandLabel } from "@/lib/utils";
+import { formatMinutes, formatTimeBandLabel } from "@/lib/utils";
 
 export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
   const denseRoutes = data.rankings.slice(3);
@@ -46,7 +46,10 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
 
               <div className="rankings-feature-metric">
                 <strong>{`+${route.typical_trip_loss_minutes.toFixed(1)} min`}</strong>
-                <span>extra time per trip</span>
+                <span>expected rider time loss</span>
+                <small className="rankings-feature-breakdown">
+                  {`wait ${formatMinutes(route.waiting_loss_minutes)} • ride ${formatMinutes(route.in_vehicle_loss_minutes)}`}
+                </small>
               </div>
 
               <dl className="rankings-feature-notes">
@@ -84,7 +87,7 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
                 </div>
                 <div className="rankings-dense-metric">
                   <b>{`+${route.typical_trip_loss_minutes.toFixed(1)} min`}</b>
-                  <span>extra time per trip</span>
+                  <span>rider time loss</span>
                 </div>
               </Link>
             ))

@@ -13,7 +13,7 @@ export default async function MapPage() {
           <p className="eyebrow">Map view</p>
           <h1>Citywide route delay map</h1>
           <p>
-            Published routes colored by typical extra time per trip.
+            Published routes colored by expected rider time loss.
           </p>
         </div>
       </section>

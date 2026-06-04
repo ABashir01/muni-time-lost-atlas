@@ -45,8 +45,8 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
             <TransitMapSurface
               ariaLabel="Published citywide route loss map"
               legend={{
-                subtitle: "Route corridors colored by typical extra time",
-                title: "Typical extra time",
+                subtitle: "Route corridors colored by expected rider time loss",
+                title: "Expected rider loss",
               }}
               fitMaxZoom={17}
               fitPadding={70}

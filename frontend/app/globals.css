@@ -2886,9 +2886,10 @@ a.compare-card:focus-visible,
   margin: 0;
   color: #111;
   font-family: var(--home-font-ui, var(--font-display));
-  font-size: clamp(1.55rem, 1.4vw, 1.95rem);
+  font-size: clamp(1.35rem, 1.18vw, 1.7rem);
   font-weight: 800;
-  line-height: 0.9;
+  line-height: 0.92;
+  text-wrap: balance;
 }
 
 .homepage-ranking-metric {
@@ -2924,6 +2925,19 @@ a.compare-card:focus-visible,
   margin: 0;
   color: #222;
   font-size: 0.9rem;
+}
+
+.homepage-ranking-breakdown,
+.rankings-feature-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  margin: 0;
+  color: #4b4b4b;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .homepage-ranking-divider {
@@ -4234,6 +4248,10 @@ a.compare-card:focus-visible,
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.rankings-feature-breakdown {
+  margin-top: 0.2rem;
 }
 
 .rankings-feature-notes {

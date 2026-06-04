@@ -11,7 +11,7 @@ import { SiteHeader } from "@/components/site-header";
 import { TransitMapSurface } from "@/components/transit-map-surface";
 import { getRouteTheme } from "@/lib/presentation";
 import { getHomepageData } from "@/lib/site-data";
-import { formatTimeBandLabel, formatTimestamp } from "@/lib/utils";
+import { formatMinutes, formatTimeBandLabel, formatTimestamp } from "@/lib/utils";
 
 const homepageFontVariants = {
   "anton-oswald": "homepage-font-anton-oswald",
@@ -152,7 +152,11 @@ export default async function HomePage({
                     <strong>{`+${route.typical_trip_loss_minutes.toFixed(1)}`}</strong>
                     <span>min</span>
                   </div>
-                  <p>extra time per trip</p>
+                  <p>expected rider time loss</p>
+                  <div className="homepage-ranking-breakdown">
+                    <span>{`wait ${formatMinutes(route.waiting_loss_minutes)}`}</span>
+                    <span>{`ride ${formatMinutes(route.in_vehicle_loss_minutes)}`}</span>
+                  </div>
                 </div>
 
                 <div className="homepage-ranking-divider" />
@@ -181,7 +185,7 @@ export default async function HomePage({
                     <strong>--</strong>
                     <span>min</span>
                   </div>
-                  <p>extra time per trip</p>
+                  <p>expected rider time loss</p>
                 </div>
                 <div className="homepage-ranking-divider" />
                 <div className="homepage-ranking-notes">

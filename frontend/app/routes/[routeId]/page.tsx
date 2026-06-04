@@ -91,9 +91,9 @@ export default async function RouteDetailPage({
 
         <div className="route-dossier-scoreboard">
           <article>
-            <span>Typical trip</span>
+            <span>Expected rider loss</span>
             <strong>{formatMinutes(data.summary.typical_trip_loss_minutes)}</strong>
-            <small>full one-way trip</small>
+            <small>waiting + ride on a full one-way trip</small>
           </article>
           <article>
             <span>Waiting loss</span>

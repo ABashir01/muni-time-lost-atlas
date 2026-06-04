@@ -62,7 +62,7 @@ export function CompareRouteBoard({
                 </div>
               </div>
               <div className="compare-card-headline-metric">
-                <span>Typical trip</span>
+                <span>Expected rider loss</span>
                 <div className="compare-card-headline-value">
                   <strong>{`+${route.typical_trip_loss_minutes.toFixed(1)}`}</strong>
                   <b>min</b>
