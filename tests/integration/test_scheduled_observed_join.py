@@ -29,6 +29,7 @@ from muni_lta_pipeline.canonical_observed_stop_events import (  # noqa: E402
 from muni_lta_pipeline.canonical_scheduled_models import (  # noqa: E402
     materialize_canonical_scheduled_models,
 )
+from muni_lta_pipeline.core_metrics import materialize_core_metrics  # noqa: E402
 from muni_lta_pipeline.gtfs_static_fixture_ingest import (  # noqa: E402
     get_postgres_settings,
     load_gtfs_static_fixture,
@@ -165,6 +166,152 @@ class ScheduledObservedJoinMismatchIntegrationTests(unittest.TestCase):
             )
         )
         self.assertEqual(matched_count, 3)
+
+
+class ScheduledObservedJoinOvernightAlignmentIntegrationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.tempdir = tempfile.TemporaryDirectory()
+        scenario_root = Path(cls.tempdir.name)
+        gtfs_dir = scenario_root / "gtfs"
+        observations_dir = scenario_root / "observations"
+        gtfs_dir.mkdir(parents=True, exist_ok=True)
+        observations_dir.mkdir(parents=True, exist_ok=True)
+
+        (gtfs_dir / "routes.txt").write_text(
+            "\n".join(
+                [
+                    "route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color",
+                    "OWL91,SFMTA,91,3RD-19TH AVE OWL,3,DA291C,FFFFFF",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (gtfs_dir / "trips.txt").write_text(
+            "\n".join(
+                [
+                    "route_id,service_id,trip_id,trip_headsign,direction_id,shape_id",
+                    "OWL91,NIGHT,OWL91_TRIP_1,West Portal Station,0,OWL91_SHAPE",
+                    "OWL91,NIGHT,OWL91_TRIP_2,West Portal Station,0,OWL91_SHAPE",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (gtfs_dir / "stops.txt").write_text(
+            "\n".join(
+                [
+                    "stop_id,stop_name,stop_lat,stop_lon",
+                    "STP_A,19th Avenue & Holloway St,37.721300,-122.475300",
+                    "STP_B,Ulloa St & West Portal Ave,37.740900,-122.465100",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (gtfs_dir / "stop_times.txt").write_text(
+            "\n".join(
+                [
+                    "trip_id,arrival_time,departure_time,stop_id,stop_sequence,shape_dist_traveled",
+                    "OWL91_TRIP_1,25:46:00,25:46:00,STP_A,1,0.0",
+                    "OWL91_TRIP_1,25:56:00,25:56:00,STP_B,2,1.0",
+                    "OWL91_TRIP_2,26:16:00,26:16:00,STP_A,1,0.0",
+                    "OWL91_TRIP_2,26:26:00,26:26:00,STP_B,2,1.0",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (gtfs_dir / "shapes.txt").write_text(
+            "\n".join(
+                [
+                    "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled",
+                    "OWL91_SHAPE,37.721300,-122.475300,1,0.0",
+                    "OWL91_SHAPE,37.740900,-122.465100,2,1.0",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (gtfs_dir / "calendar.txt").write_text(
+            "\n".join(
+                [
+                    "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date",
+                    "NIGHT,1,1,1,1,1,1,1,20260201,20260228",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (gtfs_dir / "calendar_dates.txt").write_text(
+            "service_id,date,exception_type\n",
+            encoding="utf-8",
+        )
+        (observations_dir / "stop_observations.txt").write_text(
+            "\n".join(
+                [
+                    "service_date,trip_id,stop_id,stop_sequence,observed_arrival_time",
+                    # This observation is intentionally one UTC day too early for a post-midnight scheduled trip.
+                    "2026-02-13,OWL91_TRIP_1,STP_A,1,2026-02-13T01:46:10-08:00",
+                    "2026-02-13,OWL91_TRIP_2,STP_A,1,2026-02-14T02:16:00-08:00",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        load_gtfs_static_fixture(
+            fixture_dir=gtfs_dir,
+            snapshot_label="fixture_overnight_alignment_v1",
+        )
+        materialize_canonical_scheduled_models()
+        load_historic_stop_observations_fixture(
+            fixture_dir=observations_dir,
+            snapshot_label="historic_overnight_alignment_v1",
+        )
+        materialize_canonical_observed_stop_events()
+        materialize_core_metrics()
+        cls.settings = get_postgres_settings()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.tempdir.cleanup()
+
+    def test_overnight_first_stop_observation_is_aligned_to_the_nearest_scheduled_day(self) -> None:
+        row = run_psql_sql(
+            self.settings,
+            """
+            SELECT
+                trip_id,
+                TO_CHAR(scheduled_arrival_ts AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+                TO_CHAR(observed_arrival_ts AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+                arrival_delay_secs::TEXT
+            FROM canonical.observed_stop_events
+            WHERE trip_id = 'OWL91_TRIP_1'
+              AND service_date = DATE '2026-02-13'
+              AND stop_sequence = 1;
+            """,
+        )
+
+        self.assertEqual(
+            row,
+            "OWL91_TRIP_1|2026-02-14 09:46:00|2026-02-14 09:46:10|10",
+        )
+
+    def test_overnight_alignment_prevents_a_fake_next_day_headway(self) -> None:
+        row = run_psql_sql(
+            self.settings,
+            """
+            SELECT
+                ROUND(scheduled_headway_secs / 60.0, 1)::TEXT,
+                ROUND(observed_headway_secs / 60.0, 1)::TEXT
+            FROM marts.int_headway_intervals
+            WHERE route_id = 'OWL91';
+            """,
+        )
+
+        self.assertEqual(row, "30.0|29.8")
 
 
 class ScheduledObservedJoinRealArchiveIntegrationTests(unittest.TestCase):
