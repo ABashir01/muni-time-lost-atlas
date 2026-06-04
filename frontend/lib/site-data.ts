@@ -37,6 +37,13 @@ const homepageNeighborhoodLabels: MapNeighborhoodLabel[] = [
   { coordinate: [-122.394, 37.732], text: "Bayview" },
 ];
 const homepageFeaturedRouteColors = ["#d81420", "#e85c10", "#fcc000"] as const;
+const defaultFeatureAnchorRatios = [0.5, 0.38, 0.62, 0.26, 0.74] as const;
+const homepageBadgeCandidateRatiosByRouteId: Record<string, readonly number[]> = {
+  // The 91 route geometry doubles back through the city core, so the generic midpoint-based
+  // badge candidates place the hero-map label in open space near the middle of the map.
+  // Favor the southeast branch first so the badge sits on top of the highlighted route.
+  "SF:91": [0.8, 0.78, 0.82, 0.74, 0.86],
+};
 
 type HomepageHeroMap = {
   backgroundFeatures: FeatureLine[];
@@ -601,10 +608,12 @@ function buildHomepageHeroMap(
     const routeId = feature.properties.route_id;
     const routeShortName =
       featuredShortNameById.get(routeId) ?? feature.properties.route_short_name ?? routeId;
+    const badgeCandidateRatios =
+      homepageBadgeCandidateRatiosByRouteId[routeId] ?? defaultFeatureAnchorRatios;
 
     return {
-      candidate_coordinates: getFeatureAnchorCandidates(feature),
-      coordinate: getFeatureAnchorCoordinate(feature),
+      candidate_coordinates: getFeatureAnchorCandidates(feature, badgeCandidateRatios),
+      coordinate: getFeatureAnchorCoordinate(feature, badgeCandidateRatios),
       route_id: routeId,
       route_short_name: routeShortName,
     };
@@ -678,11 +687,17 @@ function routeSummaryFromFeature(feature: RouteMapResponse["features"][number]["
   };
 }
 
-function getFeatureAnchorCoordinate(feature: FeatureLine): [number, number] {
-  return getFeatureAnchorCandidates(feature)[0] ?? [-122.4376, 37.7638];
+function getFeatureAnchorCoordinate(
+  feature: FeatureLine,
+  ratios: readonly number[] = defaultFeatureAnchorRatios,
+): [number, number] {
+  return getFeatureAnchorCandidates(feature, ratios)[0] ?? [-122.4376, 37.7638];
 }
 
-function getFeatureAnchorCandidates(feature: FeatureLine): [number, number][] {
+function getFeatureAnchorCandidates(
+  feature: FeatureLine,
+  ratios: readonly number[] = defaultFeatureAnchorRatios,
+): [number, number][] {
   const coordinates =
     feature.geometry.type === "MultiLineString"
       ? feature.geometry.coordinates.flat()
@@ -692,9 +707,7 @@ function getFeatureAnchorCandidates(feature: FeatureLine): [number, number][] {
     return [[-122.4376, 37.7638]];
   }
 
-  return [0.5, 0.38, 0.62, 0.26, 0.74].map((ratio) =>
-    getCoordinateAtLineRatio(coordinates, ratio),
-  );
+  return ratios.map((ratio) => getCoordinateAtLineRatio(coordinates, ratio));
 }
 
 function getCoordinateAtLineRatio(
