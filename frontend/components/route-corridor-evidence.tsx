@@ -10,7 +10,6 @@ import type {
   MapNeighborhoodLabel,
   RouteSegmentsResponse,
   RouteStopWaitResponse,
-  StopWaitFeature,
 } from "@/lib/types";
 import { formatMinutes } from "@/lib/utils";
 
@@ -32,6 +31,14 @@ type RouteCorridorEvidenceProps = {
 type ScopeOption = {
   id: string;
   label: string;
+};
+
+type RankedSegmentEntry = {
+  directionLabels: string[];
+  lossMinutes: number;
+  scheduledMinutes: number;
+  segmentLabel: string;
+  variantCount: number;
 };
 
 export function RouteCorridorEvidence({
@@ -74,6 +81,7 @@ export function RouteCorridorEvidence({
     const activeDirectionId = Number(activeScope.replace("direction-", ""));
     return segmentCollections.filter((collection) => collection.direction_id === activeDirectionId);
   }, [activeScope, segmentCollections]);
+
   const activeStopWaitCollections = useMemo(() => {
     if (activeScope === "both") {
       return stopWaitCollections;
@@ -82,6 +90,7 @@ export function RouteCorridorEvidence({
     const activeDirectionId = Number(activeScope.replace("direction-", ""));
     return stopWaitCollections.filter((collection) => collection.direction_id === activeDirectionId);
   }, [activeScope, stopWaitCollections]);
+
   const activeSegments = useMemo(
     () =>
       activeSegmentCollections
@@ -103,6 +112,7 @@ export function RouteCorridorEvidence({
         }),
     [activeSegmentCollections],
   );
+
   const activeStopFeatures = useMemo(
     () =>
       activeStopWaitCollections
@@ -120,13 +130,20 @@ export function RouteCorridorEvidence({
         }),
     [activeStopWaitCollections],
   );
+
   const topStopFeature = activeStopFeatures[0] ?? null;
-  const topSegments = activeSegments.slice(0, 4);
+  const rankedSegments = useMemo(
+    () => buildRankedSegmentEntries(activeSegments),
+    [activeSegments],
+  );
+  const topSegments = rankedSegments.slice(0, 4);
   const topSegment = topSegments[0] ?? null;
   const activeScopeLabel =
     scopeOptions.find((option) => option.id === activeScope)?.label ?? "Both directions";
   const activeSurfaceLabel =
-    activeScope === "both" ? "Both directions MapLibre corridor" : `${activeScopeLabel} MapLibre corridor`;
+    activeScope === "both"
+      ? "Both directions MapLibre corridor"
+      : `${activeScopeLabel} MapLibre corridor`;
 
   return (
     <article className="route-dossier-map-card">
@@ -178,18 +195,14 @@ export function RouteCorridorEvidence({
       <div className="route-dossier-map-footer">
         <div>
           <p className="eyebrow">Worst section</p>
-          <h2>{topSegment?.properties.segment_label ?? summaryWorstSegmentLabel}</h2>
+          <h2>{topSegment?.segmentLabel ?? summaryWorstSegmentLabel}</h2>
           <p>
             Evidence scope: {activeScopeLabel}. Worst time: {formattedWorstTimeBand}.
           </p>
         </div>
         <div className="route-dossier-segment-metric">
           <span>{topSegment ? "Segment slow travel" : "Route slow travel"}</span>
-          <strong>
-            {formatMinutes(
-              topSegment?.properties.segment_in_vehicle_loss_minutes ?? routeSlowTravelMinutes,
-            )}
-          </strong>
+          <strong>{formatMinutes(topSegment?.lossMinutes ?? routeSlowTravelMinutes)}</strong>
         </div>
       </div>
       {mapNotice ? <DataStatePanel eyebrow="Route map" notice={mapNotice} /> : null}
@@ -206,20 +219,17 @@ export function RouteCorridorEvidence({
           </div>
           <ol className="route-dossier-segment-list">
             {topSegments.map((feature, index) => (
-              <li
-                key={`${feature.properties.direction_id ?? "direction"}-${feature.properties.segment_sequence ?? "segment"}-${feature.properties.segment_label ?? "unknown"}-${index}`}
-              >
+              <li key={`${feature.segmentLabel}-${index}`}>
                 <div>
-                  <strong>{feature.properties.segment_label}</strong>
+                  <strong>{feature.segmentLabel}</strong>
                   <small>
-                    {feature.properties.direction_label ?? `Direction ${feature.properties.direction_id ?? "?"}`}
+                    {feature.directionLabels.join(" / ")}
                     {" · "}
-                    Scheduled {(feature.properties.scheduled_segment_minutes ?? 0).toFixed(1)} min
+                    Scheduled {feature.scheduledMinutes.toFixed(1)} min
+                    {feature.variantCount > 1 ? ` · ${feature.variantCount} variants` : ""}
                   </small>
                 </div>
-                <b>
-                  +{(feature.properties.segment_in_vehicle_loss_minutes ?? 0).toFixed(1)} min
-                </b>
+                <b>+{feature.lossMinutes.toFixed(1)} min</b>
               </li>
             ))}
           </ol>
@@ -227,4 +237,48 @@ export function RouteCorridorEvidence({
       ) : null}
     </article>
   );
+}
+
+function buildRankedSegmentEntries(features: RouteSegmentsResponse["features"]): RankedSegmentEntry[] {
+  const grouped = new Map<string, RankedSegmentEntry>();
+
+  for (const feature of features) {
+    const segmentLabel = feature.properties.segment_label ?? "Unnamed segment";
+    const directionLabel =
+      feature.properties.direction_label ??
+      `Direction ${feature.properties.direction_id ?? "?"}`;
+    const lossMinutes = feature.properties.segment_in_vehicle_loss_minutes ?? 0;
+    const scheduledMinutes = feature.properties.scheduled_segment_minutes ?? 0;
+    const existing = grouped.get(segmentLabel);
+
+    if (!existing) {
+      grouped.set(segmentLabel, {
+        directionLabels: [directionLabel],
+        lossMinutes,
+        scheduledMinutes,
+        segmentLabel,
+        variantCount: 1,
+      });
+      continue;
+    }
+
+    existing.variantCount += 1;
+
+    if (!existing.directionLabels.includes(directionLabel)) {
+      existing.directionLabels.push(directionLabel);
+    }
+
+    if (lossMinutes > existing.lossMinutes) {
+      existing.lossMinutes = lossMinutes;
+      existing.scheduledMinutes = scheduledMinutes;
+    }
+  }
+
+  return Array.from(grouped.values()).sort((left, right) => {
+    if (right.lossMinutes !== left.lossMinutes) {
+      return right.lossMinutes - left.lossMinutes;
+    }
+
+    return left.segmentLabel.localeCompare(right.segmentLabel);
+  });
 }
