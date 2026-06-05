@@ -4662,6 +4662,31 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   background: var(--blue);
 }
 
+.route-dossier-direction-toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.route-dossier-direction-toggle-button {
+  min-height: 32px;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.14);
+  padding: 0 10px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.route-dossier-direction-toggle-button[data-active="true"] {
+  background: #fff;
+  color: var(--blue);
+}
+
 .route-dossier-map-card .map-surface {
   min-height: 0;
   border: 0;
@@ -5134,8 +5159,19 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
   .rankings-feature-main,
   .route-dossier-map-footer {
-    grid-template-columns: 1fr;
-  }
+      grid-template-columns: 1fr;
+    }
+
+    .route-dossier-panel-bar {
+      align-items: flex-start;
+      flex-direction: column;
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+
+    .route-dossier-direction-toggle {
+      justify-content: flex-start;
+    }
 
   .compare-page-band .compare-controls {
     flex-wrap: wrap;

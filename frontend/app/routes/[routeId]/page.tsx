@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import { DataStatePanel } from "@/components/data-state-panel";
+import { RouteCorridorEvidence } from "@/components/route-corridor-evidence";
 import { RouteBadge } from "@/components/route-badge";
-import { TransitMapSurface } from "@/components/transit-map-surface";
-import { segmentLossLegendItems } from "@/lib/map-utils";
 import { getRouteDetailPageData } from "@/lib/site-data";
 import {
   formatMinutes,
@@ -56,20 +55,19 @@ export default async function RouteDetailPage({
   const peerGap =
     data.summary.typical_trip_loss_minutes - data.systemMedianTypicalTripLoss;
   const formattedWorstTimeBand = formatTimeBandLabel(data.summary.worst_time_band);
-  const topStopWait = data.stopWaitCollection?.features[0];
-  const topSegments =
-    [...(data.segmentCollection?.features ?? [])]
-      .sort((left, right) => {
-        const rightLoss = right.properties.segment_in_vehicle_loss_minutes ?? 0;
-        const leftLoss = left.properties.segment_in_vehicle_loss_minutes ?? 0;
+  const topStopWait = data.stopWaitCollections
+    .flatMap((collection) => collection.features)
+    .slice()
+    .sort((left, right) => {
+      const rightLoss = right.properties.waiting_loss_minutes ?? 0;
+      const leftLoss = left.properties.waiting_loss_minutes ?? 0;
 
-        if (rightLoss !== leftLoss) {
-          return rightLoss - leftLoss;
-        }
+      if (rightLoss !== leftLoss) {
+        return rightLoss - leftLoss;
+      }
 
-        return (left.properties.segment_sequence ?? 0) - (right.properties.segment_sequence ?? 0);
-      })
-      .slice(0, 4);
+      return (left.properties.direction_id ?? 0) - (right.properties.direction_id ?? 0);
+    })[0];
 
   return (
     <div className="page-stack editorial-page route-detail-page">
@@ -115,77 +113,20 @@ export default async function RouteDetailPage({
       </section>
 
       <section className="route-dossier-grid">
-        <article className="route-dossier-map-card">
-          <div className="route-dossier-panel-bar route-dossier-panel-bar-blue">
-            <span>Corridor evidence</span>
-          </div>
-          <TransitMapSurface
-            ariaLabel={`Route ${data.summary.route_short_name} detail map`}
-            backgroundRouteFeatures={data.backgroundMapFeatures}
-            fitBackgroundRouteFeatures={false}
-            focusRouteId={data.summary.route_id}
-            minHeight="420px"
-            hoverSegments
-            neighborhoodLabels={data.neighborhoodLabels}
-            legend={{
-              items: segmentLossLegendItems,
-              subtitle: "Slow-travel loss per segment",
-              title: "Segment key",
-            }}
-            overlayFeatures={data.transitLaneOverlay}
-            routeColorMode="focus"
-            routeFeatures={data.mapFeatures}
-            segmentFeatures={data.segmentCollection?.features ?? []}
-            stopFeatures={topStopWait ? [topStopWait] : []}
-            stopMarkerScale={0.68}
-            surfaceLabel={
-              data.segmentCollection
-                ? `${data.segmentCollection.direction_label} MapLibre corridor`
-                : "MapLibre route corridor"
-            }
-          />
-          <div className="route-dossier-map-footer">
-            <div>
-              <p className="eyebrow">Worst section</p>
-              <h2>{data.summary.worst_segment_label}</h2>
-              <p>
-                Main burden: {dominantProblem}. Worst time: {formattedWorstTimeBand}.
-              </p>
-            </div>
-            <div className="route-dossier-segment-metric">
-              <span>Route slow travel</span>
-              <strong>{formatMinutes(data.summary.in_vehicle_loss_minutes)}</strong>
-            </div>
-          </div>
-          {data.mapNotice ? <DataStatePanel eyebrow="Route map" notice={data.mapNotice} /> : null}
-          {topSegments.length > 0 ? (
-            <>
-              <div className="route-dossier-segment-list-heading">
-                <strong>Highest-loss segments</strong>
-                <span>The four segment links with the highest published in-vehicle loss.</span>
-              </div>
-              <ol className="route-dossier-segment-list">
-                {topSegments.map((feature, index) => (
-                  <li
-                    key={`${feature.properties.segment_sequence ?? "segment"}-${feature.properties.segment_label ?? "unknown"}-${index}`}
-                  >
-                    <div>
-                      <strong>{feature.properties.segment_label}</strong>
-                      <small>
-                        Scheduled {(feature.properties.scheduled_segment_minutes ?? 0).toFixed(1)} min
-                      </small>
-                    </div>
-                    <b>
-                      +{(feature.properties.segment_in_vehicle_loss_minutes ?? 0).toFixed(1)} min
-                    </b>
-                  </li>
-                ))}
-              </ol>
-            </>
-          ) : data.segmentNotice ? (
-            <DataStatePanel eyebrow="Segment layer" notice={data.segmentNotice} />
-          ) : null}
-        </article>
+        <RouteCorridorEvidence
+          backgroundRouteFeatures={data.backgroundMapFeatures}
+          formattedWorstTimeBand={formattedWorstTimeBand}
+          mapNotice={data.mapNotice}
+          neighborhoodLabels={data.neighborhoodLabels}
+          routeFeatures={data.mapFeatures}
+          routeShortName={data.summary.route_short_name}
+          routeSlowTravelMinutes={data.summary.in_vehicle_loss_minutes}
+          segmentCollections={data.segmentCollections}
+          segmentNotice={data.segmentNotice}
+          stopWaitCollections={data.stopWaitCollections}
+          summaryWorstSegmentLabel={data.summary.worst_segment_label}
+          transitLaneOverlay={data.transitLaneOverlay}
+        />
 
         <div className="route-dossier-sidebar">
           <article className="editorial-rail-card editorial-rail-card-accent">

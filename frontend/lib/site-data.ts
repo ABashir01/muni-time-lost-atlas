@@ -111,9 +111,9 @@ type ReadyRouteDetailPageData = {
   peersNotice?: DataNotice;
   rankedRouteCount: number;
   routeRank: number | null;
-  segmentCollection: RouteSegmentsResponse | null;
+  segmentCollections: RouteSegmentsResponse[];
   segmentNotice?: DataNotice;
-  stopWaitCollection: RouteStopWaitResponse | null;
+  stopWaitCollections: RouteStopWaitResponse[];
   stopWaitNotice?: DataNotice;
   summary: RouteSummary;
   systemMedianTypicalTripLoss: number;
@@ -375,16 +375,15 @@ export async function getRouteDetailPageData(
   const backgroundMapFeatures = mapResult.ok
     ? mapResult.data.features.filter((feature) => feature.properties.route_id !== routeId)
     : [];
-  const segmentResult = await loadDirectionalResource(
+  const segmentResult = await loadDirectionalResources(
     (direction) => getRouteSegments(routeId, direction),
     "No directional segment layer is published for this route yet.",
     "The directional segment layer could not be loaded.",
   );
-  const stopWaitResult = await loadDirectionalResource(
+  const stopWaitResult = await loadDirectionalResources(
     (direction) => getRouteStopWait(routeId, direction),
     "No stop-wait hotspot layer is published for this route yet.",
     "The stop-wait hotspot layer could not be loaded.",
-    segmentResult.direction,
   );
 
   return {
@@ -419,9 +418,9 @@ export async function getRouteDetailPageData(
         ),
     rankedRouteCount: rankedRoutes.length,
     routeRank,
-    segmentCollection: segmentResult.data,
+    segmentCollections: segmentResult.collections.map((entry) => entry.data),
     segmentNotice: segmentResult.notice,
-    stopWaitCollection: stopWaitResult.data,
+    stopWaitCollections: stopWaitResult.collections.map((entry) => entry.data),
     stopWaitNotice: stopWaitResult.notice,
     summary,
     systemMedianTypicalTripLoss: median(
@@ -525,25 +524,22 @@ async function safeLoad<T>(loader: () => Promise<T>): Promise<SuccessfulResult<T
   }
 }
 
-async function loadDirectionalResource<T>(
+async function loadDirectionalResources<T>(
   loader: (direction: number) => Promise<T>,
   emptyTitle: string,
   errorTitle: string,
-  preferredDirection?: number | null,
 ) {
-  const orderedDirections = preferredDirection == null
-    ? [...preferredDirections]
-    : [preferredDirection, ...preferredDirections.filter((direction) => direction !== preferredDirection)];
+  const collections: Array<{ data: T; direction: number }> = [];
 
-  for (const direction of orderedDirections) {
+  for (const direction of preferredDirections) {
     const result = await safeLoad(() => loader(direction));
 
     if (result.ok) {
-      return {
+      collections.push({
         data: result.data,
         direction,
-        notice: undefined,
-      };
+      });
+      continue;
     }
 
     if (result.error instanceof ApiRequestError && result.error.status === 404) {
@@ -551,15 +547,20 @@ async function loadDirectionalResource<T>(
     }
 
     return {
-      data: null,
-      direction: null,
+      collections,
       notice: buildErrorNotice(errorTitle, "The live endpoint returned an error.", result.error),
     };
   }
 
+  if (collections.length > 0) {
+    return {
+      collections,
+      notice: undefined,
+    };
+  }
+
   return {
-    data: null,
-    direction: null,
+    collections,
     notice: buildEmptyNotice(
       emptyTitle,
       "The summary is available, but the matching directional layer is not published for this route yet.",
