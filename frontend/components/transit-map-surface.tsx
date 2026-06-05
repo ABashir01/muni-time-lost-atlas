@@ -105,6 +105,7 @@ type TransitMapSurfaceProps = {
   focusRouteId?: string;
   gestureNavigation?: boolean;
   hoverRoutes?: boolean;
+  hoverSegments?: boolean;
   interactive?: boolean;
   lineMode?: "compact" | "default";
   legend?: {
@@ -138,6 +139,7 @@ export function TransitMapSurface({
   focusRouteId,
   gestureNavigation,
   hoverRoutes = false,
+  hoverSegments = false,
   interactive = true,
   lineMode = "default",
   legend,
@@ -170,6 +172,13 @@ export function TransitMapSurface({
     lossMinutes: number;
     routeName: string;
     routeShortName: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [hoveredSegment, setHoveredSegment] = useState<{
+    lossMinutes: number;
+    scheduledMinutes: number;
+    segmentLabel: string;
     x: number;
     y: number;
   } | null>(null);
@@ -459,12 +468,46 @@ export function TransitMapSurface({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !interactive || !hoverRoutes || mapStatus !== "ready") {
+    if (!map || !interactive || (!hoverRoutes && !hoverSegments) || mapStatus !== "ready") {
       setHoveredRoute(null);
+      setHoveredSegment(null);
       return;
     }
 
     const handleMove = (event: maplibregl.MapMouseEvent) => {
+      if (hoverSegments && map.getLayer(layerIds.segmentLines)) {
+        const segmentFeatures = map.queryRenderedFeatures(
+          [
+            [event.point.x - 6, event.point.y - 6],
+            [event.point.x + 6, event.point.y + 6],
+          ] as never,
+          { layers: [layerIds.segmentLines] },
+        );
+        const segmentFeature = segmentFeatures[0];
+
+        if (segmentFeature) {
+          const containerWidth = mapContainerRef.current?.clientWidth ?? 720;
+          map.getCanvas().style.cursor = "pointer";
+          setHoveredRoute(null);
+          setHoveredSegment({
+            lossMinutes: Number(
+              segmentFeature.properties?.segment_in_vehicle_loss_minutes ?? 0,
+            ),
+            scheduledMinutes: Number(
+              segmentFeature.properties?.scheduled_segment_minutes ?? 0,
+            ),
+            segmentLabel: String(
+              segmentFeature.properties?.segment_label ?? "Unnamed segment",
+            ),
+            x: Math.min(event.point.x + 16, Math.max(18, containerWidth - 248)),
+            y: event.point.y,
+          });
+          return;
+        }
+      }
+
+      setHoveredSegment(null);
+
       if (!map.getLayer(layerIds.routeHitbox)) {
         map.getCanvas().style.cursor = "";
         setHoveredRoute(null);
@@ -505,6 +548,7 @@ export function TransitMapSurface({
     const handleLeave = () => {
       map.getCanvas().style.cursor = "";
       setHoveredRoute(null);
+      setHoveredSegment(null);
     };
 
     map.on("mousemove", handleMove);
@@ -515,7 +559,7 @@ export function TransitMapSurface({
       map.off("mouseout", handleLeave);
       map.getCanvas().style.cursor = "";
     };
-  }, [hoverRoutes, interactive, mapStatus]);
+  }, [hoverRoutes, hoverSegments, interactive, mapStatus]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -750,6 +794,19 @@ export function TransitMapSurface({
           CARTO
         </a>
       </div>
+      {hoveredSegment ? (
+        <div
+          className="map-route-tooltip"
+          style={{
+            left: hoveredSegment.x,
+            top: Math.max(hoveredSegment.y - 18, 18),
+          }}
+        >
+          <strong>{hoveredSegment.segmentLabel}</strong>
+          <span>{`+${hoveredSegment.lossMinutes.toFixed(1)} min slow travel`}</span>
+          <span>{`Scheduled ${hoveredSegment.scheduledMinutes.toFixed(1)} min`}</span>
+        </div>
+      ) : null}
       {hoveredRoute ? (
         <div
           className="map-route-tooltip"

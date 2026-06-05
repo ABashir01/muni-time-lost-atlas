@@ -30,6 +30,14 @@ export const routeLossLegendItems: MapLegendItem[] = [
   { color: "#0868d0", label: "Transit-only lanes" },
 ];
 
+export const segmentLossLegendItems: MapLegendItem[] = [
+  { color: "#d81420", label: "+2.0 min or more" },
+  { color: "#e85c10", label: "+1.4 to +2.0 min" },
+  { color: "#fcc000", label: "+0.8 to +1.4 min" },
+  { color: "#0868d0", label: "+0 to +0.8 min" },
+  { color: "#138646", label: "On time / better" },
+];
+
 export function decorateRouteFeatures(
   features: FeatureLine[],
   options?: {

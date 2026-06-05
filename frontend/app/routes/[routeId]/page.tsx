@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { DataStatePanel } from "@/components/data-state-panel";
 import { RouteBadge } from "@/components/route-badge";
 import { TransitMapSurface } from "@/components/transit-map-surface";
+import { segmentLossLegendItems } from "@/lib/map-utils";
 import { getRouteDetailPageData } from "@/lib/site-data";
 import {
   formatMinutes,
@@ -124,7 +125,13 @@ export default async function RouteDetailPage({
             fitBackgroundRouteFeatures={false}
             focusRouteId={data.summary.route_id}
             minHeight="420px"
+            hoverSegments
             neighborhoodLabels={data.neighborhoodLabels}
+            legend={{
+              items: segmentLossLegendItems,
+              subtitle: "Slow-travel loss per segment",
+              title: "Segment key",
+            }}
             overlayFeatures={data.transitLaneOverlay}
             routeColorMode="focus"
             routeFeatures={data.mapFeatures}
