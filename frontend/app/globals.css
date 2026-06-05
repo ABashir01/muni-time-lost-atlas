@@ -5222,8 +5222,11 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   }
 
   .homepage-masthead {
+    position: relative;
+    z-index: 12;
     gap: 0;
     padding-right: 0;
+    overflow: visible;
   }
 
   .homepage-masthead-top {
@@ -5292,11 +5295,16 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
   .homepage-nav {
     display: none;
-    width: 100%;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 18;
     gap: 0;
     padding: 0;
     border-top: 2px solid var(--rule);
     background: #fff;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
   }
 
   .homepage-nav.is-open {
@@ -5304,12 +5312,15 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   }
 
   .homepage-nav a {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    padding: 12px 14px;
+    min-height: 62px;
+    padding: 0 18px;
     border-top: 1px solid rgba(0, 0, 0, 0.12);
     font-size: 0.9rem;
-    text-align: left;
+    text-align: center;
   }
 
   .homepage-nav a:first-child {
@@ -5401,6 +5412,7 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   .homepage-map-panel .map-canvas {
     height: clamp(250px, 66vw, 310px);
     min-height: 0;
+    background: #dceafb;
   }
 
   .homepage-explainer {
@@ -5409,6 +5421,15 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
   .homepage-explainer-head h2 {
     font-size: clamp(1.7rem, 10vw, 2.2rem);
+  }
+
+  .homepage-ranking-route p {
+    white-space: nowrap;
+    text-wrap: nowrap;
+  }
+
+  .homepage-ranking-metric p {
+    white-space: nowrap;
   }
 
   .homepage-explainer-item {
@@ -5435,12 +5456,24 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   }
 
   .compare-entry-band-copy h2 {
-    font-size: clamp(1.45rem, 8vw, 2rem);
+    font-size: clamp(1.08rem, 5.2vw, 1.32rem);
+    line-height: 0.94;
+    white-space: nowrap;
   }
 
   .compare-entry-band-copy p {
-    font-size: 0.94rem;
-    line-height: 1.32;
+    font-size: clamp(0.68rem, 2.7vw, 0.78rem);
+    line-height: 1.18;
+    white-space: nowrap;
+  }
+
+  .homepage-explainer-footer {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .homepage-explainer-link {
+    text-align: center;
   }
 
   .site-header {
@@ -5762,8 +5795,10 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   }
 
   .homepage-ranking-route p {
-    font-size: clamp(1.08rem, 6.3vw, 1.38rem);
-    line-height: 0.92;
+    font-size: clamp(0.94rem, 4.7vw, 1.14rem);
+    line-height: 0.94;
+    white-space: nowrap;
+    text-wrap: nowrap;
   }
 
   .homepage-ranking-metric {
@@ -5789,9 +5824,11 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   }
 
   .homepage-ranking-metric p {
-    max-width: 4.9rem;
-    font-size: 0.73rem;
-    line-height: 1.08;
+    max-width: none;
+    font-size: 0.63rem;
+    line-height: 1;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
   }
 
   .homepage-ranking-divider {
