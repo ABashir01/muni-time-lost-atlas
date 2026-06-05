@@ -4692,6 +4692,25 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   border: 0;
 }
 
+.route-dossier-map-card .map-legend {
+  max-width: 11rem;
+  padding: 8px 10px;
+  border-width: 1.5px;
+}
+
+.route-dossier-map-card .map-legend h3 {
+  font-size: 1.45rem;
+}
+
+.route-dossier-map-card .map-legend p {
+  font-size: 0.74rem;
+}
+
+.route-dossier-map-card .map-legend li {
+  gap: 6px;
+  font-size: 0.72rem;
+}
+
 .route-dossier-map-card .map-engine-chip {
   display: none;
 }
@@ -5520,8 +5539,27 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
   .route-dossier-map-card .map-surface,
   .route-dossier-map-card .map-canvas {
-    min-height: 320px;
-  }
+      min-height: 320px;
+    }
+
+    .route-dossier-map-card .map-legend {
+      top: 10px;
+      left: 10px;
+      max-width: 9.2rem;
+      padding: 7px 8px;
+    }
+
+    .route-dossier-map-card .map-legend h3 {
+      font-size: 1.12rem;
+    }
+
+    .route-dossier-map-card .map-legend p {
+      font-size: 0.66rem;
+    }
+
+    .route-dossier-map-card .map-legend li {
+      font-size: 0.64rem;
+    }
 
   .route-dossier-map-footer {
     padding: 14px;
@@ -5802,8 +5840,30 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   .map-edition-canvas .map-canvas,
   .route-dossier-map-card .map-surface,
   .route-dossier-map-card .map-canvas {
-    min-height: 300px;
-  }
+      min-height: 300px;
+    }
+
+    .route-dossier-map-card .map-legend {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      margin: 0;
+      max-width: 8.1rem;
+      padding: 6px 7px;
+    }
+
+    .route-dossier-map-card .map-legend h3 {
+      font-size: 0.98rem;
+    }
+
+    .route-dossier-map-card .map-legend p {
+      display: none;
+    }
+
+    .route-dossier-map-card .map-legend li {
+      gap: 5px;
+      font-size: 0.6rem;
+    }
 
   .route-dossier-map-card .map-ui-controls,
   .route-dossier-map-card .map-loading-state {

@@ -174,6 +174,7 @@ export function RouteCorridorEvidence({
         fitBackgroundRouteFeatures={false}
         focusRouteId={routeFeatures[0]?.properties.route_id}
         hoverSegments
+        key={activeScope}
         legend={{
           items: segmentLossLegendItems,
           subtitle: "Slow-travel loss per segment",
