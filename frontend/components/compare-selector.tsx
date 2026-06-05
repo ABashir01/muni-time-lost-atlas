@@ -118,6 +118,7 @@ export function CompareSelector({
   className,
   actionLabel = "Compare",
   submitPath = "/compare",
+  mobileMenuPlacement = "auto",
 }: {
   routes: RouteSummary[];
   selectedIds: string[];
@@ -127,6 +128,7 @@ export function CompareSelector({
   className?: string;
   actionLabel?: string;
   submitPath?: string;
+  mobileMenuPlacement?: "auto" | "top" | "bottom";
 }) {
   const router = useRouter();
   const normalizedSlotCount = Math.max(2, Math.min(slotCount, 4));
@@ -144,6 +146,7 @@ export function CompareSelector({
     (_, index) => selectedIds[index] ?? "",
   );
   const [menuPortalTarget, setMenuPortalTarget] = useState<HTMLElement | null>(null);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [selections, setSelections] = useState<string[]>(() => initialSelections);
 
   const activeIds = selections.filter(Boolean);
@@ -199,8 +202,23 @@ export function CompareSelector({
   }, []);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 760px)");
+    const syncViewport = () => setIsMobileViewport(mediaQuery.matches);
+
+    syncViewport();
+    mediaQuery.addEventListener("change", syncViewport);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncViewport);
+    };
+  }, []);
+
+  useEffect(() => {
     setSelections(initialSelections);
   }, [normalizedSlotCount, routeOptions, selectedIds]);
+
+  const resolvedMenuPlacement =
+    isMobileViewport && mobileMenuPlacement !== "auto" ? mobileMenuPlacement : "auto";
 
   return (
     <div className={className ? `compare-controls ${className}` : "compare-controls"}>
@@ -219,7 +237,7 @@ export function CompareSelector({
                   inputId={`compare-route-${index + 1}`}
                   instanceId={`compare-route-${index + 1}`}
                   isClearable={index >= 2}
-                  menuPlacement="auto"
+                  menuPlacement={resolvedMenuPlacement}
                   menuPortalTarget={menuPortalTarget ?? undefined}
                   menuPosition={menuPortalTarget ? "fixed" : "absolute"}
                   menuShouldBlockScroll={false}

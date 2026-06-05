@@ -5222,6 +5222,7 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   }
 
   .homepage-masthead {
+    grid-template-columns: 1fr;
     position: relative;
     z-index: 12;
     gap: 0;
@@ -5295,6 +5296,7 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
   .homepage-nav {
     display: none;
+    grid-column: 1 / -1;
     position: absolute;
     top: 100%;
     left: 50%;
@@ -5329,9 +5331,9 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   }
 
   .homepage-nav a.is-active::after {
-    right: 14px;
-    bottom: 8px;
-    left: 14px;
+    right: 0;
+    bottom: 0;
+    left: 0;
   }
 
   .homepage-story-banner {
@@ -5632,11 +5634,13 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
   .map-edition-canvas {
     min-height: 0;
+    background: #fff;
   }
 
   .map-edition-canvas .map-surface,
   .map-edition-canvas .map-canvas {
     min-height: 300px;
+    background: #fff;
   }
 
   .map-edition-canvas .map-legend {

@@ -8,6 +8,7 @@ export function CompareEntryBand({
   className,
   description,
   id,
+  mobileMenuPlacement,
   optionalPlaceholderLabel,
   placeholderLabel,
   routes,
@@ -20,6 +21,7 @@ export function CompareEntryBand({
   className?: string;
   description: string;
   id?: string;
+  mobileMenuPlacement?: "auto" | "top" | "bottom";
   optionalPlaceholderLabel?: string;
   placeholderLabel: string;
   routes: RouteSummary[];
@@ -41,6 +43,7 @@ export function CompareEntryBand({
       <CompareSelector
         actionLabel={actionLabel}
         className="compare-entry-band-controls"
+        mobileMenuPlacement={mobileMenuPlacement}
         optionalPlaceholderLabel={optionalPlaceholderLabel}
         placeholderLabel={placeholderLabel}
         routes={routes}

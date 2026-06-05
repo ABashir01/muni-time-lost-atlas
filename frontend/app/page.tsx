@@ -239,6 +239,7 @@ export default async function HomePage({
         className="homepage-compare"
         description="See how routes stack up or compare parts of the same route."
         id="compare"
+        mobileMenuPlacement="top"
         placeholderLabel="Select a route..."
         routes={data.rankings}
         selectedIds={[]}
