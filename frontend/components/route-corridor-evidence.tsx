@@ -7,7 +7,6 @@ import { segmentLossLegendItems } from "@/lib/map-utils";
 import type {
   DataNotice,
   FeatureLine,
-  MapNeighborhoodLabel,
   RouteSegmentsResponse,
   RouteStopWaitResponse,
 } from "@/lib/types";
@@ -17,7 +16,6 @@ type RouteCorridorEvidenceProps = {
   backgroundRouteFeatures: FeatureLine[];
   formattedWorstTimeBand: string;
   mapNotice?: DataNotice;
-  neighborhoodLabels: MapNeighborhoodLabel[];
   routeFeatures: FeatureLine[];
   routeShortName: string;
   routeSlowTravelMinutes: number;
@@ -45,7 +43,6 @@ export function RouteCorridorEvidence({
   backgroundRouteFeatures,
   formattedWorstTimeBand,
   mapNotice,
-  neighborhoodLabels,
   routeFeatures,
   routeShortName,
   routeSlowTravelMinutes,
@@ -183,7 +180,6 @@ export function RouteCorridorEvidence({
           title: "Segment key",
         }}
         minHeight="420px"
-        neighborhoodLabels={neighborhoodLabels}
         overlayFeatures={transitLaneOverlay}
         routeColorMode="focus"
         routeFeatures={routeFeatures}

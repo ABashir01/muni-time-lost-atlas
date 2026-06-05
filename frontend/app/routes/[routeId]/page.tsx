@@ -117,7 +117,6 @@ export default async function RouteDetailPage({
           backgroundRouteFeatures={data.backgroundMapFeatures}
           formattedWorstTimeBand={formattedWorstTimeBand}
           mapNotice={data.mapNotice}
-          neighborhoodLabels={data.neighborhoodLabels}
           routeFeatures={data.mapFeatures}
           routeShortName={data.summary.route_short_name}
           routeSlowTravelMinutes={data.summary.in_vehicle_loss_minutes}
