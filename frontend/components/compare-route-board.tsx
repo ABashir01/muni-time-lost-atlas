@@ -56,9 +56,8 @@ export function CompareRouteBoard({
             <header>
               <div className="route-heading">
                 <RouteBadge routeId={route.route_id} label={route.route_short_name} />
-                <div>
+                <div className="compare-card-route-copy">
                   <h2>{route.route_name}</h2>
-                  <p>{route.route_long_name}</p>
                 </div>
               </div>
               <div className="compare-card-headline-metric">

@@ -38,7 +38,7 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
             <div className="rankings-feature-main">
               <div className="rankings-feature-route">
                 <RouteBadge label={route.route_short_name} routeId={route.route_id} />
-                <div>
+                <div className="route-cue-anchor">
                   <h2>{route.route_name}</h2>
                   <span className="rankings-route-cue">View route →</span>
                 </div>
@@ -80,7 +80,7 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
                 </span>
                 <div className="rankings-dense-route">
                   <RouteBadge label={route.route_short_name} routeId={route.route_id} />
-                  <div>
+                  <div className="route-cue-anchor">
                     <strong>{route.route_name}</strong>
                     <span className="rankings-route-cue">View route →</span>
                   </div>
