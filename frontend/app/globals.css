@@ -5313,18 +5313,15 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
   }
 
   .homepage-nav.is-open {
-    display: grid;
+    display: block;
   }
 
   .homepage-nav a {
-    display: flex;
-    justify-self: stretch;
+    display: block;
     box-sizing: border-box;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 62px;
-    padding: 0 18px;
+    width: auto;
+    min-height: 0;
+    padding: 18px 0;
     border-top: 1px solid rgba(0, 0, 0, 0.12);
     font-size: 0.9rem;
     text-align: center;
