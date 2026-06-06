@@ -782,6 +782,10 @@ main {
   display: inline-block;
 }
 
+.map-rail-route .route-cue-anchor {
+  padding-bottom: 1rem;
+}
+
 .route-badge {
   display: inline-grid;
   place-items: center;
