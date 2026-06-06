@@ -83,9 +83,8 @@ export function MapPageSurface({ data }: { data: MapPageData }) {
                   >
                     <div className="map-rail-route">
                       <RouteBadge routeId={route.route_id} label={route.route_short_name} />
-                      <div className="route-cue-anchor">
+                      <div>
                         <strong>{route.route_name}</strong>
-                        <span className="map-route-cue">View route →</span>
                       </div>
                     </div>
                     <b>{formatMinutes(route.typical_trip_loss_minutes)}</b>

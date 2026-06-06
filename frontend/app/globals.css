@@ -772,20 +772,6 @@ main {
   gap: 0.85rem;
 }
 
-.route-cue-anchor,
-.compare-card-route-copy {
-  min-width: 0;
-}
-
-.route-cue-anchor {
-  position: relative;
-  display: inline-block;
-}
-
-.map-rail-route .route-cue-anchor {
-  padding-bottom: 1rem;
-}
-
 .route-badge {
   display: inline-grid;
   place-items: center;
@@ -1325,10 +1311,6 @@ main {
 .compare-card header h2,
 .detail-heading h1 {
   font-size: clamp(2.4rem, 4vw, 3.7rem);
-}
-
-.compare-card-route-copy h2 {
-  margin: 0;
 }
 
 .compare-card header p {
@@ -4349,41 +4331,35 @@ a.compare-card:focus-visible,
 }
 
 .rankings-route-cue {
-  position: absolute;
-  top: calc(100% + 0.18rem);
-  left: 0;
+  display: inline-block;
+  margin-top: 0.26rem;
   color: var(--red);
   font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  white-space: nowrap;
   opacity: 0;
   transform: translateY(4px);
   transition:
     opacity 120ms ease,
     transform 120ms ease;
-  pointer-events: none;
 }
 
 .map-route-cue {
-  position: absolute;
-  top: calc(100% + 0.18rem);
-  left: 0;
+  display: inline-block;
+  margin-top: 0.24rem;
   color: var(--red);
   font-family: var(--font-display);
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  white-space: nowrap;
   opacity: 0;
   transform: translateY(4px);
   transition:
     opacity 120ms ease,
     transform 120ms ease;
-  pointer-events: none;
 }
 
 a.rankings-feature-card:hover .rankings-route-cue,
