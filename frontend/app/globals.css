@@ -5308,6 +5308,8 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
     background: #fff;
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
     transform: translateX(-50%);
+    align-items: stretch;
+    justify-items: stretch;
   }
 
   .homepage-nav.is-open {
@@ -5316,6 +5318,8 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
   .homepage-nav a {
     display: flex;
+    justify-self: stretch;
+    box-sizing: border-box;
     align-items: center;
     justify-content: center;
     width: 100%;
