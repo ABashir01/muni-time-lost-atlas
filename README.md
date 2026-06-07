@@ -2,13 +2,15 @@
 
 Muni Lost Time Atlas is a transit reliability project for San Francisco. It turns GTFS schedules and historical stop-observation archives into a public-facing map and ranking of where riders lose the most time.
 
+Live site: [munitimelossatlas.com](https://munitimelossatlas.com/)
+
 Instead of describing reliability only in operational terms, the project measures transit from the rider's perspective:
 
 - extra waiting caused by irregular headways
 - extra in-vehicle time caused by slower-than-scheduled trips
 - route, stop, segment, and map views that make the burden visible
 
-![Muni Lost Time Atlas homepage](artifacts/frontend/homepage-1512x982.png)
+![Muni Lost Time Atlas homepage](image.png)
 
 ## What the app does
 
@@ -22,6 +24,7 @@ The web app answers a few simple questions:
 
 The current product surface includes:
 
+- a live public site at [munitimelossatlas.com](https://munitimelossatlas.com/)
 - a homepage with top rider-loss routes
 - a citywide route map
 - a rankings page
