@@ -76,9 +76,8 @@ export default function MethodologyPage() {
             </p>
           </div>
           <p>
-            This is the standard random-arrival waiting result used in the transit
-            literature. The formula comes from the headway-based expected-waiting
-            result discussed in{" "}
+            The formula comes from the headway-based expected-waiting result
+            discussed in{" "}
             <a className="methodology-link" href={sourceLinks[0].href} rel="noreferrer" target="_blank">
               {sourceLinks[0].label}
             </a>
