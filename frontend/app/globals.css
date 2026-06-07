@@ -4201,6 +4201,7 @@ a.compare-card:focus-visible,
 
 .rankings-feature-route .route-cue-anchor,
 .rankings-dense-route .route-cue-anchor {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -4339,19 +4340,22 @@ a.compare-card:focus-visible,
 }
 
 .rankings-route-cue {
-  display: inline-block;
-  margin-top: 0.26rem;
+  position: absolute;
+  top: calc(100% + 0.18rem);
+  left: 0;
   color: var(--red);
   font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  white-space: nowrap;
   opacity: 0;
   transform: translateY(4px);
   transition:
     opacity 120ms ease,
     transform 120ms ease;
+  pointer-events: none;
 }
 
 .map-route-cue {
