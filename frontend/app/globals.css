@@ -4199,6 +4199,14 @@ a.compare-card:focus-visible,
   min-width: 0;
 }
 
+.rankings-feature-route .route-cue-anchor,
+.rankings-dense-route .route-cue-anchor {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
 .rankings-feature-route h2,
 .route-dossier-map-footer h2 {
   margin: 0;
