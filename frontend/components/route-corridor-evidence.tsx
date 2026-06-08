@@ -174,6 +174,7 @@ export function RouteCorridorEvidence({
         fitBackgroundRouteFeatures={false}
         focusRouteId={routeFeatures[0]?.properties.route_id}
         hoverSegments
+        hoverStops
         key={activeScope}
         legend={{
           items: segmentLossLegendItems,
@@ -186,7 +187,7 @@ export function RouteCorridorEvidence({
         routeFeatures={routeFeatures}
         segmentFeatures={activeSegments}
         stopFeatures={topStopFeature ? [topStopFeature] : []}
-        stopMarkerScale={0.68}
+        stopMarkerScale={0.42}
         surfaceLabel={activeSurfaceLabel}
       />
       <div className="route-dossier-map-footer">

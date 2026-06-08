@@ -106,6 +106,7 @@ type TransitMapSurfaceProps = {
   gestureNavigation?: boolean;
   hoverRoutes?: boolean;
   hoverSegments?: boolean;
+  hoverStops?: boolean;
   interactive?: boolean;
   lineMode?: "compact" | "default";
   legend?: {
@@ -140,6 +141,7 @@ export function TransitMapSurface({
   gestureNavigation,
   hoverRoutes = false,
   hoverSegments = false,
+  hoverStops = false,
   interactive = true,
   lineMode = "default",
   legend,
@@ -179,6 +181,14 @@ export function TransitMapSurface({
     lossMinutes: number;
     scheduledMinutes: number;
     segmentLabel: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [hoveredStop, setHoveredStop] = useState<{
+    observedWaitMinutes: number;
+    scheduledWaitMinutes: number;
+    stopLabel: string;
+    waitingLossMinutes: number;
     x: number;
     y: number;
   } | null>(null);
@@ -468,13 +478,53 @@ export function TransitMapSurface({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !interactive || (!hoverRoutes && !hoverSegments) || mapStatus !== "ready") {
+    if (!map || !interactive || (!hoverRoutes && !hoverSegments && !hoverStops) || mapStatus !== "ready") {
       setHoveredRoute(null);
       setHoveredSegment(null);
+      setHoveredStop(null);
       return;
     }
 
     const handleMove = (event: maplibregl.MapMouseEvent) => {
+      if (hoverStops && map.getLayer(layerIds.stopCircles)) {
+        const stopFeatures = map.queryRenderedFeatures(
+          [
+            [event.point.x - 8, event.point.y - 8],
+            [event.point.x + 8, event.point.y + 8],
+          ] as never,
+          { layers: [layerIds.stopCircles] },
+        );
+        const stopFeature = stopFeatures[0];
+
+        if (stopFeature) {
+          const containerWidth = mapContainerRef.current?.clientWidth ?? 720;
+          map.getCanvas().style.cursor = "pointer";
+          setHoveredRoute(null);
+          setHoveredSegment(null);
+          setHoveredStop({
+            observedWaitMinutes: Number(
+              stopFeature.properties?.observed_effective_wait_minutes ?? 0,
+            ),
+            scheduledWaitMinutes: Number(
+              stopFeature.properties?.scheduled_effective_wait_minutes ?? 0,
+            ),
+            stopLabel: String(
+              stopFeature.properties?.stop_wait_label ??
+                stopFeature.properties?.stop_name ??
+                "Unnamed stop",
+            ),
+            waitingLossMinutes: Number(
+              stopFeature.properties?.waiting_loss_minutes ?? 0,
+            ),
+            x: Math.min(event.point.x + 16, Math.max(18, containerWidth - 252)),
+            y: event.point.y,
+          });
+          return;
+        }
+      }
+
+      setHoveredStop(null);
+
       if (hoverSegments && map.getLayer(layerIds.segmentLines)) {
         const segmentFeatures = map.queryRenderedFeatures(
           [
@@ -549,6 +599,7 @@ export function TransitMapSurface({
       map.getCanvas().style.cursor = "";
       setHoveredRoute(null);
       setHoveredSegment(null);
+      setHoveredStop(null);
     };
 
     map.on("mousemove", handleMove);
@@ -559,7 +610,7 @@ export function TransitMapSurface({
       map.off("mouseout", handleLeave);
       map.getCanvas().style.cursor = "";
     };
-  }, [hoverRoutes, hoverSegments, interactive, mapStatus]);
+  }, [hoverRoutes, hoverSegments, hoverStops, interactive, mapStatus]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -805,6 +856,19 @@ export function TransitMapSurface({
           <strong>{hoveredSegment.segmentLabel}</strong>
           <span>{`+${hoveredSegment.lossMinutes.toFixed(1)} min slow travel`}</span>
           <span>{`Scheduled ${hoveredSegment.scheduledMinutes.toFixed(1)} min`}</span>
+        </div>
+      ) : null}
+      {hoveredStop ? (
+        <div
+          className="map-route-tooltip"
+          style={{
+            left: hoveredStop.x,
+            top: Math.max(hoveredStop.y - 18, 18),
+          }}
+        >
+          <strong>{hoveredStop.stopLabel}</strong>
+          <span>{`+${hoveredStop.waitingLossMinutes.toFixed(1)} min waiting loss`}</span>
+          <span>{`Observed ${hoveredStop.observedWaitMinutes.toFixed(1)} min vs scheduled ${hoveredStop.scheduledWaitMinutes.toFixed(1)} min`}</span>
         </div>
       ) : null}
       {hoveredRoute ? (
