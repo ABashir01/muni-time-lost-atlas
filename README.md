@@ -4,6 +4,8 @@ Muni Lost Time Atlas is a transit reliability project for San Francisco. It turn
 
 Live site: [munitimelossatlas.com](https://munitimelossatlas.com/)
 
+Twitter thread: [https://x.com/ahadbashir_/status/2063756240287920148](https://x.com/ahadbashir_/status/2063756240287920148)
+
 Instead of describing reliability only in operational terms, the project measures transit from the rider's perspective:
 
 - extra waiting caused by irregular headways
