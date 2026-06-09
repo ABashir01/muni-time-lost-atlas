@@ -52,7 +52,7 @@ const mapStyle: StyleSpecification = {
     {
       id: "background",
       paint: {
-        "background-color": "#dde7ee",
+        "background-color": "#fafbfd",
       },
       type: "background",
     },
@@ -60,11 +60,11 @@ const mapStyle: StyleSpecification = {
       id: "basemap",
       paint: {
         "raster-brightness-max": 1,
-        "raster-brightness-min": 0.84,
-        "raster-contrast": -0.08,
+        "raster-brightness-min": 0.94,
+        "raster-contrast": -0.14,
         "raster-fade-duration": 0,
-        "raster-opacity": 0.72,
-        "raster-saturation": -0.35,
+        "raster-opacity": 0.36,
+        "raster-saturation": -0.55,
       },
       source: "basemap",
       type: "raster",
