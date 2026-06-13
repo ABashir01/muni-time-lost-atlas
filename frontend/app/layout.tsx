@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import {
   Anton,
   Archivo_Narrow,
@@ -86,6 +87,12 @@ export default function RootLayout({
         ) : (
           <AppChrome>{children}</AppChrome>
         )}
+        <Script
+          data-cf-beacon='{"token":"5753986c203d4701a73f24304e6c83e9"}'
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
