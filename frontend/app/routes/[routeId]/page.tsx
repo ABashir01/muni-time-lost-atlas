@@ -90,12 +90,12 @@ export default async function RouteDetailPage({
 
         <div className="route-dossier-scoreboard">
           <article>
-            <span>Expected rider loss</span>
+            <span>Expected full-trip loss</span>
             <strong>{formatMinutes(data.summary.typical_trip_loss_minutes)}</strong>
-            <small>waiting + ride on a full one-way trip</small>
+            <small>first-stop wait + ride from the first stop to the end of the line</small>
           </article>
           <article>
-            <span>Waiting loss</span>
+            <span>First-stop waiting loss</span>
             <strong>{formatMinutes(data.summary.waiting_loss_minutes)}</strong>
             <small>{formatPercent(data.waitingShare)} of burden</small>
           </article>
@@ -133,18 +133,18 @@ export default async function RouteDetailPage({
             <h2>{topStopWait?.properties.stop_wait_label ?? "Waiting hotspot pending"}</h2>
             {topStopWait ? (
               <>
-                <p>Stop with the highest published waiting loss.</p>
+                <p>Trip-entry stop with the highest published waiting loss.</p>
                 <dl className="route-dossier-definition-list">
                   <div>
-                    <dt>Waiting loss</dt>
+                    <dt>First-stop waiting loss</dt>
                     <dd>{formatMinutes(topStopWait.properties.waiting_loss_minutes ?? 0)}</dd>
                   </div>
                   <div>
-                    <dt>Observed wait</dt>
+                    <dt>Observed first-stop wait</dt>
                     <dd>{formatMinutes(topStopWait.properties.observed_effective_wait_minutes ?? 0)}</dd>
                   </div>
                   <div>
-                    <dt>Scheduled wait</dt>
+                    <dt>Scheduled first-stop wait</dt>
                     <dd>{formatMinutes(topStopWait.properties.scheduled_effective_wait_minutes ?? 0)}</dd>
                   </div>
                   <div>
@@ -170,28 +170,24 @@ export default async function RouteDetailPage({
 
           <article className="editorial-rail-card route-dossier-sidebar-card-compact">
           <p className="eyebrow">Sample size</p>
-          <h2>Matched trips and stops</h2>
-          <p>Trips, headway intervals, and stop events behind this route summary.</p>
+          <h2>What this summary is based on</h2>
+          <p>Published counts behind the full-trip, waiting, and corridor metrics.</p>
           <dl className="route-dossier-definition-list">
             <div>
               <dt>Route rank</dt>
               <dd>{data.routeRank ? `#${data.routeRank}` : "Not ranked yet"}</dd>
             </div>
             <div>
-              <dt>Matched full trips</dt>
+              <dt>Full trips used</dt>
               <dd>{data.summary.matched_full_trip_count}</dd>
             </div>
             <div>
-              <dt>Headway intervals</dt>
+              <dt>First-stop intervals used</dt>
               <dd>{data.summary.matched_headway_interval_count}</dd>
             </div>
             <div>
-              <dt>Matched stop events</dt>
+              <dt>Stop observations used</dt>
               <dd>{data.summary.matched_observed_stop_event_count}</dd>
-            </div>
-            <div>
-              <dt>Unmatched rows resolved</dt>
-              <dd>{data.summary.resolved_unmatched_observation_count}</dd>
             </div>
           </dl>
         </article>

@@ -58,8 +58,8 @@ export default function MethodologyPage() {
         <article className="info-panel methodology-plain-card">
           <h2>2. Waiting loss</h2>
           <p>
-            Waiting loss estimates how much extra time a rider loses before boarding
-            because actual headways are less regular than the schedule.
+            Waiting loss estimates how much extra time a full-trip rider loses before
+            boarding because actual headways are less regular than the schedule.
           </p>
           <div className="methodology-formula-block" role="img" aria-label="Waiting loss formula">
             <p className="methodology-formula-line">

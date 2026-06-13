@@ -43,8 +43,8 @@ export default async function HomePage({
   const data = await getHomepageData();
   const rankingSlots = data.rankings.slice(0, 3);
   const publishedWindowSummary = data.lastUpdatedAt
-    ? `Using the last 3 published months of route-delay data across San Francisco. Last updated ${formatTimestamp(data.lastUpdatedAt)}.`
-    : "Using the last 3 published months of route-delay data across San Francisco.";
+    ? `Based on a 3-month window, last updated ${formatTimestamp(data.lastUpdatedAt)}.`
+    : "Based on a 3-month window.";
 
   return (
     <div className={`homepage-viewport ${homepageFontClass === "homepage-font-oswald" ? "homepage-font-oswald-roboto" : homepageFontClass}`}>
@@ -67,7 +67,9 @@ export default async function HomePage({
                 <HomepageTransitSymbol />
               </div>
               <p>
-                A public map and ranking of where Muni riders lose the most time.{" "}
+                How much time does a rider lose getting on at the first stop and
+                riding to the end? This ranking answers which routes have the highest
+                full-trip time loss relative to the expected schedule.{" "}
                 {publishedWindowSummary}
               </p>
             </div>
@@ -84,7 +86,7 @@ export default async function HomePage({
             <p>Map view</p>
             <h3>Three Highest Rider-Loss Routes</h3>
             <span>
-              The map highlights the three routes with the highest published rider time loss.
+              The map highlights the three routes with the highest full-trip time loss.
               The rest of the routes are faded out in gray.
             </span>
           </div>
@@ -152,7 +154,7 @@ export default async function HomePage({
                     <strong>{`+${route.typical_trip_loss_minutes.toFixed(1)}`}</strong>
                     <span>min</span>
                   </div>
-                  <p>expected rider time loss</p>
+                  <p>expected full-trip loss</p>
                   <div className="homepage-ranking-breakdown">
                     <span>{`wait ${formatMinutes(route.waiting_loss_minutes)}`}</span>
                     <span>{`ride ${formatMinutes(route.in_vehicle_loss_minutes)}`}</span>
@@ -185,7 +187,7 @@ export default async function HomePage({
                     <strong>--</strong>
                     <span>min</span>
                   </div>
-                  <p>expected rider time loss</p>
+                  <p>expected full-trip loss</p>
                 </div>
                 <div className="homepage-ranking-divider" />
                 <div className="homepage-ranking-notes">

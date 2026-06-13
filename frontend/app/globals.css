@@ -4278,6 +4278,13 @@ a.compare-card:focus-visible,
   text-transform: uppercase;
 }
 
+.route-dossier-scoreboard span {
+  font-size: clamp(0.58rem, 0.64vw, 0.68rem);
+  letter-spacing: 0.03em;
+  line-height: 1.08;
+  white-space: nowrap;
+}
+
 .rankings-feature-notes dd,
 .rankings-context-stats strong,
 .map-rail-stats strong,
@@ -4628,7 +4635,9 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
 .route-dossier-scoreboard article {
   display: grid;
-  align-content: center;
+  align-content: start;
+  align-items: start;
+  grid-template-rows: minmax(1.5rem, auto) minmax(2.45rem, auto) 1fr;
   gap: 0.28rem;
   padding: 18px 16px;
   border-left: 1px solid rgba(0, 0, 0, 0.14);
@@ -5600,6 +5609,10 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
       font-size: 1.95rem;
   }
 
+  .route-dossier-scoreboard span {
+    white-space: normal;
+  }
+
   .route-dossier-map-card .map-surface,
   .route-dossier-map-card .map-canvas {
       min-height: 320px;
@@ -5908,6 +5921,10 @@ a.rankings-dense-row:focus-visible .rankings-route-cue {
 
   .route-dossier-scoreboard {
     grid-template-columns: 1fr;
+  }
+
+  .route-dossier-scoreboard span {
+    white-space: normal;
   }
 
   .map-edition-canvas .map-surface,

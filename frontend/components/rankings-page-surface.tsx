@@ -46,7 +46,7 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
 
               <div className="rankings-feature-metric">
                 <strong>{`+${route.typical_trip_loss_minutes.toFixed(1)} min`}</strong>
-                <span>expected rider time loss</span>
+                <span>expected full-trip loss</span>
                 <small className="rankings-feature-breakdown">
                   {`wait ${formatMinutes(route.waiting_loss_minutes)} • ride ${formatMinutes(route.in_vehicle_loss_minutes)}`}
                 </small>
@@ -87,7 +87,7 @@ export function RankingsPageSurface({ data }: { data: RankingsPageData }) {
                 </div>
                 <div className="rankings-dense-metric">
                   <b>{`+${route.typical_trip_loss_minutes.toFixed(1)} min`}</b>
-                  <span>rider time loss</span>
+                  <span>full-trip loss</span>
                 </div>
               </Link>
             ))

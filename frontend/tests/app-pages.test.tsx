@@ -134,12 +134,13 @@ describe("public pages", () => {
     expect(html).toContain("Riders Lose");
     expect(html).toContain("Most Time");
     expect(html).toContain("Three Highest Rider-Loss Routes");
-    expect(html).toContain("three routes with the highest published rider time loss");
+    expect(html).toContain("three routes with the highest full-trip time loss");
     expect(html).toContain("MapLibre GL JS route surface");
-    expect(html).toContain("A public map and ranking of where Muni riders lose the most time.");
-    expect(html).toContain("Using the last 3 published months of route-delay data across San Francisco.");
-    expect(html).toContain("Last updated");
-    expect(html).toContain("expected rider time loss");
+    expect(html).toContain("How much time does a rider lose getting on at the first stop and riding to the end?");
+    expect(html).toContain("This ranking answers which routes have the highest full-trip time loss relative to the expected schedule.");
+    expect(html).toContain("Based on a 3-month window");
+    expect(html).toContain("last updated");
+    expect(html).toContain("expected full-trip loss");
     expect(html).toContain("wait +0.8 min");
     expect(html).toContain("ride +1.5 min");
     expect(html).toContain("See full rankings");
@@ -184,7 +185,7 @@ describe("public pages", () => {
     expect(compareHtml).toContain("Pick two to four published routes");
     expect(compareHtml).toContain("Compare uses the current published route snapshot.");
     expect(compareHtml).toContain("Median route loss");
-    expect(compareHtml).toContain("Expected rider loss");
+    expect(compareHtml).toContain("Expected full-trip loss");
     expect(compareHtml).toContain("9:00-9:59 AM");
     expect(compareHtml).toContain("/routes/14");
     expect(mapHtml).toContain("Citywide route delay map");
@@ -200,6 +201,7 @@ describe("public pages", () => {
     expect(methodologyHtml).toContain("How the route time-loss number is calculated.");
     expect(methodologyHtml).toContain("Typical route time loss");
     expect(methodologyHtml).toContain("median full-trip in-vehicle loss");
+    expect(methodologyHtml).toContain("Waiting loss estimates how much extra time a full-trip rider loses before boarding");
     expect(methodologyHtml).toContain("grouped by route_id, not by route_id plus direction_id");
     expect(methodologyHtml).toContain("The current published metric combines two 511 data paths");
   });
